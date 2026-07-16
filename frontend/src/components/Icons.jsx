@@ -1,0 +1,136 @@
+const base = {
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+};
+
+export const HomeIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 11.5 12 4l9 7.5" />
+    <path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9" />
+  </svg>
+);
+
+export const ListIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="4" width="18" height="4" rx="1" />
+    <rect x="3" y="10" width="18" height="4" rx="1" />
+    <rect x="3" y="16" width="18" height="4" rx="1" />
+  </svg>
+);
+
+export const LinkIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M9.5 14.5 14.5 9.5" />
+    <path d="M11 6.5 12.6 4.9a3.5 3.5 0 0 1 5 5L16 11.4" />
+    <path d="M13 17.5 11.4 19.1a3.5 3.5 0 0 1-5-5L8 12.6" />
+  </svg>
+);
+
+export const InvoiceIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+    <path d="M14.5 3v4.5H19" />
+    <path d="M8 12h8M8 15.5h8M8 8.5h4" />
+  </svg>
+);
+
+export const UsersIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3.5 19c.5-3.2 3-5 5.5-5s5 1.8 5.5 5" />
+    <circle cx="17" cy="8.5" r="2.3" />
+    <path d="M15.8 14.2c1.9.3 3.5 1.9 3.9 4.3" />
+  </svg>
+);
+
+export const KeyIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="8" cy="15" r="4" />
+    <path d="M11 12 19 4M16.5 6.5 19 4l1.5 1.5-2.5 2.5M14.7 9l1.8 1.8" />
+  </svg>
+);
+
+export const WebhookIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M8 18a3 3 0 1 1 2-5.2L14 7.6" />
+    <path d="M16 6a3 3 0 1 1 1.8 5.4L13 7.2" />
+    <path d="M14 19a3 3 0 1 0 5-2.3L14.5 12" />
+  </svg>
+);
+
+export const BankIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 10 12 4l9 6" />
+    <path d="M5 10v9M9.5 10v9M14.5 10v9M19 10v9" />
+    <path d="M3 19h18" />
+  </svg>
+);
+
+export const RocketIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M13.5 3.5c3 .5 5 2.5 5.5 5.5-2 3-4 5-7.5 8-1-1-2-2-2-2s-1-1-2-2c3-3.5 5-5.5 8-7.5Z" />
+    <path d="M9 15c-2 0-4 1.5-4.5 4.5C7.5 19 9 17 9 15Z" />
+    <circle cx="14.5" cy="9.5" r="1.3" />
+  </svg>
+);
+
+export const HelpIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.3 9.3a2.7 2.7 0 1 1 3.9 2.4c-.8.4-1.2 1-1.2 1.9" />
+    <circle cx="12" cy="17" r="0.15" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+export const SunIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+  </svg>
+);
+
+export const MoonIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+  </svg>
+);
+
+export const MonitorIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="4.5" width="18" height="12" rx="1.5" />
+    <path d="M8 20h8M12 16.5V20" />
+  </svg>
+);
+
+export const ChevronDownIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+export const CopyIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="1.5" />
+    <path d="M6 15H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v1" />
+  </svg>
+);
+
+export const ExternalLinkIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4 10 14" />
+    <path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5" />
+  </svg>
+);
+
+export const PlusIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);

@@ -11,28 +11,50 @@ from app.core.db import get_db
 from app.core.security import decode_token, verify_api_key
 from app.models.api_key import ApiKey
 from app.models.merchant import Merchant
+from app.models.user import User, UserStatus
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
-async def get_current_merchant(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: AsyncSession = Depends(get_db),
-) -> Merchant:
+) -> User:
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing bearer token")
     try:
         payload = decode_token(credentials.credentials)
         if payload.get("type") != "access":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
-        merchant_id = uuid.UUID(payload["sub"])
+        user_id = uuid.UUID(payload["sub"])
     except (JWTError, KeyError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token") from exc
 
-    merchant = await db.get(Merchant, merchant_id)
+    user = await db.get(User, user_id)
+    if user is None or user.status != UserStatus.ACTIVE:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")
+    return user
+
+
+async def get_current_merchant(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Merchant:
+    merchant = await db.get(Merchant, user.merchant_id)
     if merchant is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Merchant not found")
     return merchant
+
+
+def require_role(*allowed_roles: str):
+    async def _checker(user: User = Depends(get_current_user)) -> User:
+        if user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="You don't have permission to perform this action"
+            )
+        return user
+
+    return _checker
 
 
 async def get_merchant_from_api_key(
@@ -75,4 +97,5 @@ async def get_merchant_flexible(
     """
     if credentials is not None and credentials.credentials.startswith("sk_"):
         return await get_merchant_from_api_key(authorization=f"Bearer {credentials.credentials}", db=db)
-    return await get_current_merchant(credentials=credentials, db=db)
+    user = await get_current_user(credentials=credentials, db=db)
+    return await get_current_merchant(user=user, db=db)

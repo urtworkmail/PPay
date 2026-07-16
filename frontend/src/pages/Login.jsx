@@ -26,7 +26,7 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout title="Log in to OpenPay" subtitle="Sandbox mode — no real funds are moved.">
+    <AuthLayout title="Log in to PPay" subtitle="Sandbox mode — no real funds are moved.">
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {error && (
           <div className="badge badge-danger" style={{ width: "100%", padding: "10px 12px" }}>

@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.deps import get_current_merchant
+from app.api.v1.deps import get_current_merchant, require_role
 from app.core.db import get_db
 from app.core.security import generate_webhook_secret
 from app.models.merchant import Merchant
+from app.models.user import User, UserRole
 from app.models.webhook import WebhookEndpoint, WebhookLog
 from app.schemas.transaction import WebhookEndpointCreateRequest, WebhookEndpointResponse, WebhookLogResponse
 
@@ -18,6 +19,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 async def create_webhook_endpoint(
     payload: WebhookEndpointCreateRequest,
     merchant: Merchant = Depends(get_current_merchant),
+    _: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db),
 ) -> WebhookEndpoint:
     endpoint = WebhookEndpoint(
@@ -49,6 +51,7 @@ async def list_webhook_endpoints(
 async def delete_webhook_endpoint(
     endpoint_id: uuid.UUID,
     merchant: Merchant = Depends(get_current_merchant),
+    _: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db),
 ) -> None:
     result = await db.execute(

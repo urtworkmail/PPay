@@ -53,7 +53,7 @@ export default function Webhooks() {
     <div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Webhooks</h1>
       <p style={{ color: "var(--color-text-muted)", marginTop: 0, marginBottom: 24 }}>
-        OpenPay sends <code className="mono">payment_intent.succeeded</code> and{" "}
+        PPay sends <code className="mono">payment_intent.succeeded</code> and{" "}
         <code className="mono">payment_intent.failed</code> events, signed with HMAC, to your registered endpoints.
       </p>
 
@@ -103,7 +103,7 @@ export default function Webhooks() {
                   <td className="mono" style={{ wordBreak: "break-all" }}>{ep.url}</td>
                   <td style={{ color: "var(--color-text-muted)", fontSize: 13 }}>{ep.events.join(", ")}</td>
                   <td>
-                    <span className={`badge ${ep.is_active ? "badge-success" : "badge-danger"}`}>
+                    <span className={`badge ${ep.is_active ? "badge-success" : "badge-danger"}`} style={{ textTransform: "capitalize" }}>
                       {ep.is_active ? "active" : "disabled"}
                     </span>
                   </td>

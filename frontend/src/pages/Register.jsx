@@ -27,7 +27,7 @@ export default function Register() {
   }
 
   return (
-    <AuthLayout title="Create your OpenPay account" subtitle="Start in sandbox mode, free — no live processing yet.">
+    <AuthLayout title="Create your PPay account" subtitle="Start in sandbox mode, free — no live processing yet.">
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {error && (
           <div className="badge badge-danger" style={{ width: "100%", padding: "10px 12px" }}>

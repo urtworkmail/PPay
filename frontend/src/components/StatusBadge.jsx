@@ -13,5 +13,9 @@ const VARIANT_BY_STATUS = {
 
 export default function StatusBadge({ status }) {
   const variant = VARIANT_BY_STATUS[status] ?? "badge-neutral";
-  return <span className={`badge ${variant}`}>{status.replace("_", " ")}</span>;
+  return (
+    <span className={`badge ${variant}`} style={{ textTransform: "capitalize" }}>
+      {status.replace("_", " ")}
+    </span>
+  );
 }

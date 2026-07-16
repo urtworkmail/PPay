@@ -141,7 +141,7 @@ export default function Checkout() {
       </form>
 
       <p style={{ fontSize: 11.5, color: "var(--color-text-faint)", marginTop: 20, textAlign: "center" }}>
-        Secured by OpenPay · Sandbox mode
+        Secured by PPay · Sandbox mode
       </p>
     </CenteredCard>
   );

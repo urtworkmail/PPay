@@ -5,15 +5,18 @@ const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
   const [merchant, setMerchant] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function loadProfile() {
     try {
-      const profile = await apiFetch("/merchants/me");
+      const [profile, userProfile] = await Promise.all([apiFetch("/merchants/me"), apiFetch("/users/me")]);
       setMerchant(profile);
+      setUser(userProfile);
     } catch {
       clearTokens();
       setMerchant(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -50,10 +53,11 @@ export function AuthProvider({ children }) {
   function logout() {
     clearTokens();
     setMerchant(null);
+    setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ merchant, loading, login, register, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ merchant, user, loading, login, register, logout }}>{children}</AuthContext.Provider>
   );
 }
 

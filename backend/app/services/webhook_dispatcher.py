@@ -64,7 +64,7 @@ async def deliver_webhook(db: AsyncSession, log: WebhookLog, endpoint: WebhookEn
                 content=payload_bytes,
                 headers={
                     "Content-Type": "application/json",
-                    "OpenPay-Signature": signature,
+                    "PPay-Signature": signature,
                 },
             )
         log.response_status = response.status_code

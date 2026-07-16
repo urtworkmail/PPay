@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.idempotency import require_idempotency_key
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus, PaymentMethod
+from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.webhook import WebhookEndpoint
@@ -159,6 +160,13 @@ async def pay_checkout_session(
 
     session.status = CheckoutSessionStatus.SUCCEEDED if result.success else CheckoutSessionStatus.FAILED
     session.completed_at = datetime.now(timezone.utc)
+
+    if result.success:
+        invoice_result = await db.execute(select(Invoice).where(Invoice.checkout_session_id == session.id))
+        invoice = invoice_result.scalar_one_or_none()
+        if invoice is not None:
+            invoice.status = InvoiceStatus.PAID
+            invoice.paid_at = session.completed_at
 
     await db.flush()
 

@@ -50,7 +50,7 @@ export default function ApiKeys() {
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>API Keys</h1>
           <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
-            Use a sandbox key to authenticate server-to-server calls to the OpenPay API.
+            Use a sandbox key to authenticate server-to-server calls to the PPay API.
           </p>
         </div>
         <button className="btn btn-primary" onClick={handleCreate} disabled={creating}>
@@ -93,7 +93,7 @@ export default function ApiKeys() {
                   <td className="mono">{k.key_prefix}_••••••••</td>
                   <td style={{ textTransform: "capitalize" }}>{k.mode}</td>
                   <td>
-                    <span className={`badge ${k.is_active ? "badge-success" : "badge-danger"}`}>
+                    <span className={`badge ${k.is_active ? "badge-success" : "badge-danger"}`} style={{ textTransform: "capitalize" }}>
                       {k.is_active ? "active" : "revoked"}
                     </span>
                   </td>

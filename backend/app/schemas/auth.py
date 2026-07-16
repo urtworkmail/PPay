@@ -31,6 +31,28 @@ class MerchantProfile(BaseModel):
     email: EmailStr
     status: str
     country: str
+    live_status: str
+
+    model_config = {"from_attributes": True}
+
+
+class GoLiveRequest(BaseModel):
+    legal_business_name: str = Field(min_length=2, max_length=255)
+    business_category: str = Field(min_length=2, max_length=120)
+    registration_number: str | None = Field(default=None, max_length=120)
+    website_url: str | None = Field(default=None, max_length=2048)
+    bank_name: str = Field(min_length=2, max_length=120)
+    bank_account_number: str = Field(min_length=4, max_length=64)
+    contact_phone: str = Field(min_length=6, max_length=32)
+    notes: str | None = None
+
+
+class GoLiveResponse(BaseModel):
+    status: str
+    legal_business_name: str
+    business_category: str
+    submitted_at: datetime
+    reviewed_at: datetime | None
 
     model_config = {"from_attributes": True}
 

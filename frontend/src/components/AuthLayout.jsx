@@ -26,7 +26,7 @@ export default function AuthLayout({ title, subtitle, children }) {
           >
             O
           </div>
-          <span style={{ fontWeight: 700, fontSize: 17 }}>OpenPay</span>
+          <span style={{ fontWeight: 700, fontSize: 17 }}>PPay</span>
         </div>
         <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 6px" }}>{title}</h1>
         {subtitle && (

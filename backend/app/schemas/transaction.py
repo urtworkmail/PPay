@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TransactionResponse(BaseModel):
@@ -29,6 +29,26 @@ class TransactionListResponse(BaseModel):
     page_size: int
 
 
+class TimelineEvent(BaseModel):
+    event: str
+    at: datetime
+
+
+class RefundCreateRequest(BaseModel):
+    reason: str | None = Field(default=None, max_length=255)
+
+
+class RefundResponse(BaseModel):
+    id: uuid.UUID
+    transaction_id: uuid.UUID
+    amount_minor: int
+    reason: str | None
+    status: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class WebhookEndpointCreateRequest(BaseModel):
     url: str
     events: list[str] = ["payment_intent.succeeded", "payment_intent.failed"]
@@ -53,3 +73,10 @@ class WebhookLogResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class TransactionDetailResponse(TransactionResponse):
+    customer_email: str | None
+    refunds: list[RefundResponse]
+    webhook_logs: list[WebhookLogResponse]
+    timeline: list[TimelineEvent]
