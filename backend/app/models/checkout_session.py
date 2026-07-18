@@ -37,6 +37,9 @@ class CheckoutSession(Base):
     payment_link_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("payment_links.id", ondelete="SET NULL"), nullable=True
     )
+    api_key_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("api_keys.id", ondelete="SET NULL"), nullable=True
+    )
     amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="PKR", nullable=False)
     status: Mapped[CheckoutSessionStatus] = mapped_column(

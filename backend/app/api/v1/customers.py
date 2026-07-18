@@ -1,18 +1,39 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.api.v1.deps import get_current_merchant
 from app.core.db import get_db
 from app.models.checkout_session import CheckoutSession
 from app.models.invoice import Invoice
 from app.models.merchant import Merchant
+from app.models.payment_link import PaymentLink
+from app.models.subscription import SavedPaymentMethod, Subscription, SubscriptionStatus
 from app.models.transaction import Transaction, TransactionStatus
-from app.schemas.customer import CustomerDetailResponse, CustomerSummary
+from app.schemas.customer import (
+    CustomerDetailResponse,
+    CustomerSummary,
+    RelatedPaymentLinkSummary,
+    SavedPaymentMethodSummary,
+)
 from app.schemas.invoice import InvoiceResponse
 from app.schemas.transaction import TransactionResponse
 
 router = APIRouter(prefix="/customers", tags=["customers"])
+
+
+def _payment_method_label(details: dict) -> str:
+    method = details.get("method")
+    if method == "card":
+        return f"Card •••• {details.get('last4', '????')}"
+    if method == "wallet":
+        return f"Wallet •••{details.get('phone_last4', '????')}"
+    if method == "bank_transfer":
+        return "Bank transfer"
+    if method == "qr":
+        return "QR"
+    return (method or "unknown").replace("_", " ").capitalize()
 
 
 @router.get("", response_model=list[CustomerSummary])
@@ -36,6 +57,17 @@ async def list_customers(
         .group_by(CheckoutSession.customer_email)
         .order_by(func.max(Transaction.created_at).desc())
     )
+    rows = result.all()
+
+    sub_counts_result = await db.execute(
+        select(Subscription.customer_email, func.count(Subscription.id))
+        .where(
+            Subscription.merchant_id == merchant.id,
+            Subscription.status.in_([SubscriptionStatus.ACTIVE, SubscriptionStatus.PAST_DUE]),
+        )
+        .group_by(Subscription.customer_email)
+    )
+    sub_counts = dict(sub_counts_result.all())
 
     return [
         CustomerSummary(
@@ -44,8 +76,9 @@ async def list_customers(
             currency=row.currency,
             transaction_count=row.tx_count,
             last_transaction_at=row.last_tx_at,
+            subscription_count=sub_counts.get(row.customer_email, 0),
         )
-        for row in result.all()
+        for row in rows
     ]
 
 
@@ -54,6 +87,7 @@ async def get_customer_detail(
     email: str, merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
 ) -> CustomerDetailResponse:
     from app.api.v1.invoices import _to_response as invoice_to_response
+    from app.api.v1.subscriptions import _to_response as subscription_to_response
 
     tx_result = await db.execute(
         select(Transaction)
@@ -88,6 +122,35 @@ async def get_customer_detail(
     )
     invoices = list(invoice_result.scalars().all())
 
+    payment_methods: list[str] = []
+    for t in succeeded:
+        label = _payment_method_label(t.payment_method_details or {})
+        if label not in payment_methods:
+            payment_methods.append(label)
+
+    subscription_result = await db.execute(
+        select(Subscription)
+        .where(Subscription.merchant_id == merchant.id, Subscription.customer_email == email)
+        .options(selectinload(Subscription.price))
+        .order_by(Subscription.created_at.desc())
+    )
+    subscriptions = list(subscription_result.unique().scalars().all())
+
+    saved_method_result = await db.execute(
+        select(SavedPaymentMethod)
+        .where(SavedPaymentMethod.merchant_id == merchant.id, SavedPaymentMethod.customer_email == email)
+        .order_by(SavedPaymentMethod.created_at.desc())
+    )
+    saved_methods = list(saved_method_result.scalars().all())
+
+    payment_link_result = await db.execute(
+        select(PaymentLink)
+        .join(CheckoutSession, CheckoutSession.payment_link_id == PaymentLink.id)
+        .where(CheckoutSession.merchant_id == merchant.id, CheckoutSession.customer_email == email)
+        .distinct()
+    )
+    payment_links = list(payment_link_result.scalars().all())
+
     return CustomerDetailResponse(
         email=email,
         name=name,
@@ -96,6 +159,21 @@ async def get_customer_detail(
         transaction_count=len(succeeded),
         first_seen_at=first_session.created_at if first_session else None,
         last_transaction_at=transactions[0].created_at if transactions else None,
-        transactions=[TransactionResponse.model_validate(t) for t in transactions],
+        payment_methods=payment_methods,
+        transactions=[
+            TransactionResponse(**TransactionResponse.model_validate(t).model_dump() | {"customer_email": email})
+            for t in transactions
+        ],
         invoices=[invoice_to_response(inv) for inv in invoices],
+        subscriptions=[subscription_to_response(s) for s in subscriptions],
+        saved_payment_methods=[
+            SavedPaymentMethodSummary(
+                id=m.id,
+                method=m.method.value,
+                label=_payment_method_label(m.masked_details or {}),
+                created_at=m.created_at,
+            )
+            for m in saved_methods
+        ],
+        payment_links=[RelatedPaymentLinkSummary(id=link.id, title=link.title) for link in payment_links],
     )

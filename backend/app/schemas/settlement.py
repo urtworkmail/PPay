@@ -4,6 +4,16 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class BalanceSummaryResponse(BaseModel):
+    currency: str
+    pending_settlement_minor: int
+    available_minor: int
+    paid_out_minor: int
+    next_payout_at: datetime | None
+    next_payout_amount_minor: int
+    payout_schedule: str
+
+
 class SettlementResponse(BaseModel):
     id: uuid.UUID
     period_start: datetime

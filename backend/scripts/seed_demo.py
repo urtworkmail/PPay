@@ -60,6 +60,20 @@ def now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+CARD_LAST4_CHOICES = ["4242", "0002", "0069", "0119", "1881", "3155"]
+
+
+def _payment_method_details(method: PaymentMethod) -> dict:
+    """Mirrors the shape app.services.sandbox_engine actually produces for each method."""
+    if method == PaymentMethod.CARD:
+        return {"method": "card", "last4": random.choice(CARD_LAST4_CHOICES)}
+    if method == PaymentMethod.WALLET:
+        return {"method": "wallet", "phone_last4": f"{random.randint(0, 9999):04d}"}
+    if method == PaymentMethod.BANK_TRANSFER:
+        return {"method": "bank_transfer"}
+    return {"method": method.value}
+
+
 async def get_merchant(db, email: str) -> Merchant:
     result = await db.execute(select(Merchant).where(Merchant.email == email))
     merchant = result.scalar_one_or_none()
@@ -164,7 +178,7 @@ async def seed_transactions(db, merchant: Merchant, endpoint: WebhookEndpoint) -
             status=status,
             gateway_reference=f"gw_{uuid.uuid4().hex[:16]}",
             failure_reason=failure_reason,
-            payment_method_details={"method": method.value, "masked": "**** 4242" if method == PaymentMethod.CARD else None},
+            payment_method_details=_payment_method_details(method),
             settled=settled,
             created_at=created_at,
         )

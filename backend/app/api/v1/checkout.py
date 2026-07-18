@@ -6,19 +6,23 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.deps import get_merchant_from_api_key
+from app.api.v1.deps import get_merchant_and_key_from_api_key, get_merchant_from_api_key
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.idempotency import require_idempotency_key
+from app.models.api_key import ApiKey
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus, PaymentMethod
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
+from app.models.subscription import SavedPaymentMethod, SavedPaymentMethodType, Subscription, SubscriptionStatus
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.webhook import WebhookEndpoint
+from app.schemas.branding import MerchantBrandingSummary
 from app.schemas.checkout import CheckoutPayRequest, CheckoutSessionCreateRequest, CheckoutSessionResponse
 from app.schemas.transaction import TransactionResponse
 from app.services import sandbox_engine
 from app.services.fee_calculator import calculate_fee_minor, calculate_net_minor
+from app.services.subscription_engine import activate_subscription
 from app.services.webhook_dispatcher import deliver_webhook, enqueue_webhook_event
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
@@ -32,7 +36,7 @@ def _checkout_url(session_id: uuid.UUID) -> str:
     return f"{frontend_origin}{CHECKOUT_FRONTEND_PATH}/{session_id}"
 
 
-def _to_response(session: CheckoutSession) -> CheckoutSessionResponse:
+def _to_response(session: CheckoutSession, merchant: Merchant | None = None) -> CheckoutSessionResponse:
     return CheckoutSessionResponse(
         id=session.id,
         amount_minor=session.amount_minor,
@@ -46,6 +50,7 @@ def _to_response(session: CheckoutSession) -> CheckoutSessionResponse:
         created_at=session.created_at,
         expires_at=session.expires_at,
         completed_at=session.completed_at,
+        merchant=MerchantBrandingSummary.model_validate(merchant) if merchant else None,
     )
 
 
@@ -53,9 +58,10 @@ def _to_response(session: CheckoutSession) -> CheckoutSessionResponse:
 async def create_checkout_session(
     payload: CheckoutSessionCreateRequest,
     idempotency_key: str = Depends(require_idempotency_key),
-    merchant: Merchant = Depends(get_merchant_from_api_key),
+    merchant_and_key: tuple[Merchant, ApiKey] = Depends(get_merchant_and_key_from_api_key),
     db: AsyncSession = Depends(get_db),
 ) -> CheckoutSessionResponse:
+    merchant, api_key = merchant_and_key
     existing = await db.execute(
         select(CheckoutSession).where(
             CheckoutSession.merchant_id == merchant.id,
@@ -64,10 +70,33 @@ async def create_checkout_session(
     )
     existing_session = existing.scalar_one_or_none()
     if existing_session is not None:
+        replayed_params = (
+            existing_session.amount_minor,
+            existing_session.currency,
+            existing_session.description,
+            existing_session.customer_email,
+            existing_session.customer_phone,
+            existing_session.return_url,
+            existing_session.session_metadata,
+        )
+        new_params = (
+            payload.amount_minor,
+            payload.currency.upper(),
+            payload.description,
+            payload.customer_email,
+            payload.customer_phone,
+            payload.return_url,
+            payload.metadata,
+        )
+        if replayed_params != new_params:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Idempotency key already used with different parameters"
+            )
         return _to_response(existing_session)
 
     session = CheckoutSession(
         merchant_id=merchant.id,
+        api_key_id=api_key.id,
         amount_minor=payload.amount_minor,
         currency=payload.currency.upper(),
         description=payload.description,
@@ -102,7 +131,8 @@ async def get_checkout_session(session_id: uuid.UUID, db: AsyncSession = Depends
         await db.commit()
         await db.refresh(session)
 
-    return _to_response(session)
+    merchant = await db.get(Merchant, session.merchant_id)
+    return _to_response(session, merchant)
 
 
 @router.post("/sessions/{session_id}/pay", response_model=TransactionResponse)
@@ -123,6 +153,17 @@ async def pay_checkout_session(
         method = PaymentMethod(payload.method)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid payment method") from exc
+
+    merchant = await db.get(Merchant, session.merchant_id)
+    if merchant is not None and method.value not in merchant.enabled_payment_methods:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{method.value} is not enabled for this merchant")
+
+    # Sessions created without an email up front (payment links, pay-by-link
+    # invoices) get one attached here so the payment is still attributable to
+    # a customer — matches what the merchant-integration create-session path
+    # already captures.
+    if session.customer_email is None and payload.customer_email:
+        session.customer_email = payload.customer_email
 
     session.status = CheckoutSessionStatus.PENDING
     session.method = method
@@ -161,12 +202,50 @@ async def pay_checkout_session(
     session.status = CheckoutSessionStatus.SUCCEEDED if result.success else CheckoutSessionStatus.FAILED
     session.completed_at = datetime.now(timezone.utc)
 
+    invoice = None
+    subscription = None
     if result.success:
         invoice_result = await db.execute(select(Invoice).where(Invoice.checkout_session_id == session.id))
         invoice = invoice_result.scalar_one_or_none()
-        if invoice is not None:
-            invoice.status = InvoiceStatus.PAID
-            invoice.paid_at = session.completed_at
+        if invoice is not None and invoice.subscription_id is not None:
+            subscription = await db.get(Subscription, invoice.subscription_id)
+
+    # A subscription's first payment always needs a payment method on file to
+    # bill future cycles, regardless of what the checkbox on the pay page said.
+    should_save_method = payload.save_payment_method or (
+        subscription is not None and subscription.status == SubscriptionStatus.INCOMPLETE
+    )
+
+    saved_method_id = None
+    if result.success and should_save_method and method in (PaymentMethod.CARD, PaymentMethod.WALLET) and session.customer_email:
+        digits = (payload.card_number if method == PaymentMethod.CARD else payload.wallet_phone) or ""
+        saved_type = SavedPaymentMethodType.CARD if method == PaymentMethod.CARD else SavedPaymentMethodType.WALLET
+        existing_method = await db.execute(
+            select(SavedPaymentMethod).where(
+                SavedPaymentMethod.merchant_id == session.merchant_id,
+                SavedPaymentMethod.customer_email == session.customer_email,
+                SavedPaymentMethod.method == saved_type,
+            )
+        )
+        saved_method = existing_method.scalar_one_or_none()
+        if saved_method is None:
+            saved_method = SavedPaymentMethod(
+                merchant_id=session.merchant_id, customer_email=session.customer_email, method=saved_type
+            )
+            db.add(saved_method)
+        saved_method.masked_details = result.masked_details
+        saved_method.sandbox_digits = "".join(ch for ch in digits if ch.isdigit())
+        await db.flush()
+        saved_method_id = saved_method.id
+
+    if result.success and invoice is not None:
+        invoice.status = InvoiceStatus.PAID
+        invoice.paid_at = session.completed_at
+
+        if subscription is not None and subscription.status == SubscriptionStatus.INCOMPLETE:
+            method_id = saved_method_id or subscription.payment_method_id
+            if method_id is not None:
+                await activate_subscription(db, subscription, method_id, now=session.completed_at)
 
     await db.flush()
 

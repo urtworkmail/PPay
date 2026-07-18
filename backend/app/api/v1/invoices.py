@@ -12,10 +12,12 @@ from app.core.db import get_db
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
+from app.models.subscription import Subscription
 from app.models.transaction import Transaction
+from app.schemas.branding import MerchantBrandingSummary
 from app.schemas.checkout import CheckoutSessionResponse
 from app.schemas.invoice import InvoiceCreateRequest, InvoiceDetailResponse, InvoiceResponse
-from app.schemas.transaction import TransactionResponse
+from app.schemas.transaction import RelatedSubscription, TransactionResponse
 
 router = APIRouter(prefix="/invoices", tags=["invoices"])
 SESSION_TTL_MINUTES = 60 * 24
@@ -26,7 +28,7 @@ def _frontend_origin() -> str:
     return settings.cors_origin_list[0] if settings.cors_origin_list else "http://localhost:5173"
 
 
-def _to_response(invoice: Invoice) -> InvoiceResponse:
+def _to_response(invoice: Invoice, merchant: Merchant | None = None) -> InvoiceResponse:
     url = None
     if invoice.status != InvoiceStatus.DRAFT:
         url = f"{_frontend_origin()}/invoices/{invoice.id}"
@@ -40,6 +42,9 @@ def _to_response(invoice: Invoice) -> InvoiceResponse:
         status=invoice.status,
         due_date=invoice.due_date,
         url=url,
+        subscription_id=invoice.subscription_id,
+        billing_reason=invoice.billing_reason,
+        merchant=MerchantBrandingSummary.model_validate(merchant) if merchant else None,
         created_at=invoice.created_at,
         sent_at=invoice.sent_at,
         paid_at=invoice.paid_at,
@@ -95,9 +100,17 @@ async def get_invoice_detail(
         )
         transaction = tx_result.scalar_one_or_none()
 
+    subscription_link = None
+    if invoice.subscription_id is not None:
+        subscription = await db.get(Subscription, invoice.subscription_id)
+        if subscription is not None:
+            subscription_link = RelatedSubscription(id=subscription.id, status=subscription.status)
+
     base = _to_response(invoice)
     return InvoiceDetailResponse(
-        **base.model_dump(), transaction=TransactionResponse.model_validate(transaction) if transaction else None
+        **base.model_dump(),
+        transaction=TransactionResponse.model_validate(transaction) if transaction else None,
+        subscription=subscription_link,
     )
 
 
@@ -122,7 +135,8 @@ async def get_invoice_public(invoice_id: uuid.UUID, db: AsyncSession = Depends(g
     invoice = await db.get(Invoice, invoice_id)
     if invoice is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
-    return _to_response(invoice)
+    merchant = await db.get(Merchant, invoice.merchant_id)
+    return _to_response(invoice, merchant)
 
 
 @router.post("/{invoice_id}/sessions", response_model=CheckoutSessionResponse, status_code=status.HTTP_201_CREATED)

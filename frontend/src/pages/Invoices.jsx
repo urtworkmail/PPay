@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { formatDate, formatMinorAmount } from "../api/format";
+import Drawer from "../components/Drawer";
 import { CopyIcon, PlusIcon } from "../components/Icons";
-import Modal from "../components/Modal";
 import StatusBadge from "../components/StatusBadge";
 
 export default function Invoices() {
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState([]);
   const [error, setError] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -98,12 +100,19 @@ export default function Invoices() {
             </thead>
             <tbody>
               {invoices.map((inv) => (
-                <tr key={inv.id}>
+                <tr key={inv.id} onClick={() => navigate(`/dashboard/invoices/${inv.id}`)} style={{ cursor: "pointer" }}>
                   <td>
                     <div style={{ fontWeight: 600 }}>{inv.customer_name || inv.customer_email}</div>
                     <div style={{ fontSize: 12.5, color: "var(--color-text-muted)" }}>{inv.customer_email}</div>
                   </td>
-                  <td>{formatMinorAmount(inv.amount_minor, inv.currency)}</td>
+                  <td>
+                    {formatMinorAmount(inv.amount_minor, inv.currency)}
+                    {inv.subscription_id && (
+                      <span className="badge badge-neutral" style={{ marginLeft: 8 }}>
+                        subscription
+                      </span>
+                    )}
+                  </td>
                   <td style={{ color: "var(--color-text-muted)" }}>{inv.due_date ? formatDate(inv.due_date) : "—"}</td>
                   <td>
                     <StatusBadge status={inv.status} />
@@ -111,7 +120,10 @@ export default function Invoices() {
                   <td>
                     {inv.url && (
                       <button
-                        onClick={() => copyLink(inv)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyLink(inv);
+                        }}
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -130,7 +142,14 @@ export default function Invoices() {
                   </td>
                   <td>
                     {inv.status === "sent" && (
-                      <button className="btn btn-danger" style={{ padding: "5px 10px", fontSize: 12.5 }} onClick={() => handleCancel(inv.id)}>
+                      <button
+                        className="btn btn-danger"
+                        style={{ padding: "5px 10px", fontSize: 12.5 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancel(inv.id);
+                        }}
+                      >
                         Cancel
                       </button>
                     )}
@@ -143,7 +162,7 @@ export default function Invoices() {
       </div>
 
       {showCreate && (
-        <Modal title="Create invoice" onClose={() => setShowCreate(false)}>
+        <Drawer title="Create invoice" subtitle="Send a one-off invoice to a specific customer." onClose={() => setShowCreate(false)}>
           <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <label style={{ fontSize: 13, fontWeight: 500 }}>
               Customer name (optional)
@@ -188,7 +207,7 @@ export default function Invoices() {
               </button>
             </div>
           </form>
-        </Modal>
+        </Drawer>
       )}
     </div>
   );

@@ -3,7 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.schemas.transaction import TransactionResponse
+from app.schemas.branding import MerchantBrandingSummary
+from app.schemas.transaction import RelatedSubscription, TransactionResponse
 
 
 class InvoiceCreateRequest(BaseModel):
@@ -25,6 +26,9 @@ class InvoiceResponse(BaseModel):
     status: str
     due_date: datetime | None
     url: str | None
+    subscription_id: uuid.UUID | None = None
+    billing_reason: str | None = None
+    merchant: MerchantBrandingSummary | None = None
     created_at: datetime
     sent_at: datetime | None
     paid_at: datetime | None
@@ -34,3 +38,4 @@ class InvoiceResponse(BaseModel):
 
 class InvoiceDetailResponse(InvoiceResponse):
     transaction: TransactionResponse | None
+    subscription: RelatedSubscription | None = None

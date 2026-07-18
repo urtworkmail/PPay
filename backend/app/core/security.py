@@ -1,5 +1,11 @@
+import base64
+import hashlib
+import hmac
 import secrets
+import struct
+import time
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
 
 import bcrypt
 from jose import jwt
@@ -31,9 +37,10 @@ def create_access_token(subject: str) -> str:
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
-def create_refresh_token(subject: str) -> str:
+def create_refresh_token(subject: str, jti: str | None = None) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
-    payload = {"sub": subject, "exp": expire, "type": "refresh"}
+    jti = jti or secrets.token_urlsafe(16)
+    payload = {"sub": subject, "exp": expire, "type": "refresh", "jti": jti}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
@@ -59,3 +66,41 @@ def verify_api_key(full_key: str, hashed_key: str) -> bool:
 
 def generate_webhook_secret() -> str:
     return f"whsec_{secrets.token_urlsafe(24)}"
+
+
+# --- TOTP (RFC 6238) two-factor authentication -----------------------------
+# Hand-rolled with stdlib hmac/hashlib rather than pulling in a library —
+# mirrors the same choice already made for webhook HMAC signing
+# (webhook_dispatcher.py::sign_payload). No QR image is generated (that would
+# need qrcode/Pillow); the secret and otpauth:// URI are shown as text, which
+# every authenticator app accepts via manual entry.
+_TOTP_STEP_SECONDS = 30
+_TOTP_DIGITS = 6
+
+
+def generate_totp_secret() -> str:
+    return base64.b32encode(secrets.token_bytes(20)).decode("utf-8").rstrip("=")
+
+
+def _totp_code_at(secret: str, counter: int) -> str:
+    # Base32 secrets need to be padded back out to a multiple of 8 chars to decode.
+    padded = secret + "=" * (-len(secret) % 8)
+    key = base64.b32decode(padded.upper())
+    msg = struct.pack(">Q", counter)
+    digest = hmac.new(key, msg, hashlib.sha1).digest()
+    offset = digest[-1] & 0x0F
+    truncated = struct.unpack(">I", digest[offset : offset + 4])[0] & 0x7FFFFFFF
+    return str(truncated % (10**_TOTP_DIGITS)).zfill(_TOTP_DIGITS)
+
+
+def verify_totp_code(secret: str, code: str) -> bool:
+    if not code or not code.isdigit():
+        return False
+    counter = int(time.time()) // _TOTP_STEP_SECONDS
+    # Allow the immediately preceding/following step to tolerate clock drift.
+    return any(hmac.compare_digest(_totp_code_at(secret, counter + offset), code) for offset in (-1, 0, 1))
+
+
+def totp_uri(secret: str, email: str, issuer: str = "PPay") -> str:
+    label = quote(f"{issuer}:{email}")
+    return f"otpauth://totp/{label}?secret={secret}&issuer={quote(issuer)}&algorithm=SHA1&digits={_TOTP_DIGITS}&period={_TOTP_STEP_SECONDS}"

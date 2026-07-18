@@ -1,105 +1,201 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useState } from "react";
+import { NavLink, Outlet } from "react-router-dom";
+import TopBar from "./TopBar";
 import {
   BankIcon,
-  HelpIcon,
+  BoxIcon,
+  ChevronDownIcon,
   HomeIcon,
   InvoiceIcon,
   KeyIcon,
   LinkIcon,
   ListIcon,
-  MonitorIcon,
-  MoonIcon,
   RocketIcon,
-  SunIcon,
   UsersIcon,
   WebhookIcon,
 } from "./Icons";
 
-const NAV_SECTIONS = [
-  {
-    label: "Home",
-    items: [{ to: "/dashboard", label: "Overview", icon: HomeIcon, end: true }],
-  },
+const TOP_ITEMS = [
+  { to: "/dashboard", label: "Home", icon: HomeIcon, end: true },
+  { to: "/dashboard/balances", label: "Balances", icon: BankIcon },
+  { to: "/dashboard/transactions", label: "Transactions", icon: ListIcon },
+  { to: "/dashboard/customers", label: "Customers", icon: UsersIcon },
+  { to: "/dashboard/products", label: "Product catalog", icon: BoxIcon },
+];
+
+const SHORTCUTS = [
+  { to: "/dashboard/subscriptions", label: "Subscriptions" },
+  { to: "/dashboard/invoices", label: "Invoices" },
+  { to: "/dashboard/coming-soon/payments-analytics", label: "Payments Analytics", soon: true },
+  { to: "/dashboard/payment-links", label: "Payment Links" },
+];
+
+const PRODUCT_GROUPS = [
   {
     label: "Payments",
     items: [
-      { to: "/dashboard/transactions", label: "Transactions", icon: ListIcon },
-      { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
-      { to: "/dashboard/invoices", label: "Billing", icon: InvoiceIcon },
-      { to: "/dashboard/customers", label: "Customers", icon: UsersIcon },
+      { to: "/dashboard/coming-soon/payments-analytics", label: "Analytics", soon: true },
+      { to: "/dashboard/coming-soon/disputes", label: "Disputes", soon: true },
+      { to: "/dashboard/payment-links", label: "Payment Links" },
+      { to: "/dashboard/coming-soon/risk-radar", label: "PPR (PPay Risk Radar)", soon: true },
     ],
   },
   {
-    label: "Developers",
+    label: "Billing",
     items: [
-      { to: "/dashboard/api-keys", label: "API Keys", icon: KeyIcon },
-      { to: "/dashboard/webhooks", label: "Webhooks", icon: WebhookIcon },
+      { to: "/dashboard/coming-soon/billing-overview", label: "Overview", soon: true },
+      { to: "/dashboard/subscriptions", label: "Subscriptions" },
+      { to: "/dashboard/invoices", label: "Invoices" },
+      { to: "/dashboard/coming-soon/usage-based", label: "Usage-based", soon: true },
+      { to: "/dashboard/coming-soon/revenue-recovery", label: "Revenue Recovery", soon: true },
     ],
   },
   {
-    label: "Finance",
-    items: [{ to: "/dashboard/settlements", label: "Settlements", icon: BankIcon }],
+    label: "Reporting",
+    items: [
+      { to: "/dashboard/coming-soon/reports", label: "Reports", soon: true },
+      { to: "/dashboard/coming-soon/metrics", label: "Metrics", soon: true },
+      { to: "/dashboard/coming-soon/data-management", label: "Data Management", soon: true },
+      { to: "/dashboard/coming-soon/data-analysis", label: "Data Analysis", soon: true },
+    ],
   },
   {
-    label: "Account",
+    label: "More",
     items: [
-      { to: "/dashboard/team", label: "Team", icon: UsersIcon },
-      { to: "/dashboard/go-live", label: "Go Live", icon: RocketIcon },
-      { to: "/dashboard/help", label: "Help Center", icon: HelpIcon },
+      { to: "/dashboard/coming-soon/profiles", label: "Profiles", soon: true },
+      { to: "/dashboard/coming-soon/tax", label: "Tax", soon: true },
+      { to: "/dashboard/coming-soon/identity", label: "Identity", soon: true },
+      { to: "/dashboard/coming-soon/financial-connections", label: "Financial Connections", soon: true },
+      { to: "/dashboard/coming-soon/workflows", label: "Workflows", soon: true },
+      { to: "/dashboard/coming-soon/issuing", label: "Issuing", soon: true },
     ],
   },
 ];
 
-const THEME_ICONS = { light: SunIcon, dark: MoonIcon, system: MonitorIcon };
+const DEVELOPERS = [
+  { to: "/dashboard/api-keys", label: "API Keys", icon: KeyIcon },
+  { to: "/dashboard/webhooks", label: "Webhooks", icon: WebhookIcon },
+  { to: "/dashboard/events", label: "Events", icon: ListIcon },
+  { to: "/docs", label: "Documentation", icon: InvoiceIcon },
+];
 
-function ThemeToggle() {
-  const { mode, cycleTheme } = useTheme();
-  const Icon = THEME_ICONS[mode];
+const ACCOUNT = [
+  { to: "/dashboard/team", label: "Team", icon: UsersIcon },
+  { to: "/dashboard/go-live", label: "Go Live", icon: RocketIcon },
+];
+
+const itemStyle = ({ isActive }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "5px 10px",
+  borderRadius: "var(--radius-sm)",
+  fontSize: 13,
+  fontWeight: 500,
+  textDecoration: "none",
+  color: isActive ? "var(--color-accent)" : "var(--color-text-muted)",
+  background: isActive ? "var(--color-accent-soft)" : "transparent",
+});
+
+function SoonBadge() {
   return (
-    <button
-      onClick={cycleTheme}
-      title={`Theme: ${mode} (click to change)`}
-      aria-label="Toggle theme"
+    <span
       style={{
-        width: 32,
-        height: 32,
-        borderRadius: 8,
+        marginLeft: "auto",
+        fontSize: 9.5,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.03em",
+        color: "var(--color-text-faint)",
         border: "1px solid var(--color-border)",
-        background: "var(--color-surface)",
-        color: "var(--color-text-muted)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
+        borderRadius: 4,
+        padding: "1px 5px",
+        flexShrink: 0,
       }}
     >
-      <Icon width={16} height={16} />
-    </button>
+      Soon
+    </span>
+  );
+}
+
+function SectionLabel({ children }) {
+  return (
+    <div
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        color: "var(--color-text-faint)",
+        padding: "0 10px",
+        marginBottom: 4,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function NavItem({ item }) {
+  return (
+    <NavLink key={item.to} to={item.to} end={item.end} style={itemStyle}>
+      {item.icon && <item.icon width={15} height={15} />}
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+      {item.soon && <SoonBadge />}
+    </NavLink>
+  );
+}
+
+function CollapsibleGroup({ group }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          width: "100%",
+          padding: "5px 10px",
+          background: "none",
+          border: "none",
+          borderRadius: "var(--radius-sm)",
+          fontSize: 13,
+          fontWeight: 500,
+          color: "var(--color-text-muted)",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        {group.label}
+        <ChevronDownIcon
+          width={12}
+          height={12}
+          style={{ marginLeft: "auto", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.12s ease" }}
+        />
+      </button>
+      {open && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 14, marginTop: 1 }}>
+          {group.items.map((item) => (
+            <NavItem key={item.to + item.label} item={item} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function DashboardLayout() {
-  const { merchant, logout } = useAuth();
-  const navigate = useNavigate();
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
-
-  const initials = (merchant?.business_name || "?").slice(0, 1).toUpperCase();
-
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
         style={{
-          width: 232,
+          width: 228,
           flexShrink: 0,
           borderRight: "1px solid var(--color-border)",
           background: "var(--color-surface)",
-          padding: "20px 14px",
+          padding: "14px 10px",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -108,129 +204,80 @@ export default function DashboardLayout() {
           overflowY: "auto",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "3px 8px", marginBottom: 16 }}>
           <div
             style={{
-              width: 26,
-              height: 26,
-              borderRadius: 7,
+              width: 22,
+              height: 22,
+              borderRadius: 6,
               background: "var(--color-accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "white",
               fontWeight: 700,
-              fontSize: 14,
+              fontSize: 12,
             }}
           >
             P
           </div>
-          <span style={{ fontWeight: 700, fontSize: 15.5 }}>PPay</span>
-          <span className="badge badge-pending" style={{ marginLeft: "auto", fontSize: 11 }}>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>PPay</span>
+          <span className="badge badge-pending" style={{ marginLeft: "auto", fontSize: 10 }}>
             Sandbox
           </span>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
-          {NAV_SECTIONS.map((section) => (
-            <div key={section.label}>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--color-text-faint)",
-                  padding: "0 10px",
-                  marginBottom: 6,
-                }}
-              >
-                {section.label}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {section.items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    style={({ isActive }) => ({
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 9,
-                      padding: "7px 10px",
-                      borderRadius: 7,
-                      fontSize: 13.5,
-                      fontWeight: 500,
-                      textDecoration: "none",
-                      color: isActive ? "var(--color-accent)" : "var(--color-text-muted)",
-                      background: isActive ? "var(--color-accent-soft)" : "transparent",
-                    })}
-                  >
-                    <item.icon />
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
+        <nav style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {TOP_ITEMS.map((item) => (
+              <NavItem key={item.to} item={item} />
+            ))}
+          </div>
 
-        <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--color-border)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px", marginBottom: 10 }}>
-            <div
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: "50%",
-                background: "var(--color-accent-soft)",
-                color: "var(--color-accent)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 700,
-                fontSize: 12,
-                flexShrink: 0,
-              }}
-            >
-              {initials}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {merchant?.business_name}
-              </div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "var(--color-text-faint)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {merchant?.email}
-              </div>
+          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
+            <SectionLabel>Shortcuts</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {SHORTCUTS.map((item) => (
+                <NavItem key={item.to + item.label} item={item} />
+              ))}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn btn-secondary" style={{ flex: 1, fontSize: 12.5, padding: "7px 10px" }} onClick={handleLogout}>
-              Log out
-            </button>
-            <ThemeToggle />
+
+          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
+            <SectionLabel>Products</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {PRODUCT_GROUPS.map((group) => (
+                <CollapsibleGroup key={group.label} group={group} />
+              ))}
+            </div>
           </div>
-        </div>
+
+          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
+            <SectionLabel>Developers</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {DEVELOPERS.map((item) => (
+                <NavItem key={item.to} item={item} />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
+            <SectionLabel>Account</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {ACCOUNT.map((item) => (
+                <NavItem key={item.to} item={item} />
+              ))}
+            </div>
+          </div>
+        </nav>
       </aside>
 
-      <main style={{ flex: 1, padding: "32px 40px", maxWidth: 1120, width: "100%" }}>
-        <Outlet />
-      </main>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <TopBar />
+        <main style={{ padding: "32px 40px", maxWidth: 1120, width: "100%" }}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

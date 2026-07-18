@@ -6,7 +6,10 @@ from app.api.v1 import (
     customers,
     invoices,
     payment_links,
+    products,
+    search,
     settlements,
+    subscriptions,
     team,
     transactions,
     webhooks,
@@ -24,3 +27,6 @@ api_router.include_router(settlements.router)
 api_router.include_router(payment_links.router)
 api_router.include_router(invoices.router)
 api_router.include_router(customers.router)
+api_router.include_router(search.router)
+api_router.include_router(products.router)
+api_router.include_router(subscriptions.router)

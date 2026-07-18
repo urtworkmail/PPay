@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.checkout import _to_response as checkout_to_response
@@ -12,6 +12,8 @@ from app.core.db import get_db
 from app.models.checkout_session import CheckoutSession
 from app.models.merchant import Merchant
 from app.models.payment_link import PaymentLink
+from app.models.product import BillingInterval, Price, Product
+from app.schemas.branding import MerchantBrandingSummary
 from app.schemas.checkout import CheckoutSessionResponse
 from app.schemas.payment_link import PaymentLinkCreateRequest, PaymentLinkDetailResponse, PaymentLinkResponse
 from app.schemas.transaction import TransactionResponse
@@ -25,7 +27,9 @@ def _frontend_origin() -> str:
     return settings.cors_origin_list[0] if settings.cors_origin_list else "http://localhost:5173"
 
 
-def _to_response(link: PaymentLink) -> PaymentLinkResponse:
+def _to_response(
+    link: PaymentLink, customer_count: int = 0, product_name: str | None = None, merchant: Merchant | None = None
+) -> PaymentLinkResponse:
     return PaymentLinkResponse(
         id=link.id,
         title=link.title,
@@ -36,7 +40,20 @@ def _to_response(link: PaymentLink) -> PaymentLinkResponse:
         usage_count=link.usage_count,
         url=f"{_frontend_origin()}/pay/{link.id}",
         created_at=link.created_at,
+        customer_count=customer_count,
+        price_id=link.price_id,
+        product_name=product_name,
+        merchant=MerchantBrandingSummary.model_validate(merchant) if merchant else None,
     )
+
+
+async def _product_name_for(db: AsyncSession, link: PaymentLink) -> str | None:
+    if link.price_id is None:
+        return None
+    result = await db.execute(
+        select(Product.name).join(Price, Price.product_id == Product.id).where(Price.id == link.price_id)
+    )
+    return result.scalar_one_or_none()
 
 
 @router.post("", response_model=PaymentLinkResponse, status_code=status.HTTP_201_CREATED)
@@ -45,27 +62,66 @@ async def create_payment_link(
     merchant: Merchant = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ) -> PaymentLinkResponse:
+    result = await db.execute(
+        select(Price, Product).join(Product, Price.product_id == Product.id).where(Price.id == payload.price_id)
+    )
+    row = result.first()
+    if row is None or row[0].merchant_id != merchant.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Price not found")
+    price, product = row
+    if not price.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This price has been deactivated")
+    if price.interval != BillingInterval.ONE_TIME:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Recurring prices can't be used for payment links — create a subscription instead",
+        )
+
+    # The link copies amount/title at creation time rather than joining live,
+    # matching Stripe: a link keeps working exactly as shared even if the
+    # price is later deactivated (prices are otherwise immutable — no amount
+    # ever changes underneath a link that's already gone out).
     link = PaymentLink(
         merchant_id=merchant.id,
-        title=payload.title,
-        description=payload.description,
-        amount_minor=payload.amount_minor,
-        currency=payload.currency.upper(),
+        price_id=price.id,
+        title=product.name,
+        description=product.description,
+        amount_minor=price.amount_minor,
+        currency=price.currency,
     )
     db.add(link)
     await db.commit()
     await db.refresh(link)
-    return _to_response(link)
+    return _to_response(link, product_name=product.name)
 
 
 @router.get("", response_model=list[PaymentLinkResponse])
 async def list_payment_links(
     merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
 ) -> list[PaymentLinkResponse]:
+    from app.models.transaction import Transaction
+
     result = await db.execute(
         select(PaymentLink).where(PaymentLink.merchant_id == merchant.id).order_by(PaymentLink.created_at.desc())
     )
-    return [_to_response(link) for link in result.scalars().all()]
+    links = list(result.scalars().all())
+
+    counts_result = await db.execute(
+        select(CheckoutSession.payment_link_id, func.count(func.distinct(CheckoutSession.customer_email)))
+        .join(Transaction, Transaction.checkout_session_id == CheckoutSession.id)
+        .where(CheckoutSession.merchant_id == merchant.id, CheckoutSession.payment_link_id.is_not(None))
+        .group_by(CheckoutSession.payment_link_id)
+    )
+    counts = dict(counts_result.all())
+
+    names_result = await db.execute(
+        select(Price.id, Product.name)
+        .join(Product, Price.product_id == Product.id)
+        .where(Price.merchant_id == merchant.id)
+    )
+    names = dict(names_result.all())
+
+    return [_to_response(link, counts.get(link.id, 0), names.get(link.price_id)) for link in links]
 
 
 @router.get("/{link_id}", response_model=PaymentLinkDetailResponse)
@@ -80,16 +136,22 @@ async def get_payment_link_detail(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment link not found")
 
     tx_result = await db.execute(
-        select(Transaction)
+        select(Transaction, CheckoutSession.customer_email)
         .join(CheckoutSession, Transaction.checkout_session_id == CheckoutSession.id)
         .where(CheckoutSession.payment_link_id == link.id)
         .order_by(Transaction.created_at.desc())
     )
-    transactions = list(tx_result.scalars().all())
+    rows = tx_result.all()
+    customer_count = len({email for _, email in rows if email})
+    product_name = await _product_name_for(db, link)
 
-    base = _to_response(link)
+    base = _to_response(link, customer_count, product_name)
     return PaymentLinkDetailResponse(
-        **base.model_dump(), transactions=[TransactionResponse.model_validate(t) for t in transactions]
+        **base.model_dump(),
+        transactions=[
+            TransactionResponse(**TransactionResponse.model_validate(t).model_dump() | {"customer_email": email})
+            for t, email in rows
+        ],
     )
 
 
@@ -112,7 +174,9 @@ async def get_payment_link_public(link_id: uuid.UUID, db: AsyncSession = Depends
     link = await db.get(PaymentLink, link_id)
     if link is None or not link.is_active:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment link not found")
-    return _to_response(link)
+    product_name = await _product_name_for(db, link)
+    merchant = await db.get(Merchant, link.merchant_id)
+    return _to_response(link, product_name=product_name, merchant=merchant)
 
 
 @router.post("/{link_id}/sessions", response_model=CheckoutSessionResponse, status_code=status.HTTP_201_CREATED)

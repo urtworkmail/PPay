@@ -134,3 +134,52 @@ export const PlusIcon = (p) => (
     <path d="M12 5v14M5 12h14" />
   </svg>
 );
+
+export const ArrowLeftIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M19 12H5M11 6l-6 6 6 6" />
+  </svg>
+);
+
+export const SearchIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-4.3-4.3" />
+  </svg>
+);
+
+export const BellIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10Z" />
+    <path d="M10 19a2 2 0 0 0 4 0" />
+  </svg>
+);
+
+export const SettingsIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1h-.2a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.6v-.2a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6h.1a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.6 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z" />
+  </svg>
+);
+
+export const UserCircleIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="10" r="3" />
+    <path d="M5.8 18.5a6.5 6.5 0 0 1 12.4 0" />
+  </svg>
+);
+
+export const XIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </svg>
+);
+
+export const BoxIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 3 3 7.5 12 12l9-4.5L12 3Z" />
+    <path d="M3 7.5V16l9 4.5 9-4.5V7.5" />
+    <path d="M12 12v8.5" />
+  </svg>
+);

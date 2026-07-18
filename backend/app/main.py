@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
-from app.services.settlement_engine import run_settlement_batch_job
+from app.services.settlement_engine import process_due_payouts_job, run_settlement_batch_job
+from app.services.subscription_engine import run_subscription_billing_job
 from app.services.webhook_dispatcher import retry_pending_webhooks
 
 settings = get_settings()
@@ -17,6 +18,8 @@ scheduler = AsyncIOScheduler()
 async def lifespan(app: FastAPI):
     scheduler.add_job(retry_pending_webhooks, "interval", seconds=15, id="webhook_retry")
     scheduler.add_job(run_settlement_batch_job, "cron", hour=0, minute=5, id="nightly_settlement")
+    scheduler.add_job(process_due_payouts_job, "interval", hours=1, id="process_due_payouts")
+    scheduler.add_job(run_subscription_billing_job, "interval", hours=1, id="subscription_billing")
     scheduler.start()
     yield
     scheduler.shutdown(wait=False)

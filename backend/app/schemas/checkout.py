@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
+from app.schemas.branding import MerchantBrandingSummary
+
 
 class CheckoutSessionCreateRequest(BaseModel):
     amount_minor: int = Field(gt=0, description="Amount in minor units (paisas)")
@@ -27,6 +29,7 @@ class CheckoutSessionResponse(BaseModel):
     created_at: datetime
     expires_at: datetime
     completed_at: datetime | None
+    merchant: MerchantBrandingSummary | None = None
 
     model_config = {"from_attributes": True}
 
@@ -35,3 +38,7 @@ class CheckoutPayRequest(BaseModel):
     method: str = Field(description="card | wallet | bank_transfer")
     card_number: str | None = Field(default=None, description="Sandbox test card number")
     wallet_phone: str | None = Field(default=None, description="Sandbox test wallet phone number")
+    save_payment_method: bool = Field(default=False, description="Keep this card/wallet on file for future charges")
+    customer_email: EmailStr | None = Field(
+        default=None, description="Backfills the session's customer_email when it wasn't captured at creation (e.g. payment links)"
+    )

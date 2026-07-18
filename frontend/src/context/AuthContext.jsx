@@ -30,10 +30,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  async function login(email, password) {
+  async function login(email, password, totpCode) {
     const tokens = await apiFetch("/auth/login", {
       method: "POST",
-      body: { email, password },
+      body: { email, password, totp_code: totpCode || undefined },
       auth: false,
     });
     setTokens(tokens.access_token, tokens.refresh_token);

@@ -14,6 +14,9 @@ class PaymentLink(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
+    price_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("prices.id", ondelete="RESTRICT"), nullable=True
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
     amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
@@ -23,3 +26,4 @@ class PaymentLink(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     merchant: Mapped["Merchant"] = relationship()
+    price: Mapped["Price | None"] = relationship()

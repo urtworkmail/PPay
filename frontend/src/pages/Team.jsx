@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { formatDate } from "../api/format";
 import { useAuth } from "../context/AuthContext";
-import Modal from "../components/Modal";
+import Drawer from "../components/Drawer";
 import { PlusIcon } from "../components/Icons";
 
 const ROLES = ["owner", "admin", "analyst", "support"];
@@ -146,7 +146,7 @@ export default function Team() {
       </div>
 
       {showInvite && (
-        <Modal
+        <Drawer
           title="Invite a team member"
           onClose={() => {
             setShowInvite(false);
@@ -193,7 +193,7 @@ export default function Team() {
               </button>
             </form>
           )}
-        </Modal>
+        </Drawer>
       )}
     </div>
   );

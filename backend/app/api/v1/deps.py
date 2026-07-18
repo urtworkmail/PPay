@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.core.security import decode_token, verify_api_key
 from app.models.api_key import ApiKey
-from app.models.merchant import Merchant
+from app.models.merchant import Merchant, MerchantStatus
 from app.models.user import User, UserStatus
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -43,6 +43,8 @@ async def get_current_merchant(
     merchant = await db.get(Merchant, user.merchant_id)
     if merchant is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Merchant not found")
+    if merchant.status == MerchantStatus.SUSPENDED:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="This account has been closed")
     return merchant
 
 
@@ -57,10 +59,7 @@ def require_role(*allowed_roles: str):
     return _checker
 
 
-async def get_merchant_from_api_key(
-    authorization: str | None = Header(default=None),
-    db: AsyncSession = Depends(get_db),
-) -> Merchant:
+async def _resolve_api_key(authorization: str | None, db: AsyncSession) -> tuple[Merchant, ApiKey]:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API key")
     api_key_value = authorization.removeprefix("Bearer ").strip()
@@ -78,11 +77,26 @@ async def get_merchant_from_api_key(
         if verify_api_key(api_key_value, candidate.hashed_key):
             candidate.last_used_at = datetime.now(timezone.utc)
             merchant = await db.get(Merchant, candidate.merchant_id)
-            if merchant is None:
+            if merchant is None or merchant.status == MerchantStatus.SUSPENDED:
                 break
-            return merchant
+            return merchant, candidate
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
+
+
+async def get_merchant_from_api_key(
+    authorization: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> Merchant:
+    merchant, _ = await _resolve_api_key(authorization, db)
+    return merchant
+
+
+async def get_merchant_and_key_from_api_key(
+    authorization: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> tuple[Merchant, ApiKey]:
+    return await _resolve_api_key(authorization, db)
 
 
 async def get_merchant_flexible(

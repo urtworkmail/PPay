@@ -34,6 +34,10 @@ class Invoice(Base):
     checkout_session_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("checkout_sessions.id", ondelete="SET NULL"), nullable=True
     )
+    subscription_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("subscriptions.id", ondelete="SET NULL"), nullable=True
+    )
+    billing_reason: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

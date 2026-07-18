@@ -6,15 +6,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_merchant, get_merchant_flexible, require_role
 from app.core.db import get_db
+from app.models.api_key import ApiKey
 from app.models.checkout_session import CheckoutSession
+from app.models.invoice import Invoice
 from app.models.merchant import Merchant
+from app.models.payment_link import PaymentLink
 from app.models.refund import Refund
+from app.models.subscription import Subscription
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.user import User, UserRole
 from app.models.webhook import WebhookEndpoint, WebhookLog
 from app.schemas.transaction import (
     RefundCreateRequest,
     RefundResponse,
+    RelatedInvoice,
+    RelatedPaymentLink,
+    RelatedSubscription,
     TimelineEvent,
     TransactionDetailResponse,
     TransactionListResponse,
@@ -34,7 +41,11 @@ async def list_transactions(
     merchant: Merchant = Depends(get_merchant_flexible),
     db: AsyncSession = Depends(get_db),
 ) -> TransactionListResponse:
-    base_query = select(Transaction).where(Transaction.merchant_id == merchant.id)
+    base_query = (
+        select(Transaction, CheckoutSession.customer_email)
+        .join(CheckoutSession, Transaction.checkout_session_id == CheckoutSession.id)
+        .where(Transaction.merchant_id == merchant.id)
+    )
     count_query = select(func.count()).select_from(Transaction).where(Transaction.merchant_id == merchant.id)
 
     if status_filter is not None:
@@ -46,7 +57,10 @@ async def list_transactions(
     result = await db.execute(
         base_query.order_by(Transaction.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
     )
-    items = [TransactionResponse.model_validate(t) for t in result.scalars().all()]
+    items = [
+        TransactionResponse(**TransactionResponse.model_validate(t).model_dump() | {"customer_email": email})
+        for t, email in result.all()
+    ]
 
     return TransactionListResponse(items=items, total=total, page=page, page_size=page_size)
 
@@ -65,6 +79,32 @@ async def get_transaction(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
 
     session = await db.get(CheckoutSession, transaction.checkout_session_id)
+
+    payment_link = None
+    invoice_link = None
+    subscription_link = None
+    api_key_prefix = None
+    customer_name = None
+    if session is not None:
+        if isinstance(session.session_metadata, dict):
+            customer_name = session.session_metadata.get("customer_name")
+        if session.payment_link_id is not None:
+            link = await db.get(PaymentLink, session.payment_link_id)
+            if link is not None:
+                payment_link = RelatedPaymentLink(id=link.id, title=link.title)
+        if session.api_key_id is not None:
+            key = await db.get(ApiKey, session.api_key_id)
+            if key is not None:
+                api_key_prefix = key.key_prefix
+
+        invoice_result = await db.execute(select(Invoice).where(Invoice.checkout_session_id == session.id))
+        invoice = invoice_result.scalar_one_or_none()
+        if invoice is not None:
+            invoice_link = RelatedInvoice(id=invoice.id, status=invoice.status)
+            if invoice.subscription_id is not None:
+                subscription = await db.get(Subscription, invoice.subscription_id)
+                if subscription is not None:
+                    subscription_link = RelatedSubscription(id=subscription.id, status=subscription.status)
 
     refunds_result = await db.execute(
         select(Refund).where(Refund.transaction_id == transaction.id).order_by(Refund.created_at.asc())
@@ -96,11 +136,15 @@ async def get_transaction(
     timeline.sort(key=lambda e: e.at)
 
     return TransactionDetailResponse(
-        **TransactionResponse.model_validate(transaction).model_dump(),
-        customer_email=session.customer_email if session else None,
+        **(TransactionResponse.model_validate(transaction).model_dump() | {"customer_email": session.customer_email if session else None}),
+        customer_name=customer_name,
         refunds=[RefundResponse.model_validate(r) for r in refunds],
         webhook_logs=[WebhookLogResponse.model_validate(log) for log in webhook_logs],
         timeline=timeline,
+        payment_link=payment_link,
+        invoice=invoice_link,
+        subscription=subscription_link,
+        api_key_prefix=api_key_prefix,
     )
 
 

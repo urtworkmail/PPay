@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { formatDate, formatMinorAmount } from "../api/format";
 
 export default function Customers() {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,15 +39,27 @@ export default function Customers() {
                 <th>Email</th>
                 <th>Total spent</th>
                 <th>Transactions</th>
+                <th>Subscriptions</th>
                 <th>Last payment</th>
               </tr>
             </thead>
             <tbody>
               {customers.map((c) => (
-                <tr key={c.email}>
+                <tr
+                  key={c.email}
+                  onClick={() => navigate(`/dashboard/customers/${encodeURIComponent(c.email)}`)}
+                  style={{ cursor: "pointer" }}
+                >
                   <td>{c.email}</td>
                   <td style={{ fontWeight: 600 }}>{formatMinorAmount(c.total_spent_minor, c.currency)}</td>
                   <td>{c.transaction_count}</td>
+                  <td>
+                    {c.subscription_count > 0 ? (
+                      <span className="badge badge-success">{c.subscription_count} active</span>
+                    ) : (
+                      <span style={{ color: "var(--color-text-faint)" }}>—</span>
+                    )}
+                  </td>
                   <td style={{ color: "var(--color-text-muted)" }}>{formatDate(c.last_transaction_at)}</td>
                 </tr>
               ))}

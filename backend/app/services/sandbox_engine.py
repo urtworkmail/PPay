@@ -37,8 +37,11 @@ class AuthorizationResult:
     masked_details: dict
 
 
-def _normalize(value: str) -> str:
+def normalize_digits(value: str) -> str:
     return "".join(ch for ch in value if ch.isdigit())
+
+
+_normalize = normalize_digits
 
 
 async def authorize_card(card_number: str) -> AuthorizationResult:
@@ -78,4 +81,31 @@ async def authorize_bank_transfer() -> AuthorizationResult:
         failure_reason=None,
         gateway_reference=f"sbx_{secrets.token_hex(8)}",
         masked_details={"method": "bank_transfer"},
+    )
+
+
+# Off-session (no cardholder present) decline rate for cards that aren't one of
+# the known magic test numbers above — mirrors the real-world fact that a card
+# which worked once can still fail on a later renewal (expired, insufficient
+# funds that day, etc). This is what actually gives the dunning/retry logic in
+# subscription_engine.py something to do in the demo.
+OFF_SESSION_DECLINE_RATE = 0.15
+OFF_SESSION_DECLINE_REASONS = ["insufficient_funds", "card_declined", "expired_card"]
+
+
+async def authorize_off_session(digits: str, method: str) -> AuthorizationResult:
+    """Charges a previously-saved card/wallet with no cardholder present (subscription renewals)."""
+    outcomes = CARD_OUTCOMES if method == "card" else WALLET_OUTCOMES
+    if digits in outcomes:
+        success, reason = outcomes[digits]
+    elif random.random() < OFF_SESSION_DECLINE_RATE:
+        success, reason = False, random.choice(OFF_SESSION_DECLINE_REASONS)
+    else:
+        success, reason = True, None
+
+    return AuthorizationResult(
+        success=success,
+        failure_reason=reason,
+        gateway_reference=f"sbx_{secrets.token_hex(8)}",
+        masked_details={"method": method, "last4": digits[-4:] if len(digits) >= 4 else digits},
     )

@@ -1,16 +1,14 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
+from app.schemas.branding import MerchantBrandingSummary
 from app.schemas.transaction import TransactionResponse
 
 
 class PaymentLinkCreateRequest(BaseModel):
-    title: str = Field(min_length=2, max_length=255)
-    description: str | None = Field(default=None, max_length=500)
-    amount_minor: int = Field(gt=0)
-    currency: str = Field(default="PKR", min_length=3, max_length=3)
+    price_id: uuid.UUID
 
 
 class PaymentLinkResponse(BaseModel):
@@ -23,6 +21,10 @@ class PaymentLinkResponse(BaseModel):
     usage_count: int
     url: str
     created_at: datetime
+    customer_count: int = 0
+    price_id: uuid.UUID | None = None
+    product_name: str | None = None
+    merchant: MerchantBrandingSummary | None = None
 
     model_config = {"from_attributes": True}
 

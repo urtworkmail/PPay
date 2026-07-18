@@ -11,6 +11,7 @@ class UserProfile(BaseModel):
     name: str | None
     role: str
     status: str
+    totp_enabled: bool = False
     created_at: datetime
     last_login_at: datetime | None
 
@@ -60,3 +61,27 @@ class AcceptInviteRequest(BaseModel):
     token: str
     name: str | None = Field(default=None, max_length=255)
     password: str = Field(min_length=8, max_length=128)
+
+
+class TotpEnrollResponse(BaseModel):
+    secret: str
+    otpauth_uri: str
+
+
+class TotpVerifyRequest(BaseModel):
+    code: str = Field(min_length=6, max_length=6)
+
+
+class TotpDisableRequest(BaseModel):
+    password: str
+
+
+class SessionResponse(BaseModel):
+    id: uuid.UUID
+    ip_address: str | None
+    user_agent: str | None
+    created_at: datetime
+    last_seen_at: datetime
+    is_current: bool = False
+
+    model_config = {"from_attributes": True}

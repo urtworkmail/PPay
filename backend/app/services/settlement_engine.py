@@ -5,9 +5,18 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import AsyncSessionLocal
-from app.models.merchant import Merchant
+from app.models.merchant import Merchant, PayoutSchedule
 from app.models.settlement import Settlement, SettlementItem, SettlementStatus
 from app.models.transaction import Transaction, TransactionStatus
+
+# How long a settlement sits as "pending" before it's swept into a simulated
+# payout, based on the merchant's chosen payout schedule — mirrors the way a
+# real gateway holds funds for a few days before releasing them to the bank.
+PAYOUT_DELAY_DAYS = {
+    PayoutSchedule.DAILY: 1,
+    PayoutSchedule.WEEKLY: 7,
+    PayoutSchedule.MONTHLY: 30,
+}
 
 
 async def run_settlement_batch(db: AsyncSession, period_end: datetime | None = None) -> list[Settlement]:
@@ -48,8 +57,7 @@ async def run_settlement_batch(db: AsyncSession, period_end: datetime | None = N
             fee_amount_minor=fees,
             net_amount_minor=net,
             transaction_count=len(transactions),
-            status=SettlementStatus.PAID,
-            paid_at=datetime.now(timezone.utc),
+            status=SettlementStatus.PENDING,
         )
         db.add(settlement)
         await db.flush()
@@ -68,4 +76,33 @@ async def run_settlement_batch_job() -> None:
     """APScheduler job wrapper: runs the settlement batch in its own session."""
     async with AsyncSessionLocal() as db:
         await run_settlement_batch(db)
+        await db.commit()
+
+
+async def process_due_payouts(db: AsyncSession, now: datetime | None = None) -> list[Settlement]:
+    """Marks pending settlements as paid once their merchant's payout delay has elapsed."""
+    now = now or datetime.now(timezone.utc)
+
+    result = await db.execute(
+        select(Settlement, Merchant)
+        .join(Merchant, Settlement.merchant_id == Merchant.id)
+        .where(Settlement.status == SettlementStatus.PENDING)
+    )
+    paid: list[Settlement] = []
+
+    for settlement, merchant in result.all():
+        delay_days = PAYOUT_DELAY_DAYS[merchant.payout_schedule]
+        if now >= settlement.created_at + timedelta(days=delay_days):
+            settlement.status = SettlementStatus.PAID
+            settlement.paid_at = now
+            paid.append(settlement)
+
+    await db.flush()
+    return paid
+
+
+async def process_due_payouts_job() -> None:
+    """APScheduler job wrapper: sweeps due payouts in their own session."""
+    async with AsyncSessionLocal() as db:
+        await process_due_payouts(db)
         await db.commit()

@@ -16,6 +16,7 @@ class TransactionResponse(BaseModel):
     failure_reason: str | None
     payment_method_details: dict
     settled: bool
+    customer_email: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -60,23 +61,53 @@ class WebhookEndpointResponse(BaseModel):
     events: list[str]
     is_active: bool
     secret: str | None = None
+    last_delivery_at: datetime | None = None
+    failure_count_24h: int = 0
 
     model_config = {"from_attributes": True}
 
 
 class WebhookLogResponse(BaseModel):
     id: uuid.UUID
+    endpoint_id: uuid.UUID
+    transaction_id: uuid.UUID | None
     event_type: str
+    payload: dict
     response_status: int | None
     attempt_count: int
     status: str
+    next_retry_at: datetime | None
     created_at: datetime
+    customer_email: str | None = None
 
     model_config = {"from_attributes": True}
 
 
+class EventLogResponse(WebhookLogResponse):
+    endpoint_url: str
+
+
+class RelatedPaymentLink(BaseModel):
+    id: uuid.UUID
+    title: str
+
+
+class RelatedInvoice(BaseModel):
+    id: uuid.UUID
+    status: str
+
+
+class RelatedSubscription(BaseModel):
+    id: uuid.UUID
+    status: str
+
+
 class TransactionDetailResponse(TransactionResponse):
-    customer_email: str | None
+    customer_name: str | None = None
     refunds: list[RefundResponse]
     webhook_logs: list[WebhookLogResponse]
     timeline: list[TimelineEvent]
+    payment_link: RelatedPaymentLink | None = None
+    invoice: RelatedInvoice | None = None
+    subscription: RelatedSubscription | None = None
+    api_key_prefix: str | None = None

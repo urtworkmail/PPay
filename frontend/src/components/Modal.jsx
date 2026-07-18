@@ -1,7 +1,6 @@
 export default function Modal({ title, children, onClose }) {
   return (
     <div
-      onClick={onClose}
       style={{
         position: "fixed",
         inset: 0,
@@ -13,11 +12,10 @@ export default function Modal({ title, children, onClose }) {
         padding: 20,
       }}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="card"
-        style={{ width: "100%", maxWidth: 420, padding: 24, background: "var(--color-surface)" }}
-      >
+      {/* Deliberately no onClick={onClose} on the overlay — a stray click outside
+          shouldn't discard whatever the user has typed. Only an explicit action
+          inside (Cancel/Confirm) should dismiss this. */}
+      <div className="card" style={{ width: "100%", maxWidth: 420, padding: 24, background: "var(--color-surface)" }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</div>
         {children}
       </div>

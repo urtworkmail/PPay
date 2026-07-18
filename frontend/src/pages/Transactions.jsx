@@ -1,15 +1,46 @@
 import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { formatDate, formatMinorAmount } from "../api/format";
 import Modal from "../components/Modal";
 import StatusBadge from "../components/StatusBadge";
 
+function exportCsv(items) {
+  const header = ["id", "gateway_reference", "amount_minor", "currency", "fee_minor", "net_amount_minor", "status", "method", "created_at"];
+  const rows = items.map((t) => [
+    t.id,
+    t.gateway_reference ?? "",
+    t.amount_minor,
+    t.currency,
+    t.fee_minor,
+    t.net_amount_minor,
+    t.status,
+    t.payment_method_details?.method ?? "",
+    t.created_at,
+  ]);
+  const csv = [header, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 const STATUS_FILTERS = ["all", "succeeded", "failed", "pending", "refunded"];
 
 export default function Transactions() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialStatus = searchParams.get("status");
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(
+    STATUS_FILTERS.includes(initialStatus) ? initialStatus : "all"
+  );
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refundTarget, setRefundTarget] = useState(null);
@@ -54,7 +85,12 @@ export default function Transactions() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Transactions</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Transactions</h1>
+        <button className="btn btn-secondary" style={{ padding: "6px 14px", fontSize: 13 }} onClick={() => exportCsv(items)} disabled={items.length === 0}>
+          Export CSV
+        </button>
+      </div>
       <p style={{ color: "var(--color-text-muted)", marginTop: 0, marginBottom: 24 }}>{total} total</p>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -82,6 +118,7 @@ export default function Transactions() {
             <thead>
               <tr>
                 <th>Reference</th>
+                <th>Customer</th>
                 <th>Amount</th>
                 <th>Fee</th>
                 <th>Net</th>
@@ -93,8 +130,21 @@ export default function Transactions() {
             </thead>
             <tbody>
               {items.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.id} onClick={() => navigate(`/dashboard/transactions/${t.id}`)} style={{ cursor: "pointer" }}>
                   <td className="mono">{t.gateway_reference ?? t.id.slice(0, 8)}</td>
+                  <td>
+                    {t.customer_email ? (
+                      <Link
+                        to={`/dashboard/customers/${encodeURIComponent(t.customer_email)}`}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: "var(--color-accent)", textDecoration: "none" }}
+                      >
+                        {t.customer_email}
+                      </Link>
+                    ) : (
+                      <span style={{ color: "var(--color-text-faint)" }}>—</span>
+                    )}
+                  </td>
                   <td>{formatMinorAmount(t.amount_minor, t.currency)}</td>
                   <td style={{ color: "var(--color-text-muted)" }}>{formatMinorAmount(t.fee_minor, t.currency)}</td>
                   <td>{formatMinorAmount(t.net_amount_minor, t.currency)}</td>
@@ -110,7 +160,10 @@ export default function Transactions() {
                       <button
                         className="btn btn-danger"
                         style={{ padding: "5px 10px", fontSize: 12.5 }}
-                        onClick={() => setRefundTarget(t)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRefundTarget(t);
+                        }}
                       >
                         Refund
                       </button>
