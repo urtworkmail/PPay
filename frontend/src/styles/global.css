@@ -79,7 +79,7 @@ body,
 body {
   margin: 0;
   font-family:
-    "Inter",
+    "Manrope",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
@@ -266,6 +266,33 @@ tr:last-child td {
 
 .related-row:hover {
   background: var(--color-bg);
+}
+
+.nav-tip-anchor {
+  position: relative;
+}
+
+.nav-tip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 70;
+}
+
+.nav-tip-anchor:hover .nav-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 .related-row-icon {

@@ -334,7 +334,7 @@ function ProfileMenu() {
   );
 }
 
-export default function TopBar() {
+export default function TopBar({ onOpenHelp }) {
   const navigate = useNavigate();
 
   return (
@@ -355,7 +355,7 @@ export default function TopBar() {
     >
       <SearchBox />
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <IconButton onClick={() => navigate("/dashboard/help")} aria-label="Help" title="Help">
+        <IconButton onClick={onOpenHelp} aria-label="Help" title="Help">
           <HelpIcon width={16} height={16} />
         </IconButton>
         <NotificationsMenu />

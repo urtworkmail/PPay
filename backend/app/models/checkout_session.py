@@ -6,7 +6,7 @@ from sqlalchemy import BigInteger, CheckConstraint, DateTime, Enum, ForeignKey, 
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class CheckoutSessionStatus(StrEnum):
@@ -30,15 +30,19 @@ class CheckoutSession(Base):
     __table_args__ = (
         UniqueConstraint("merchant_id", "idempotency_key", name="uq_checkout_merchant_idempotency"),
         CheckConstraint("amount_minor > 0", name="ck_checkout_amount_positive"),
+        {"schema": TENANT_SCHEMA},
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
     payment_link_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("payment_links.id", ondelete="SET NULL"), nullable=True
+        ForeignKey(f"{TENANT_SCHEMA}.payment_links.id", ondelete="SET NULL"), nullable=True
+    )
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey(f"{TENANT_SCHEMA}.customers.id", ondelete="SET NULL"), nullable=True
     )
     api_key_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("api_keys.id", ondelete="SET NULL"), nullable=True
+        ForeignKey(f"{TENANT_SCHEMA}.api_keys.id", ondelete="SET NULL"), nullable=True
     )
     amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="PKR", nullable=False)

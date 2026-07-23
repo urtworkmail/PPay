@@ -19,6 +19,14 @@ class TransactionResponse(BaseModel):
     customer_email: str | None = None
     created_at: datetime
     updated_at: datetime
+    payment_intent_status: str | None = Field(
+        default=None,
+        description=(
+            "The orchestrating PaymentIntent's own status, when one exists. Notably "
+            "distinguishes 'requires_reconciliation' (rail didn't respond — we're "
+            "checking) from 'failed' (rail said no), which `status` above cannot."
+        ),
+    )
 
     model_config = {"from_attributes": True}
 
@@ -111,3 +119,4 @@ class TransactionDetailResponse(TransactionResponse):
     invoice: RelatedInvoice | None = None
     subscription: RelatedSubscription | None = None
     api_key_prefix: str | None = None
+    charge_attempts: int = 0

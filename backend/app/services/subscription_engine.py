@@ -6,15 +6,17 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.db import AsyncSessionLocal
+from app.core.db import Mode, session_factory_for_mode
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus, PaymentMethod
 from app.models.invoice import Invoice, InvoiceStatus
+from app.models.payment_intent import PaymentIntentSourceType
 from app.models.product import BillingInterval, Price
 from app.models.subscription import SavedPaymentMethod, Subscription, SubscriptionStatus
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.webhook import WebhookEndpoint
 from app.services import sandbox_engine
 from app.services.fee_calculator import calculate_fee_minor, calculate_net_minor
+from app.services.payment_intent_engine import get_or_create_payment_intent, record_charge_attempt
 from app.services.webhook_dispatcher import deliver_webhook, enqueue_webhook_event
 
 MAX_BILLING_ATTEMPTS = 3
@@ -131,6 +133,28 @@ async def charge_subscription_cycle(
     )
     db.add(transaction)
 
+    # PaymentIntent/Charge orchestrator write, alongside the Transaction above
+    # (Phase 2, dual-write — see payment_intent_engine module docstring).
+    intent = await get_or_create_payment_intent(
+        db,
+        merchant_id=subscription.merchant_id,
+        amount_minor=price.amount_minor,
+        currency=price.currency,
+        source_type=PaymentIntentSourceType.SUBSCRIPTION,
+        source_id=subscription.id,
+        idempotency_key=session.idempotency_key,
+        payment_method_id=subscription.payment_method_id,
+    )
+    await record_charge_attempt(
+        db,
+        intent,
+        adapter_name=f"mock_{(payment_method.method.value if payment_method else 'none')}",
+        success=result.success,
+        failure_reason=result.failure_reason,
+        rail_reference_id=result.gateway_reference or None,
+        raw_response_payload=result.masked_details,
+    )
+
     session.status = CheckoutSessionStatus.SUCCEEDED if result.success else CheckoutSessionStatus.FAILED
     session.completed_at = datetime.now(timezone.utc)
 
@@ -213,7 +237,9 @@ async def run_subscription_billing(db: AsyncSession, now: datetime | None = None
 
 
 async def run_subscription_billing_job() -> None:
-    """APScheduler job wrapper: runs subscription billing in its own session."""
-    async with AsyncSessionLocal() as db:
-        await run_subscription_billing(db)
-        await db.commit()
+    """APScheduler job wrapper: runs subscription billing once per mode (sandbox
+    and production subscriptions are entirely separate — see core/db.py)."""
+    for mode in Mode:
+        async with session_factory_for_mode(mode)() as db:
+            await run_subscription_billing(db)
+            await db.commit()

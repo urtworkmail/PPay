@@ -16,5 +16,27 @@ services:
       timeout: 5s
       retries: 10
 
+  archive-db:
+    # Deliberately a separate container/instance from `db`, not another
+    # schema in the same one — a compromised main-DB credential must not be
+    # able to reach archived live data. Only reached via the platform-admin
+    # archive flow (backend/app/services/archive_engine.py).
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: openpay
+      POSTGRES_PASSWORD: openpay
+      POSTGRES_DB: openpay_archive
+    ports:
+      - "5435:5432"
+    volumes:
+      - openpay_archive_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openpay"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   openpay_pgdata:
+  openpay_archive_pgdata:

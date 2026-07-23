@@ -152,7 +152,7 @@ export default function Transactions() {
                     {t.payment_method_details?.method ?? "—"}
                   </td>
                   <td>
-                    <StatusBadge status={t.status} />
+                    <StatusBadge status={t.payment_intent_status === "requires_reconciliation" ? "requires_reconciliation" : t.status} />
                   </td>
                   <td style={{ color: "var(--color-text-muted)" }}>{formatDate(t.created_at)}</td>
                   <td>

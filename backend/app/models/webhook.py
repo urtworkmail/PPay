@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, fun
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class WebhookDeliveryStatus(StrEnum):
@@ -17,6 +17,7 @@ class WebhookDeliveryStatus(StrEnum):
 
 class WebhookEndpoint(Base):
     __tablename__ = "webhook_endpoints"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
@@ -31,14 +32,26 @@ class WebhookEndpoint(Base):
 
 
 class WebhookLog(Base):
+    """A single delivery attempt of an `Event` to one `WebhookEndpoint`.
+
+    The immutable `Event` (app.models.event.Event) is the source-of-truth log
+    of what happened; this row tracks the separate concern of whether/when
+    delivery to a specific endpoint succeeded, so retries and replay operate
+    on delivery state without ever mutating the event itself.
+    """
+
     __tablename__ = "webhook_logs"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     endpoint_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("webhook_endpoints.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(f"{TENANT_SCHEMA}.webhook_endpoints.id", ondelete="CASCADE"), nullable=False
+    )
+    event_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey(f"{TENANT_SCHEMA}.events.id", ondelete="SET NULL"), nullable=True
     )
     transaction_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("transactions.id", ondelete="SET NULL"), nullable=True
+        ForeignKey(f"{TENANT_SCHEMA}.transactions.id", ondelete="SET NULL"), nullable=True
     )
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)

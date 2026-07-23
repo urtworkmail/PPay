@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class ApiKeyMode(StrEnum):
@@ -15,7 +15,16 @@ class ApiKeyMode(StrEnum):
 
 
 class ApiKey(Base):
+    """Mode is inherent to the key material itself (the `sk_test_`/`sk_live_`
+    prefix), so this table is schema-separated like all tenant data: a
+    merchant's test key row lives in the `sandbox` schema, its live key row
+    in `production`. `core.db.resolve_request_mode` reads the prefix straight
+    off the raw bearer token — no DB round-trip needed — so by the time this
+    table is queried the session is already pointed at the matching schema.
+    """
+
     __tablename__ = "api_keys"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)

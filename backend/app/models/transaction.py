@@ -6,7 +6,7 @@ from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class TransactionStatus(StrEnum):
@@ -19,10 +19,11 @@ class TransactionStatus(StrEnum):
 
 class Transaction(Base):
     __tablename__ = "transactions"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     checkout_session_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("checkout_sessions.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(f"{TENANT_SCHEMA}.checkout_sessions.id", ondelete="CASCADE"), nullable=False
     )
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
     amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)

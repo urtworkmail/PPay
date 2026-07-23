@@ -17,7 +17,7 @@ class CheckoutSessionCreateRequest(BaseModel):
 
 
 class CheckoutSessionResponse(BaseModel):
-    id: uuid.UUID
+    id: str
     amount_minor: int
     currency: str
     status: str

@@ -5,17 +5,20 @@ from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKe
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class PaymentLink(Base):
     __tablename__ = "payment_links"
-    __table_args__ = (CheckConstraint("amount_minor > 0", name="ck_payment_link_amount_positive"),)
+    __table_args__ = (
+        CheckConstraint("amount_minor > 0", name="ck_payment_link_amount_positive"),
+        {"schema": TENANT_SCHEMA},
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
     price_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("prices.id", ondelete="RESTRICT"), nullable=True
+        ForeignKey(f"{TENANT_SCHEMA}.prices.id", ondelete="RESTRICT"), nullable=True
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)

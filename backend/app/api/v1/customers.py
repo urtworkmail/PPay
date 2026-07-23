@@ -3,8 +3,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.api.v1.deps import get_current_merchant
-from app.core.db import get_db
+from app.api.v1.deps import get_current_merchant, get_request_mode
+from app.core.db import Mode, get_db
+from app.core.public_ref import PAYMENT_LINK_PREFIX, encode_ref
 from app.models.checkout_session import CheckoutSession
 from app.models.invoice import Invoice
 from app.models.merchant import Merchant
@@ -84,7 +85,10 @@ async def list_customers(
 
 @router.get("/{email}", response_model=CustomerDetailResponse)
 async def get_customer_detail(
-    email: str, merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
+    email: str,
+    merchant: Merchant = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> CustomerDetailResponse:
     from app.api.v1.invoices import _to_response as invoice_to_response
     from app.api.v1.subscriptions import _to_response as subscription_to_response
@@ -164,7 +168,7 @@ async def get_customer_detail(
             TransactionResponse(**TransactionResponse.model_validate(t).model_dump() | {"customer_email": email})
             for t in transactions
         ],
-        invoices=[invoice_to_response(inv) for inv in invoices],
+        invoices=[invoice_to_response(inv, mode) for inv in invoices],
         subscriptions=[subscription_to_response(s) for s in subscriptions],
         saved_payment_methods=[
             SavedPaymentMethodSummary(
@@ -175,5 +179,8 @@ async def get_customer_detail(
             )
             for m in saved_methods
         ],
-        payment_links=[RelatedPaymentLinkSummary(id=link.id, title=link.title) for link in payment_links],
+        payment_links=[
+            RelatedPaymentLinkSummary(id=encode_ref(PAYMENT_LINK_PREFIX, mode, link.id), title=link.title)
+            for link in payment_links
+        ],
     )

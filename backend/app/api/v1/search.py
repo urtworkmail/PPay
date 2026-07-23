@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import cast, or_, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.deps import get_current_merchant
-from app.core.db import get_db
+from app.api.v1.deps import get_current_merchant, get_request_mode
+from app.core.db import Mode, get_db
+from app.core.public_ref import INVOICE_PREFIX, PAYMENT_LINK_PREFIX, encode_ref
 from app.models.checkout_session import CheckoutSession
 from app.models.invoice import Invoice
 from app.models.merchant import Merchant
@@ -21,6 +22,7 @@ async def search(
     q: str = Query(min_length=2, max_length=255),
     merchant: Merchant = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> SearchResponse:
     pattern = f"%{q}%"
     results: list[SearchResult] = []
@@ -74,13 +76,14 @@ async def search(
         .limit(RESULT_LIMIT)
     )
     for inv in invoice_result.scalars().all():
+        public_id = encode_ref(INVOICE_PREFIX, mode, inv.id)
         results.append(
             SearchResult(
                 type="invoice",
-                id=str(inv.id),
+                id=public_id,
                 label=inv.customer_name or inv.customer_email,
                 sublabel=f"{inv.amount_minor / 100:.2f} {inv.currency} · {inv.status}",
-                path=f"/dashboard/invoices/{inv.id}",
+                path=f"/dashboard/invoices/{public_id}",
             )
         )
 
@@ -97,13 +100,14 @@ async def search(
         .limit(RESULT_LIMIT)
     )
     for link in link_result.scalars().all():
+        public_id = encode_ref(PAYMENT_LINK_PREFIX, mode, link.id)
         results.append(
             SearchResult(
                 type="payment_link",
-                id=str(link.id),
+                id=public_id,
                 label=link.title,
                 sublabel=f"{link.amount_minor / 100:.2f} {link.currency}",
-                path=f"/dashboard/payment-links/{link.id}",
+                path=f"/dashboard/payment-links/{public_id}",
             )
         )
 

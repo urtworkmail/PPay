@@ -26,6 +26,7 @@ import PaymentLinks from "./pages/PaymentLinks";
 import ProductDetail from "./pages/ProductDetail";
 import Products from "./pages/Products";
 import Register from "./pages/Register";
+import Sentinel from "./pages/Sentinel";
 import Settings from "./pages/Settings";
 import SettingsBilling from "./pages/SettingsBilling";
 import SettingsBranding from "./pages/SettingsBranding";
@@ -37,6 +38,7 @@ import SettingsPersonal from "./pages/SettingsPersonal";
 import SettingsPlansFees from "./pages/SettingsPlansFees";
 import SubscriptionDetail from "./pages/SubscriptionDetail";
 import Subscriptions from "./pages/Subscriptions";
+import SystemStatus from "./pages/SystemStatus";
 import Team from "./pages/Team";
 import TransactionDetail from "./pages/TransactionDetail";
 import Transactions from "./pages/Transactions";
@@ -87,6 +89,8 @@ export default function App() {
         <Route path="balances" element={<Balances />} />
         <Route path="team" element={<Team />} />
         <Route path="go-live" element={<GoLive />} />
+        <Route path="sentinel" element={<Sentinel />} />
+        <Route path="status" element={<SystemStatus />} />
         <Route path="help" element={<HelpCenter />} />
         <Route path="help/category/:categorySlug" element={<HelpCategory />} />
         <Route path="help/:articleSlug" element={<HelpArticle />} />

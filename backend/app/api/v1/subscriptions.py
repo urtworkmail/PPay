@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.v1.checkout import _checkout_url
-from app.api.v1.deps import get_current_merchant
-from app.core.db import get_db
+from app.api.v1.deps import get_current_merchant, get_request_mode
+from app.core.db import Mode, get_db
+from app.core.public_ref import CHECKOUT_SESSION_PREFIX, encode_ref
 from app.models.checkout_session import CheckoutSession
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
@@ -70,6 +71,7 @@ async def create_subscription(
     payload: SubscriptionCreateRequest,
     merchant: Merchant = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> SubscriptionResponse:
     price = await db.get(Price, payload.price_id)
     if price is None or price.merchant_id != merchant.id or not price.is_active:
@@ -142,7 +144,7 @@ async def create_subscription(
         db.add(session)
         await db.flush()
         invoice.checkout_session_id = session.id
-        checkout_url = _checkout_url(session.id)
+        checkout_url = _checkout_url(encode_ref(CHECKOUT_SESSION_PREFIX, mode, session.id))
 
     await db.commit()
 
@@ -165,7 +167,10 @@ async def list_subscriptions(
 
 @router.get("/{subscription_id}", response_model=SubscriptionDetailResponse)
 async def get_subscription_detail(
-    subscription_id: uuid.UUID, merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
+    subscription_id: uuid.UUID,
+    merchant: Merchant = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> SubscriptionDetailResponse:
     from app.api.v1.invoices import _to_response as invoice_to_response
     from app.schemas.transaction import TransactionResponse
@@ -193,7 +198,7 @@ async def get_subscription_detail(
                 transaction_ids.append(transaction.id)
         invoice_details.append(
             {
-                **invoice_to_response(inv).model_dump(),
+                **invoice_to_response(inv, mode).model_dump(),
                 "transaction": TransactionResponse.model_validate(transaction) if transaction else None,
                 "subscription": subscription_link,
             }

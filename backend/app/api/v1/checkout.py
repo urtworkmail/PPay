@@ -8,12 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_merchant_and_key_from_api_key, get_merchant_from_api_key
 from app.core.config import get_settings
-from app.core.db import get_db
+from app.core.db import Mode, get_db, session_factory_for_mode
 from app.core.idempotency import require_idempotency_key
-from app.models.api_key import ApiKey
+from app.core.public_ref import CHECKOUT_SESSION_PREFIX, decode_ref, encode_ref
+from app.models.api_key import ApiKey, ApiKeyMode
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus, PaymentMethod
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
+from app.models.payment_intent import PaymentIntentSourceType
 from app.models.subscription import SavedPaymentMethod, SavedPaymentMethodType, Subscription, SubscriptionStatus
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.webhook import WebhookEndpoint
@@ -22,6 +24,7 @@ from app.schemas.checkout import CheckoutPayRequest, CheckoutSessionCreateReques
 from app.schemas.transaction import TransactionResponse
 from app.services import sandbox_engine
 from app.services.fee_calculator import calculate_fee_minor, calculate_net_minor
+from app.services.payment_intent_engine import get_or_create_payment_intent, record_charge_attempt
 from app.services.subscription_engine import activate_subscription
 from app.services.webhook_dispatcher import deliver_webhook, enqueue_webhook_event
 
@@ -30,15 +33,20 @@ SESSION_TTL_MINUTES = 30
 CHECKOUT_FRONTEND_PATH = "/checkout"
 
 
-def _checkout_url(session_id: uuid.UUID) -> str:
+def _checkout_url(public_ref: str) -> str:
     settings = get_settings()
     frontend_origin = settings.cors_origin_list[0] if settings.cors_origin_list else "http://localhost:5173"
-    return f"{frontend_origin}{CHECKOUT_FRONTEND_PATH}/{session_id}"
+    return f"{frontend_origin}{CHECKOUT_FRONTEND_PATH}/{public_ref}"
 
 
-def _to_response(session: CheckoutSession, merchant: Merchant | None = None) -> CheckoutSessionResponse:
+def mode_of(api_key: ApiKey) -> Mode:
+    return Mode.LIVE if api_key.mode == ApiKeyMode.LIVE else Mode.SANDBOX
+
+
+def _to_response(session: CheckoutSession, mode: Mode, merchant: Merchant | None = None) -> CheckoutSessionResponse:
+    public_id = encode_ref(CHECKOUT_SESSION_PREFIX, mode, session.id)
     return CheckoutSessionResponse(
-        id=session.id,
+        id=public_id,
         amount_minor=session.amount_minor,
         currency=session.currency,
         status=session.status,
@@ -46,7 +54,7 @@ def _to_response(session: CheckoutSession, merchant: Merchant | None = None) -> 
         customer_email=session.customer_email,
         description=session.description,
         return_url=session.return_url,
-        checkout_url=_checkout_url(session.id),
+        checkout_url=_checkout_url(public_id),
         created_at=session.created_at,
         expires_at=session.expires_at,
         completed_at=session.completed_at,
@@ -92,7 +100,7 @@ async def create_checkout_session(
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="Idempotency key already used with different parameters"
             )
-        return _to_response(existing_session)
+        return _to_response(existing_session, mode_of(api_key))
 
     session = CheckoutSession(
         merchant_id=merchant.id,
@@ -117,28 +125,45 @@ async def create_checkout_session(
         ) from exc
     await db.refresh(session)
 
-    return _to_response(session)
+    return _to_response(session, mode_of(api_key))
+
+
+def _decode_checkout_ref(session_id: str) -> tuple[Mode, uuid.UUID]:
+    try:
+        decoded = decode_ref(CHECKOUT_SESSION_PREFIX, session_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checkout session not found") from exc
+    return decoded.mode, decoded.id
 
 
 @router.get("/sessions/{session_id}", response_model=CheckoutSessionResponse)
-async def get_checkout_session(session_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> CheckoutSessionResponse:
-    session = await db.get(CheckoutSession, session_id)
-    if session is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checkout session not found")
+async def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
+    # Public, unauthenticated route (the buyer's browser hits this directly) —
+    # mode comes from the reference itself, not from a header, since there is
+    # no API key or dashboard session here to read it from.
+    mode, real_id = _decode_checkout_ref(session_id)
+    async with session_factory_for_mode(mode)() as db:
+        session = await db.get(CheckoutSession, real_id)
+        if session is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checkout session not found")
 
-    if session.status == CheckoutSessionStatus.CREATED and session.expires_at < datetime.now(timezone.utc):
-        session.status = CheckoutSessionStatus.EXPIRED
-        await db.commit()
-        await db.refresh(session)
+        if session.status == CheckoutSessionStatus.CREATED and session.expires_at < datetime.now(timezone.utc):
+            session.status = CheckoutSessionStatus.EXPIRED
+            await db.commit()
+            await db.refresh(session)
 
-    merchant = await db.get(Merchant, session.merchant_id)
-    return _to_response(session, merchant)
+        merchant = await db.get(Merchant, session.merchant_id)
+        return _to_response(session, mode, merchant)
 
 
 @router.post("/sessions/{session_id}/pay", response_model=TransactionResponse)
-async def pay_checkout_session(
-    session_id: uuid.UUID, payload: CheckoutPayRequest, db: AsyncSession = Depends(get_db)
-) -> Transaction:
+async def pay_checkout_session(session_id: str, payload: CheckoutPayRequest) -> Transaction:
+    mode, real_id = _decode_checkout_ref(session_id)
+    async with session_factory_for_mode(mode)() as db:
+        return await _pay_checkout_session(real_id, payload, db)
+
+
+async def _pay_checkout_session(session_id: uuid.UUID, payload: CheckoutPayRequest, db: AsyncSession) -> Transaction:
     session = await db.get(CheckoutSession, session_id)
     if session is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checkout session not found")
@@ -198,6 +223,29 @@ async def pay_checkout_session(
         payment_method_details=result.masked_details,
     )
     db.add(transaction)
+
+    # PaymentIntent/Charge orchestrator write, alongside the Transaction above
+    # (Phase 2, dual-write — see payment_intent_engine module docstring). This
+    # is what gives "the rail timed out" its own requires_reconciliation state
+    # instead of being indistinguishable from a normal decline.
+    intent = await get_or_create_payment_intent(
+        db,
+        merchant_id=session.merchant_id,
+        amount_minor=session.amount_minor,
+        currency=session.currency,
+        source_type=PaymentIntentSourceType.CHECKOUT,
+        source_id=session.id,
+        idempotency_key=session.idempotency_key,
+    )
+    await record_charge_attempt(
+        db,
+        intent,
+        adapter_name=f"mock_{method.value}",
+        success=result.success,
+        failure_reason=result.failure_reason,
+        rail_reference_id=result.gateway_reference or None,
+        raw_response_payload=result.masked_details,
+    )
 
     session.status = CheckoutSessionStatus.SUCCEEDED if result.success else CheckoutSessionStatus.FAILED
     session.completed_at = datetime.now(timezone.utc)

@@ -19,6 +19,7 @@ from app.schemas.transaction import (
     WebhookEndpointResponse,
     WebhookLogResponse,
 )
+from app.services.audit_log import record_audit_event
 from app.services.webhook_dispatcher import deliver_webhook
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -60,6 +61,15 @@ async def create_webhook_endpoint(
         events=payload.events,
     )
     db.add(endpoint)
+    await db.flush()
+    await record_audit_event(
+        db,
+        merchant_id=merchant.id,
+        action="create",
+        resource_type="WebhookEndpoint",
+        resource_id=endpoint.id,
+        changes={"url": endpoint.url, "events": endpoint.events},
+    )
     await db.commit()
     await db.refresh(endpoint)
     return endpoint
@@ -211,7 +221,13 @@ async def delete_webhook_endpoint(
     endpoint = result.scalar_one_or_none()
     if endpoint is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Webhook endpoint not found")
-    await db.delete(endpoint)
+    # No account data is ever hard-deleted — deactivating stops future
+    # deliveries (enqueue_webhook_event only selects is_active endpoints)
+    # while preserving the endpoint's delivery history.
+    endpoint.is_active = False
+    await record_audit_event(
+        db, merchant_id=merchant.id, action="deactivate", resource_type="WebhookEndpoint", resource_id=endpoint.id
+    )
     await db.commit()
 
 

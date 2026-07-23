@@ -1,0 +1,19 @@
+{$SITE_ADDRESS} {
+	encode gzip
+
+	# Backend API and health check live outside /api/v1 too (GET /health),
+	# everything else is the React SPA served as static files.
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
+
+	handle /health {
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

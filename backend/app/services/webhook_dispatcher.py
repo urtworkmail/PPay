@@ -8,7 +8,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import AsyncSessionLocal
+from app.core.db import Mode, session_factory_for_mode
 from app.models.webhook import WebhookDeliveryStatus, WebhookEndpoint, WebhookLog
 
 MAX_ATTEMPTS = 5
@@ -81,23 +81,26 @@ async def deliver_webhook(db: AsyncSession, log: WebhookLog, endpoint: WebhookEn
 
 
 async def retry_pending_webhooks() -> None:
-    """APScheduler job: delivers any webhook logs whose retry backoff has elapsed."""
-    async with AsyncSessionLocal() as db:
-        now = datetime.now(timezone.utc)
-        result = await db.execute(
-            select(WebhookLog).where(
-                WebhookLog.status == WebhookDeliveryStatus.PENDING,
-                WebhookLog.next_retry_at.is_not(None),
-                WebhookLog.next_retry_at <= now,
+    """APScheduler job: delivers any webhook logs whose retry backoff has
+    elapsed, once per mode (sandbox and production webhook endpoints/logs are
+    entirely separate — see core/db.py)."""
+    now = datetime.now(timezone.utc)
+    for mode in Mode:
+        async with session_factory_for_mode(mode)() as db:
+            result = await db.execute(
+                select(WebhookLog).where(
+                    WebhookLog.status == WebhookDeliveryStatus.PENDING,
+                    WebhookLog.next_retry_at.is_not(None),
+                    WebhookLog.next_retry_at <= now,
+                )
             )
-        )
-        logs = result.scalars().all()
-        for log in logs:
-            endpoint = await db.get(WebhookEndpoint, log.endpoint_id)
-            if endpoint is not None:
-                await deliver_webhook(db, log, endpoint)
-        if logs:
-            await db.commit()
+            logs = result.scalars().all()
+            for log in logs:
+                endpoint = await db.get(WebhookEndpoint, log.endpoint_id)
+                if endpoint is not None:
+                    await deliver_webhook(db, log, endpoint)
+            if logs:
+                await db.commit()
 
 
 def _schedule_retry_or_fail(log: WebhookLog) -> None:

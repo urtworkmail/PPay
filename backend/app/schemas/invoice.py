@@ -17,7 +17,7 @@ class InvoiceCreateRequest(BaseModel):
 
 
 class InvoiceResponse(BaseModel):
-    id: uuid.UUID
+    id: str
     customer_name: str | None
     customer_email: str
     amount_minor: int

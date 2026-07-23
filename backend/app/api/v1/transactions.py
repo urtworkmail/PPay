@@ -10,6 +10,8 @@ from app.models.api_key import ApiKey
 from app.models.checkout_session import CheckoutSession
 from app.models.invoice import Invoice
 from app.models.merchant import Merchant
+from app.models.payment_intent import PaymentIntent, PaymentIntentSourceType
+from app.models.charge import Charge
 from app.models.payment_link import PaymentLink
 from app.models.refund import Refund
 from app.models.subscription import Subscription
@@ -42,8 +44,13 @@ async def list_transactions(
     db: AsyncSession = Depends(get_db),
 ) -> TransactionListResponse:
     base_query = (
-        select(Transaction, CheckoutSession.customer_email)
+        select(Transaction, CheckoutSession.customer_email, PaymentIntent.status)
         .join(CheckoutSession, Transaction.checkout_session_id == CheckoutSession.id)
+        .outerjoin(
+            PaymentIntent,
+            (PaymentIntent.source_id == Transaction.checkout_session_id)
+            & (PaymentIntent.source_type == PaymentIntentSourceType.CHECKOUT),
+        )
         .where(Transaction.merchant_id == merchant.id)
     )
     count_query = select(func.count()).select_from(Transaction).where(Transaction.merchant_id == merchant.id)
@@ -58,8 +65,11 @@ async def list_transactions(
         base_query.order_by(Transaction.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
     )
     items = [
-        TransactionResponse(**TransactionResponse.model_validate(t).model_dump() | {"customer_email": email})
-        for t, email in result.all()
+        TransactionResponse(
+            **TransactionResponse.model_validate(t).model_dump()
+            | {"customer_email": email, "payment_intent_status": intent_status}
+        )
+        for t, email, intent_status in result.all()
     ]
 
     return TransactionListResponse(items=items, total=total, page=page, page_size=page_size)
@@ -111,6 +121,18 @@ async def get_transaction(
     )
     refunds = list(refunds_result.scalars().all())
 
+    intent_result = await db.execute(
+        select(PaymentIntent).where(
+            PaymentIntent.source_id == transaction.checkout_session_id,
+            PaymentIntent.source_type == PaymentIntentSourceType.CHECKOUT,
+        )
+    )
+    intent = intent_result.scalar_one_or_none()
+    charge_attempts = 0
+    if intent is not None:
+        charges_result = await db.execute(select(func.count()).select_from(Charge).where(Charge.payment_intent_id == intent.id))
+        charge_attempts = charges_result.scalar_one()
+
     logs_result = await db.execute(
         select(WebhookLog)
         .join(WebhookEndpoint, WebhookLog.endpoint_id == WebhookEndpoint.id)
@@ -136,7 +158,13 @@ async def get_transaction(
     timeline.sort(key=lambda e: e.at)
 
     return TransactionDetailResponse(
-        **(TransactionResponse.model_validate(transaction).model_dump() | {"customer_email": session.customer_email if session else None}),
+        **(
+            TransactionResponse.model_validate(transaction).model_dump()
+            | {
+                "customer_email": session.customer_email if session else None,
+                "payment_intent_status": intent.status if intent is not None else None,
+            }
+        ),
         customer_name=customer_name,
         refunds=[RefundResponse.model_validate(r) for r in refunds],
         webhook_logs=[WebhookLogResponse.model_validate(log) for log in webhook_logs],
@@ -145,6 +173,7 @@ async def get_transaction(
         invoice=invoice_link,
         subscription=subscription_link,
         api_key_prefix=api_key_prefix,
+        charge_attempts=charge_attempts,
     )
 
 

@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -20,7 +19,7 @@ class CustomerSummary(BaseModel):
 
 
 class RelatedPaymentLinkSummary(BaseModel):
-    id: uuid.UUID
+    id: str
     title: str
 
 

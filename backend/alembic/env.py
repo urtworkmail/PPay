@@ -17,6 +17,15 @@ config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
 target_metadata = Base.metadata
 
+# NOTE on schema separation (see 0a071415ddaf_schema_separation_and_phase1_entities.py):
+# migrations are NOT run twice automatically (once per schema). Account-level tables
+# (merchants, users, sessions, live_access_requests) live in the single default schema
+# and must only be migrated once; a blanket "run every migration against both schemas"
+# mechanism would double-apply those and fail. Instead, each migration that touches
+# tenant-scoped tables (schema="tenant" in __table_args__) is responsible for looping
+# over ("sandbox", "production") itself via `bind.execution_options(schema_translate_map=...)`
+# — see 0a071415ddaf for the pattern to copy.
+
 
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")

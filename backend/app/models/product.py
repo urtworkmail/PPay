@@ -6,7 +6,7 @@ from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, Enum, For
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class BillingInterval(StrEnum):
@@ -19,6 +19,7 @@ class BillingInterval(StrEnum):
 
 class Product(Base):
     __tablename__ = "products"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
@@ -33,10 +34,15 @@ class Product(Base):
 
 class Price(Base):
     __tablename__ = "prices"
-    __table_args__ = (CheckConstraint("amount_minor > 0", name="ck_price_amount_positive"),)
+    __table_args__ = (
+        CheckConstraint("amount_minor > 0", name="ck_price_amount_positive"),
+        {"schema": TENANT_SCHEMA},
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey(f"{TENANT_SCHEMA}.products.id", ondelete="CASCADE"), nullable=False
+    )
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
     amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="PKR", nullable=False)

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import AsyncSessionLocal
+from app.core.db import Mode, session_factory_for_mode
 from app.models.merchant import Merchant, PayoutSchedule
 from app.models.settlement import Settlement, SettlementItem, SettlementStatus
 from app.models.transaction import Transaction, TransactionStatus
@@ -73,10 +73,12 @@ async def run_settlement_batch(db: AsyncSession, period_end: datetime | None = N
 
 
 async def run_settlement_batch_job() -> None:
-    """APScheduler job wrapper: runs the settlement batch in its own session."""
-    async with AsyncSessionLocal() as db:
-        await run_settlement_batch(db)
-        await db.commit()
+    """APScheduler job wrapper: runs the settlement batch once per mode (sandbox
+    and production are entirely separate transaction sets — see core/db.py)."""
+    for mode in Mode:
+        async with session_factory_for_mode(mode)() as db:
+            await run_settlement_batch(db)
+            await db.commit()
 
 
 async def process_due_payouts(db: AsyncSession, now: datetime | None = None) -> list[Settlement]:
@@ -102,7 +104,8 @@ async def process_due_payouts(db: AsyncSession, now: datetime | None = None) -> 
 
 
 async def process_due_payouts_job() -> None:
-    """APScheduler job wrapper: sweeps due payouts in their own session."""
-    async with AsyncSessionLocal() as db:
-        await process_due_payouts(db)
-        await db.commit()
+    """APScheduler job wrapper: sweeps due payouts once per mode."""
+    for mode in Mode:
+        async with session_factory_for_mode(mode)() as db:
+            await process_due_payouts(db)
+            await db.commit()

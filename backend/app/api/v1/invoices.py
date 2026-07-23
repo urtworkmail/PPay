@@ -6,9 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.checkout import _to_response as checkout_to_response
-from app.api.v1.deps import get_current_merchant
+from app.api.v1.deps import get_current_merchant, get_request_mode
 from app.core.config import get_settings
-from app.core.db import get_db
+from app.core.db import Mode, get_db, session_factory_for_mode
+from app.core.public_ref import INVOICE_PREFIX, decode_ref, encode_ref
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
@@ -28,12 +29,23 @@ def _frontend_origin() -> str:
     return settings.cors_origin_list[0] if settings.cors_origin_list else "http://localhost:5173"
 
 
-def _to_response(invoice: Invoice, merchant: Merchant | None = None) -> InvoiceResponse:
+def _decode_invoice_ref(invoice_id: str, expected_mode: Mode | None = None) -> uuid.UUID:
+    try:
+        decoded = decode_ref(INVOICE_PREFIX, invoice_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found") from exc
+    if expected_mode is not None and decoded.mode != expected_mode:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
+    return decoded.id
+
+
+def _to_response(invoice: Invoice, mode: Mode, merchant: Merchant | None = None) -> InvoiceResponse:
+    public_id = encode_ref(INVOICE_PREFIX, mode, invoice.id)
     url = None
     if invoice.status != InvoiceStatus.DRAFT:
-        url = f"{_frontend_origin()}/invoices/{invoice.id}"
+        url = f"{_frontend_origin()}/invoices/{public_id}"
     return InvoiceResponse(
-        id=invoice.id,
+        id=public_id,
         customer_name=invoice.customer_name,
         customer_email=invoice.customer_email,
         amount_minor=invoice.amount_minor,
@@ -56,6 +68,7 @@ async def create_invoice(
     payload: InvoiceCreateRequest,
     merchant: Merchant = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> InvoiceResponse:
     invoice = Invoice(
         merchant_id=merchant.id,
@@ -71,24 +84,30 @@ async def create_invoice(
     db.add(invoice)
     await db.commit()
     await db.refresh(invoice)
-    return _to_response(invoice)
+    return _to_response(invoice, mode)
 
 
 @router.get("", response_model=list[InvoiceResponse])
 async def list_invoices(
-    merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
+    merchant: Merchant = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> list[InvoiceResponse]:
     result = await db.execute(
         select(Invoice).where(Invoice.merchant_id == merchant.id).order_by(Invoice.created_at.desc())
     )
-    return [_to_response(inv) for inv in result.scalars().all()]
+    return [_to_response(inv, mode) for inv in result.scalars().all()]
 
 
 @router.get("/{invoice_id}", response_model=InvoiceDetailResponse)
 async def get_invoice_detail(
-    invoice_id: uuid.UUID, merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
+    invoice_id: str,
+    merchant: Merchant = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> InvoiceDetailResponse:
-    result = await db.execute(select(Invoice).where(Invoice.id == invoice_id, Invoice.merchant_id == merchant.id))
+    real_id = _decode_invoice_ref(invoice_id, expected_mode=mode)
+    result = await db.execute(select(Invoice).where(Invoice.id == real_id, Invoice.merchant_id == merchant.id))
     invoice = result.scalar_one_or_none()
     if invoice is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
@@ -106,7 +125,7 @@ async def get_invoice_detail(
         if subscription is not None:
             subscription_link = RelatedSubscription(id=subscription.id, status=subscription.status)
 
-    base = _to_response(invoice)
+    base = _to_response(invoice, mode)
     return InvoiceDetailResponse(
         **base.model_dump(),
         transaction=TransactionResponse.model_validate(transaction) if transaction else None,
@@ -116,9 +135,13 @@ async def get_invoice_detail(
 
 @router.post("/{invoice_id}/cancel", response_model=InvoiceResponse)
 async def cancel_invoice(
-    invoice_id: uuid.UUID, merchant: Merchant = Depends(get_current_merchant), db: AsyncSession = Depends(get_db)
+    invoice_id: str,
+    merchant: Merchant = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+    mode: Mode = Depends(get_request_mode),
 ) -> InvoiceResponse:
-    result = await db.execute(select(Invoice).where(Invoice.id == invoice_id, Invoice.merchant_id == merchant.id))
+    real_id = _decode_invoice_ref(invoice_id, expected_mode=mode)
+    result = await db.execute(select(Invoice).where(Invoice.id == real_id, Invoice.merchant_id == merchant.id))
     invoice = result.scalar_one_or_none()
     if invoice is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
@@ -127,22 +150,30 @@ async def cancel_invoice(
     invoice.status = InvoiceStatus.CANCELLED
     await db.commit()
     await db.refresh(invoice)
-    return _to_response(invoice)
+    return _to_response(invoice, mode)
 
 
 @router.get("/{invoice_id}/public", response_model=InvoiceResponse)
-async def get_invoice_public(invoice_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> InvoiceResponse:
-    invoice = await db.get(Invoice, invoice_id)
-    if invoice is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
-    merchant = await db.get(Merchant, invoice.merchant_id)
-    return _to_response(invoice, merchant)
+async def get_invoice_public(invoice_id: str) -> InvoiceResponse:
+    decoded = decode_ref(INVOICE_PREFIX, invoice_id)
+    mode, real_id = decoded.mode, decoded.id
+    async with session_factory_for_mode(mode)() as db:
+        invoice = await db.get(Invoice, real_id)
+        if invoice is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
+        merchant = await db.get(Merchant, invoice.merchant_id)
+        return _to_response(invoice, mode, merchant)
 
 
 @router.post("/{invoice_id}/sessions", response_model=CheckoutSessionResponse, status_code=status.HTTP_201_CREATED)
-async def create_session_from_invoice(
-    invoice_id: uuid.UUID, db: AsyncSession = Depends(get_db)
-) -> CheckoutSessionResponse:
+async def create_session_from_invoice(invoice_id: str) -> CheckoutSessionResponse:
+    decoded = decode_ref(INVOICE_PREFIX, invoice_id)
+    mode, real_id = decoded.mode, decoded.id
+    async with session_factory_for_mode(mode)() as db:
+        return await _create_session_from_invoice(real_id, mode, db)
+
+
+async def _create_session_from_invoice(invoice_id: uuid.UUID, mode: Mode, db: AsyncSession) -> CheckoutSessionResponse:
     invoice = await db.get(Invoice, invoice_id)
     if invoice is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
@@ -157,7 +188,7 @@ async def create_session_from_invoice(
             CheckoutSessionStatus.CREATED,
             CheckoutSessionStatus.PENDING,
         ):
-            return checkout_to_response(existing)
+            return checkout_to_response(existing, mode)
 
     session = CheckoutSession(
         merchant_id=invoice.merchant_id,
@@ -174,4 +205,4 @@ async def create_session_from_invoice(
     await db.commit()
     await db.refresh(session)
 
-    return checkout_to_response(session)
+    return checkout_to_response(session, mode)

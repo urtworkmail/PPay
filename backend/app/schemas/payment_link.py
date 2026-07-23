@@ -12,7 +12,7 @@ class PaymentLinkCreateRequest(BaseModel):
 
 
 class PaymentLinkResponse(BaseModel):
-    id: uuid.UUID
+    id: str
     title: str
     description: str | None
     amount_minor: int

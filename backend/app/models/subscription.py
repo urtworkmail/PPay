@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, fun
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class SavedPaymentMethodType(StrEnum):
@@ -24,9 +24,13 @@ class SavedPaymentMethod(Base):
     """
 
     __tablename__ = "saved_payment_methods"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey(f"{TENANT_SCHEMA}.customers.id", ondelete="SET NULL"), nullable=True
+    )
     customer_email: Mapped[str] = mapped_column(String(255), nullable=False)
     method: Mapped[SavedPaymentMethodType] = mapped_column(
         Enum(SavedPaymentMethodType, name="saved_payment_method_type"), nullable=False
@@ -48,14 +52,17 @@ class SubscriptionStatus(StrEnum):
 
 class Subscription(Base):
     __tablename__ = "subscriptions"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
     customer_email: Mapped[str] = mapped_column(String(255), nullable=False)
     customer_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    price_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("prices.id", ondelete="RESTRICT"), nullable=False)
+    price_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey(f"{TENANT_SCHEMA}.prices.id", ondelete="RESTRICT"), nullable=False
+    )
     payment_method_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("saved_payment_methods.id", ondelete="SET NULL"), nullable=True
+        ForeignKey(f"{TENANT_SCHEMA}.saved_payment_methods.id", ondelete="SET NULL"), nullable=True
     )
     status: Mapped[SubscriptionStatus] = mapped_column(
         Enum(SubscriptionStatus, name="subscription_status"), default=SubscriptionStatus.INCOMPLETE, nullable=False

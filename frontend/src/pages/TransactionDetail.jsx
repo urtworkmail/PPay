@@ -84,7 +84,7 @@ export default function TransactionDetail() {
         title={
           <>
             <span className="mono">{tx.gateway_reference ?? tx.id.slice(0, 8)}</span>
-            <StatusBadge status={tx.status} />
+            <StatusBadge status={tx.payment_intent_status === "requires_reconciliation" ? "requires_reconciliation" : tx.status} />
           </>
         }
         subtitle={formatDate(tx.created_at)}
@@ -165,6 +165,13 @@ export default function TransactionDetail() {
                 value={<span className="mono" style={{ fontSize: 11.5 }}>{tx.checkout_session_id}</span>}
               />
               <Field label="Currency" value={tx.currency} />
+              {tx.charge_attempts > 1 && <Field label="Charge attempts" value={tx.charge_attempts} />}
+              {tx.payment_intent_status === "requires_reconciliation" && (
+                <Field
+                  label="Reconciliation"
+                  value={<span style={{ color: "var(--color-text-muted)" }}>The rail didn't respond in time — we're checking automatically, not treating this as failed.</span>}
+                />
+              )}
               {tx.api_key_prefix && (
                 <Field label="Created via API key" value={<span className="mono">{tx.api_key_prefix}_••••••••</span>} />
               )}

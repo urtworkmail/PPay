@@ -48,6 +48,15 @@ def decode_token(token: str) -> dict:
     return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
 
 
+def create_platform_admin_token(subject: str) -> str:
+    """A distinct token `type` from merchant User access tokens — a merchant
+    JWT must never be accepted by a PlatformAdmin-only endpoint, or vice
+    versa, even though both are signed with the same JWT secret."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
+    payload = {"sub": subject, "exp": expire, "type": "platform_admin_access"}
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
+
 def generate_api_key(mode: str = "sandbox") -> tuple[str, str, str]:
     """Returns (full_key, key_prefix, raw_secret_to_hash)."""
     raw = secrets.token_urlsafe(32)

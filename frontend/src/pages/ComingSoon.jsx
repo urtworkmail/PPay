@@ -5,7 +5,6 @@ const LABELS = {
   subscriptions: "Subscriptions",
   "payments-analytics": "Payments Analytics",
   disputes: "Disputes",
-  "risk-radar": "PPR — PPay Risk Radar",
   "billing-overview": "Billing Overview",
   "usage-based": "Usage-based Billing",
   "revenue-recovery": "Revenue Recovery",

@@ -1,13 +1,14 @@
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_db
+from app.core.audit_context import current_user_email, current_user_id
+from app.core.db import Mode, get_db, resolve_request_mode
 from app.core.security import decode_token, verify_api_key
 from app.models.api_key import ApiKey
 from app.models.merchant import Merchant, MerchantStatus
@@ -33,6 +34,11 @@ async def get_current_user(
     user = await db.get(User, user_id)
     if user is None or user.status != UserStatus.ACTIVE:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")
+
+    # Attributes any audit-logged change made for the rest of this request to
+    # this verified user — see core/audit_context.py.
+    current_user_id.set(user.id)
+    current_user_email.set(user.email)
     return user
 
 
@@ -97,6 +103,13 @@ async def get_merchant_and_key_from_api_key(
     db: AsyncSession = Depends(get_db),
 ) -> tuple[Merchant, ApiKey]:
     return await _resolve_api_key(authorization, db)
+
+
+async def get_request_mode(request: Request) -> Mode:
+    """Same resolution `get_db` already applies to the session — exposed
+    separately for handlers that need to encode a mode-bearing public
+    reference (core/public_ref.py) alongside their DB-scoped work."""
+    return resolve_request_mode(request)
 
 
 async def get_merchant_flexible(

@@ -26,6 +26,7 @@ from app.models.live_access_request import BusinessType, LiveAccessRequest
 from app.models.merchant import Merchant, MerchantLiveStatus, MerchantStatus, PayoutSchedule
 from app.models.session import Session as UserSession
 from app.models.user import User, UserRole, UserStatus
+from app.services.audit_log import record_audit_event
 from app.schemas.auth import (
     ActivationChecklistItem,
     ActivationChecklistResponse,
@@ -453,6 +454,11 @@ async def create_api_key(
     full_key, prefix, _key = generate_api_key(mode="sandbox")
     api_key = ApiKey(merchant_id=merchant.id, key_prefix=prefix, hashed_key=hash_api_key(full_key))
     db.add(api_key)
+    await db.flush()
+    await record_audit_event(
+        db, merchant_id=merchant.id, action="create", resource_type="ApiKey", resource_id=api_key.id,
+        changes={"key_prefix": prefix},
+    )
     await db.commit()
     await db.refresh(api_key)
 
@@ -479,6 +485,9 @@ async def revoke_api_key(
     if api_key is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
     api_key.is_active = False
+    await record_audit_event(
+        db, merchant_id=merchant.id, action="revoke", resource_type="ApiKey", resource_id=api_key.id
+    )
     await db.commit()
 
 

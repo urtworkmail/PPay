@@ -6,7 +6,7 @@ from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Integer, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.core.db import TENANT_SCHEMA, Base
 
 
 class SettlementStatus(StrEnum):
@@ -16,6 +16,7 @@ class SettlementStatus(StrEnum):
 
 class Settlement(Base):
     __tablename__ = "settlements"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     merchant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
@@ -37,13 +38,14 @@ class Settlement(Base):
 
 class SettlementItem(Base):
     __tablename__ = "settlement_items"
+    __table_args__ = {"schema": TENANT_SCHEMA}
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     settlement_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("settlements.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(f"{TENANT_SCHEMA}.settlements.id", ondelete="CASCADE"), nullable=False
     )
     transaction_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("transactions.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(f"{TENANT_SCHEMA}.transactions.id", ondelete="CASCADE"), nullable=False
     )
 
     settlement: Mapped["Settlement"] = relationship(back_populates="items")
