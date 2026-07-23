@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import DeveloperPanel, { DEV_PANEL_COLLAPSED_HEIGHT, DEV_PANEL_EXPANDED_HEIGHT } from "./DeveloperPanel";
+import DeveloperPanel from "./DeveloperPanel";
 import { ChevronDownIcon, ChevronLeftIcon, RocketIcon, WebhookIcon } from "./Icons";
 import HelpPanel from "./HelpPanel";
 import OnboardingWidget from "./OnboardingWidget";
@@ -266,6 +266,7 @@ export default function DashboardLayout() {
   const [helpPinned, setHelpPinned] = useState(() => localStorage.getItem(HELP_PINNED_STORAGE_KEY) === "1");
   const [helpWidth, setHelpWidth] = useState(() => Number(localStorage.getItem(HELP_WIDTH_STORAGE_KEY)) || 400);
   const [devPanelOpen, setDevPanelOpen] = useState(() => localStorage.getItem(DEV_PANEL_STORAGE_KEY) === "1");
+  const [devPanelHeight, setDevPanelHeight] = useState(37);
   const [manualCollapsed, setManualCollapsed] = useState(() => localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1");
 
   // Pinning the help panel takes over the horizontal space it needs: the
@@ -286,8 +287,6 @@ export default function DashboardLayout() {
   useEffect(() => {
     localStorage.setItem(DEV_PANEL_STORAGE_KEY, devPanelOpen ? "1" : "0");
   }, [devPanelOpen]);
-
-  const devPanelHeight = devPanelOpen ? DEV_PANEL_EXPANDED_HEIGHT : DEV_PANEL_COLLAPSED_HEIGHT;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -311,7 +310,20 @@ export default function DashboardLayout() {
           <WorkspaceSwitcher collapsed={collapsed} />
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, overflowY: "auto", overflowX: "visible" }}>
+        <nav
+          style={
+            collapsed
+              ? // Collapsed nav-item tooltips are absolutely positioned past the
+                // sidebar's right edge (see .nav-tip in global.css). Any non-visible
+                // value on the other axis forces browsers to compute this axis as
+                // "auto" too (CSS overflow spec), which turned that overflowing
+                // tooltip content into a real horizontal scrollbar — so this mode
+                // uses `overflow: visible` on both axes instead (no scrolling here,
+                // but collapsed content is short enough that it isn't needed).
+                { display: "flex", flexDirection: "column", gap: 12, flex: 1, overflow: "visible" }
+              : { display: "flex", flexDirection: "column", gap: 12, flex: 1, overflowY: "auto", overflowX: "hidden" }
+          }
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {TOP_ITEMS.map((item) => (
               <NavItem key={item.to} item={item} collapsed={collapsed} />
@@ -405,7 +417,7 @@ export default function DashboardLayout() {
             <Outlet />
           </div>
         </main>
-        <DeveloperPanel open={devPanelOpen} onToggle={() => setDevPanelOpen((v) => !v)} />
+        <DeveloperPanel open={devPanelOpen} onToggle={() => setDevPanelOpen((v) => !v)} onHeightChange={setDevPanelHeight} />
       </div>
 
       <HelpPanel

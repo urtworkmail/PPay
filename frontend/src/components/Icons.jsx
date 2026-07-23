@@ -296,3 +296,64 @@ export const TerminalIcon = (p) => (
     <path d="m7 9.5 3 2.5-3 2.5M12 15.5h5" />
   </svg>
 );
+
+export const TrendUpIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="m3.5 16 6-6.5 4 4L20.5 6" />
+    <path d="M14.5 6h6v6" />
+  </svg>
+);
+
+export const LifeBuoyIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="3.5" />
+    <path d="m6.3 6.3 3.3 3.3M18 18l-3.4-3.4M6.3 18l3.3-3.4M18 6l-3.4 3.4" />
+  </svg>
+);
+
+export const ClipboardIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="6" y="4.5" width="12" height="16" rx="1.5" />
+    <path d="M9.5 4.5V3.8a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v.7" />
+    <path d="M9 10h6M9 13.5h6M9 17h4" />
+  </svg>
+);
+
+export const CompassIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15 9-2 5.5L9 16l2-5.5Z" />
+  </svg>
+);
+
+export const IdCardIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="5.5" width="18" height="13" rx="1.5" />
+    <circle cx="8.5" cy="11" r="1.8" />
+    <path d="M6 15.3c.4-1.3 1.3-2 2.5-2s2.1.7 2.5 2" />
+    <path d="M14 9.5h4M14 13h4" />
+  </svg>
+);
+
+export const ReceiptIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3Z" />
+    <path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5" />
+  </svg>
+);
+
+export const PlugIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M9 3v5M15 3v5" />
+    <path d="M7 8h10v3a5 5 0 0 1-10 0V8Z" />
+    <path d="M12 16v5" />
+  </svg>
+);
+
+export const BookIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 5.5c2-1 5-1 8 .5 3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z" />
+    <path d="M12 6v13" />
+  </svg>
+);

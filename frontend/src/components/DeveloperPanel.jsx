@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clearRequestLog, getRequestLog, subscribeRequestLog } from "../api/requestLog";
 import { ChevronDownIcon, TerminalIcon } from "./Icons";
-
-// Approximate rendered heights (collapsed bar vs. expanded with its capped
-// scroll area) — used by DashboardLayout to keep the Help panel from
-// covering this bar, and to size its own bottom offset.
-export const DEV_PANEL_COLLAPSED_HEIGHT = 36;
-export const DEV_PANEL_EXPANDED_HEIGHT = 36 + 260;
 
 function statusColor(entry) {
   if (!entry.ok) return "var(--color-danger)";
@@ -82,16 +76,31 @@ function RequestRow({ entry, expanded, onToggle }) {
   );
 }
 
-export default function DeveloperPanel({ open, onToggle }) {
+export default function DeveloperPanel({ open, onToggle, onHeightChange }) {
   const [log, setLog] = useState(getRequestLog());
   const [expandedId, setExpandedId] = useState(null);
+  const rootRef = useRef(null);
 
   useEffect(() => subscribeRequestLog(setLog), []);
+
+  // Reports its own real rendered height (rather than the caller guessing a
+  // pixel constant) so the Help panel can size its bottom edge to sit
+  // exactly on top of this bar, whatever state it's in.
+  useEffect(() => {
+    if (!onHeightChange || !rootRef.current) return;
+    const el = rootRef.current;
+    const observer = new ResizeObserver((entries) => {
+      onHeightChange(entries[0].contentRect.height);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onHeightChange]);
 
   const last = log[0];
 
   return (
     <div
+      ref={rootRef}
       style={{
         position: "sticky",
         bottom: 0,

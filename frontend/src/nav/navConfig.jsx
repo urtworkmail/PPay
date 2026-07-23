@@ -1,20 +1,29 @@
 import {
+  AlertIcon,
   BankIcon,
   BoxIcon,
+  BookIcon,
   CardIcon,
   ChartIcon,
   ChartLineIcon,
+  ClipboardIcon,
+  CompassIcon,
   DatabaseIcon,
   FingerprintIcon,
   HomeIcon,
+  IdCardIcon,
   InvoiceIcon,
   KeyIcon,
+  LifeBuoyIcon,
   LinkIcon,
   ListIcon,
   PercentIcon,
+  PlugIcon,
+  ReceiptIcon,
   RefreshIcon,
   RocketIcon,
   ShieldIcon,
+  TrendUpIcon,
   UsersIcon,
   WebhookIcon,
   WorkflowIcon,
@@ -35,12 +44,15 @@ export const SHORTCUTS = [
   { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
 ];
 
+// Every item's icon is unique within this whole structure — no two entries
+// below share an icon (Shortcuts intentionally mirrors the same icon as its
+// matching Products entry, since it points at the identical page).
 export const PRODUCT_GROUPS = [
   {
     label: "Payments",
     items: [
       { to: "/dashboard/coming-soon/payments-analytics", label: "Analytics", icon: ChartIcon, soon: true },
-      { to: "/dashboard/coming-soon/disputes", label: "Disputes", icon: InvoiceIcon, soon: true },
+      { to: "/dashboard/coming-soon/disputes", label: "Disputes", icon: AlertIcon, soon: true },
       { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
       { to: "/dashboard/sentinel", label: "Sentinel", icon: ShieldIcon },
     ],
@@ -48,29 +60,29 @@ export const PRODUCT_GROUPS = [
   {
     label: "Billing",
     items: [
-      { to: "/dashboard/coming-soon/billing-overview", label: "Overview", icon: ChartIcon, soon: true },
+      { to: "/dashboard/coming-soon/billing-overview", label: "Overview", icon: TrendUpIcon, soon: true },
       { to: "/dashboard/subscriptions", label: "Subscriptions", icon: RefreshIcon },
       { to: "/dashboard/invoices", label: "Invoices", icon: InvoiceIcon },
       { to: "/dashboard/coming-soon/usage-based", label: "Usage-based", icon: PercentIcon, soon: true },
-      { to: "/dashboard/coming-soon/revenue-recovery", label: "Revenue Recovery", icon: RefreshIcon, soon: true },
+      { to: "/dashboard/coming-soon/revenue-recovery", label: "Revenue Recovery", icon: LifeBuoyIcon, soon: true },
     ],
   },
   {
     label: "Reporting",
     items: [
-      { to: "/dashboard/coming-soon/reports", label: "Reports", icon: ChartIcon, soon: true },
+      { to: "/dashboard/coming-soon/reports", label: "Reports", icon: ClipboardIcon, soon: true },
       { to: "/dashboard/coming-soon/metrics", label: "Metrics", icon: ChartLineIcon, soon: true },
       { to: "/dashboard/coming-soon/data-management", label: "Data Management", icon: DatabaseIcon, soon: true },
-      { to: "/dashboard/coming-soon/data-analysis", label: "Data Analysis", icon: ChartLineIcon, soon: true },
+      { to: "/dashboard/coming-soon/data-analysis", label: "Data Analysis", icon: CompassIcon, soon: true },
     ],
   },
   {
     label: "More",
     items: [
-      { to: "/dashboard/coming-soon/profiles", label: "Profiles", icon: UsersIcon, soon: true },
-      { to: "/dashboard/coming-soon/tax", label: "Tax", icon: PercentIcon, soon: true },
+      { to: "/dashboard/coming-soon/profiles", label: "Profiles", icon: IdCardIcon, soon: true },
+      { to: "/dashboard/coming-soon/tax", label: "Tax", icon: ReceiptIcon, soon: true },
       { to: "/dashboard/coming-soon/identity", label: "Identity", icon: FingerprintIcon, soon: true },
-      { to: "/dashboard/coming-soon/financial-connections", label: "Financial Connections", icon: BankIcon, soon: true },
+      { to: "/dashboard/coming-soon/financial-connections", label: "Financial Connections", icon: PlugIcon, soon: true },
       { to: "/dashboard/coming-soon/workflows", label: "Workflows", icon: WorkflowIcon, soon: true },
       { to: "/dashboard/coming-soon/issuing", label: "Issuing", icon: CardIcon, soon: true },
     ],
@@ -81,7 +93,7 @@ export const DEVELOPERS = [
   { to: "/dashboard/api-keys", label: "API Keys", icon: KeyIcon },
   { to: "/dashboard/webhooks", label: "Webhooks", icon: WebhookIcon },
   { to: "/dashboard/events", label: "Events", icon: ListIcon },
-  { to: "/docs", label: "Documentation", icon: InvoiceIcon },
+  { to: "/docs", label: "Documentation", icon: BookIcon },
 ];
 
 export const ACCOUNT = [
