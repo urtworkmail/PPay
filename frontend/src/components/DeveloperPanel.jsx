@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { clearRequestLog, getRequestLog, subscribeRequestLog } from "../api/requestLog";
 import { ChevronDownIcon, TerminalIcon } from "./Icons";
 
-const PANEL_STORAGE_KEY = "ppay_dev_panel_open";
+// Approximate rendered heights (collapsed bar vs. expanded with its capped
+// scroll area) — used by DashboardLayout to keep the Help panel from
+// covering this bar, and to size its own bottom offset.
+export const DEV_PANEL_COLLAPSED_HEIGHT = 36;
+export const DEV_PANEL_EXPANDED_HEIGHT = 36 + 260;
 
 function statusColor(entry) {
   if (!entry.ok) return "var(--color-danger)";
@@ -78,13 +82,11 @@ function RequestRow({ entry, expanded, onToggle }) {
   );
 }
 
-export default function DeveloperPanel() {
-  const [open, setOpen] = useState(() => localStorage.getItem(PANEL_STORAGE_KEY) === "1");
+export default function DeveloperPanel({ open, onToggle }) {
   const [log, setLog] = useState(getRequestLog());
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => subscribeRequestLog(setLog), []);
-  useEffect(() => localStorage.setItem(PANEL_STORAGE_KEY, open ? "1" : "0"), [open]);
 
   const last = log[0];
 
@@ -101,7 +103,7 @@ export default function DeveloperPanel() {
       }}
     >
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         style={{
           display: "flex",
           alignItems: "center",

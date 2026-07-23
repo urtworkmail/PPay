@@ -59,7 +59,7 @@ function ChecklistRow({ item, onNavigate }) {
   );
 }
 
-export default function OnboardingWidget() {
+export default function OnboardingWidget({ bottomOffset = 0 }) {
   const navigate = useNavigate();
   const [checklist, setChecklist] = useState(null);
   const [expanded, setExpanded] = useState(false);
@@ -81,7 +81,7 @@ export default function OnboardingWidget() {
   }
 
   return (
-    <div style={{ position: "fixed", right: 20, bottom: 20, zIndex: 80 }}>
+    <div style={{ position: "fixed", right: 20, bottom: bottomOffset + 20, zIndex: 80, transition: "bottom 0.15s ease" }}>
       {expanded && (
         <div
           className="card"

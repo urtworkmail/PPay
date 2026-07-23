@@ -1,9 +1,49 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { getBreadcrumb } from "../nav/navConfig";
 import { BellIcon, HelpIcon, MoonIcon, SearchIcon, SettingsIcon, SunIcon } from "./Icons";
+
+function Breadcrumb() {
+  const location = useLocation();
+  const crumbs = getBreadcrumb(location.pathname);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, flexShrink: 0, minWidth: 0 }}>
+      {crumbs.map((c, i) => (
+        <span key={i} style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+          {i > 0 && <span style={{ color: "var(--color-text-faint)" }}>/</span>}
+          {c.to ? (
+            <Link
+              to={c.to}
+              style={{
+                color: "var(--color-text-muted)",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {c.label}
+            </Link>
+          ) : (
+            <span
+              style={{
+                fontWeight: 700,
+                color: "var(--color-text)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: 220,
+              }}
+            >
+              {c.label}
+            </span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const RESULT_TYPE_LABEL = {
   transaction: "Transaction",
@@ -353,7 +393,10 @@ export default function TopBar({ onOpenHelp }) {
         borderBottom: "1px solid var(--color-border)",
       }}
     >
-      <SearchBox />
+      <Breadcrumb />
+      <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+        <SearchBox />
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <IconButton onClick={onOpenHelp} aria-label="Help" title="Help">
           <HelpIcon width={16} height={16} />

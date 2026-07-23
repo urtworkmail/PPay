@@ -1,103 +1,18 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
-import DeveloperPanel from "./DeveloperPanel";
+import { Link, NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import DeveloperPanel, { DEV_PANEL_COLLAPSED_HEIGHT, DEV_PANEL_EXPANDED_HEIGHT } from "./DeveloperPanel";
+import { ChevronDownIcon, ChevronLeftIcon, RocketIcon, WebhookIcon } from "./Icons";
 import HelpPanel from "./HelpPanel";
 import OnboardingWidget from "./OnboardingWidget";
 import TopBar from "./TopBar";
-import {
-  BankIcon,
-  BoxIcon,
-  CardIcon,
-  ChartIcon,
-  ChartLineIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  DatabaseIcon,
-  FingerprintIcon,
-  HomeIcon,
-  InvoiceIcon,
-  KeyIcon,
-  LinkIcon,
-  ListIcon,
-  PercentIcon,
-  RefreshIcon,
-  RocketIcon,
-  ShieldIcon,
-  UsersIcon,
-  WebhookIcon,
-  WorkflowIcon,
-} from "./Icons";
-
-const TOP_ITEMS = [
-  { to: "/dashboard", label: "Home", icon: HomeIcon, end: true },
-  { to: "/dashboard/balances", label: "Balances", icon: BankIcon },
-  { to: "/dashboard/transactions", label: "Transactions", icon: ListIcon },
-  { to: "/dashboard/customers", label: "Customers", icon: UsersIcon },
-  { to: "/dashboard/products", label: "Product catalog", icon: BoxIcon },
-];
-
-const SHORTCUTS = [
-  { to: "/dashboard/subscriptions", label: "Subscriptions", icon: RefreshIcon },
-  { to: "/dashboard/invoices", label: "Invoices", icon: InvoiceIcon },
-  { to: "/dashboard/coming-soon/payments-analytics", label: "Payments Analytics", icon: ChartIcon, soon: true },
-  { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
-];
-
-const PRODUCT_GROUPS = [
-  {
-    label: "Payments",
-    items: [
-      { to: "/dashboard/coming-soon/payments-analytics", label: "Analytics", icon: ChartIcon, soon: true },
-      { to: "/dashboard/coming-soon/disputes", label: "Disputes", icon: InvoiceIcon, soon: true },
-      { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
-      { to: "/dashboard/sentinel", label: "Sentinel", icon: ShieldIcon },
-    ],
-  },
-  {
-    label: "Billing",
-    items: [
-      { to: "/dashboard/coming-soon/billing-overview", label: "Overview", icon: ChartIcon, soon: true },
-      { to: "/dashboard/subscriptions", label: "Subscriptions", icon: RefreshIcon },
-      { to: "/dashboard/invoices", label: "Invoices", icon: InvoiceIcon },
-      { to: "/dashboard/coming-soon/usage-based", label: "Usage-based", icon: PercentIcon, soon: true },
-      { to: "/dashboard/coming-soon/revenue-recovery", label: "Revenue Recovery", icon: RefreshIcon, soon: true },
-    ],
-  },
-  {
-    label: "Reporting",
-    items: [
-      { to: "/dashboard/coming-soon/reports", label: "Reports", icon: ChartIcon, soon: true },
-      { to: "/dashboard/coming-soon/metrics", label: "Metrics", icon: ChartLineIcon, soon: true },
-      { to: "/dashboard/coming-soon/data-management", label: "Data Management", icon: DatabaseIcon, soon: true },
-      { to: "/dashboard/coming-soon/data-analysis", label: "Data Analysis", icon: ChartLineIcon, soon: true },
-    ],
-  },
-  {
-    label: "More",
-    items: [
-      { to: "/dashboard/coming-soon/profiles", label: "Profiles", icon: UsersIcon, soon: true },
-      { to: "/dashboard/coming-soon/tax", label: "Tax", icon: PercentIcon, soon: true },
-      { to: "/dashboard/coming-soon/identity", label: "Identity", icon: FingerprintIcon, soon: true },
-      { to: "/dashboard/coming-soon/financial-connections", label: "Financial Connections", icon: BankIcon, soon: true },
-      { to: "/dashboard/coming-soon/workflows", label: "Workflows", icon: WorkflowIcon, soon: true },
-      { to: "/dashboard/coming-soon/issuing", label: "Issuing", icon: CardIcon, soon: true },
-    ],
-  },
-];
-
-const DEVELOPERS = [
-  { to: "/dashboard/api-keys", label: "API Keys", icon: KeyIcon },
-  { to: "/dashboard/webhooks", label: "Webhooks", icon: WebhookIcon },
-  { to: "/dashboard/events", label: "Events", icon: ListIcon },
-  { to: "/docs", label: "Documentation", icon: InvoiceIcon },
-];
-
-const ACCOUNT = [
-  { to: "/dashboard/team", label: "Team", icon: UsersIcon },
-  { to: "/dashboard/go-live", label: "Go Live", icon: RocketIcon },
-];
+import { ACCOUNT, DEVELOPERS, PRODUCT_GROUPS, SHORTCUTS, TOP_ITEMS } from "../nav/navConfig";
 
 const COLLAPSE_STORAGE_KEY = "ppay_sidebar_collapsed";
+const HELP_PINNED_STORAGE_KEY = "ppay_help_pinned";
+const HELP_WIDTH_STORAGE_KEY = "ppay_help_width";
+const DEV_PANEL_STORAGE_KEY = "ppay_dev_panel_open";
+const TOPBAR_HEIGHT = 60;
 
 const itemStyle = ({ isActive }) => ({
   display: "flex",
@@ -233,19 +148,152 @@ function CollapsibleGroup({ group, collapsed }) {
   );
 }
 
+function WorkspaceSwitcher({ collapsed }) {
+  const { merchant } = useAuth();
+  const initials = (merchant?.business_name || "P").slice(0, 1).toUpperCase();
+  const isLive = merchant?.live_status === "live";
+
+  if (collapsed) {
+    return (
+      <div
+        className="nav-tip-anchor"
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          background: "var(--color-accent)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: 700,
+          fontSize: 12.5,
+          margin: "0 auto",
+        }}
+      >
+        {initials}
+        <span className="nav-tip">{merchant?.business_name ?? "PPay"}</span>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      className="card"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        width: "100%",
+        padding: "8px 9px",
+        background: "var(--color-bg)",
+        border: "1px solid var(--color-border)",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+      title="Switch mode from the top bar toggle"
+    >
+      <div
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          background: "var(--color-accent)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: 700,
+          fontSize: 12,
+          flexShrink: 0,
+        }}
+      >
+        {initials}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {merchant?.business_name ?? "PPay"}
+        </div>
+        <div style={{ fontSize: 10.5, color: isLive ? "var(--color-success)" : "var(--color-pending)", fontWeight: 600 }}>
+          {isLive ? "Live mode" : "Sandbox mode"}
+        </div>
+      </div>
+      <ChevronDownIcon width={12} height={12} style={{ color: "var(--color-text-faint)", flexShrink: 0 }} />
+    </button>
+  );
+}
+
+function SidebarPromo({ merchant }) {
+  if (merchant?.live_status === "live") {
+    return (
+      <Link
+        to="/dashboard/webhooks"
+        className="card"
+        style={{ display: "block", padding: 12, textDecoration: "none", color: "inherit", marginBottom: 8 }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <WebhookIcon width={15} height={15} style={{ color: "var(--color-accent)" }} />
+          <span style={{ fontWeight: 700, fontSize: 12.5 }}>Add a webhook</span>
+        </div>
+        <p style={{ fontSize: 11.5, color: "var(--color-text-muted)", margin: "0 0 8px", lineHeight: 1.4 }}>
+          Get notified the moment a payment succeeds or fails.
+        </p>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--color-accent)" }}>Set up now →</span>
+      </Link>
+    );
+  }
+  return (
+    <Link
+      to="/dashboard/go-live"
+      className="card"
+      style={{ display: "block", padding: 12, textDecoration: "none", color: "inherit", marginBottom: 8 }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <RocketIcon width={15} height={15} style={{ color: "var(--color-accent)" }} />
+        <span style={{ fontWeight: 700, fontSize: 12.5 }}>Accept real payments</span>
+      </div>
+      <p style={{ fontSize: 11.5, color: "var(--color-text-muted)", margin: "0 0 8px", lineHeight: 1.4 }}>
+        Submit your business for review to unlock live mode.
+      </p>
+      <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--color-accent)" }}>Go Live →</span>
+    </Link>
+  );
+}
+
 export default function DashboardLayout() {
+  const { merchant } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1");
+  const [helpPinned, setHelpPinned] = useState(() => localStorage.getItem(HELP_PINNED_STORAGE_KEY) === "1");
+  const [helpWidth, setHelpWidth] = useState(() => Number(localStorage.getItem(HELP_WIDTH_STORAGE_KEY)) || 400);
+  const [devPanelOpen, setDevPanelOpen] = useState(() => localStorage.getItem(DEV_PANEL_STORAGE_KEY) === "1");
+  const [manualCollapsed, setManualCollapsed] = useState(() => localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1");
+
+  // Pinning the help panel takes over the horizontal space it needs: the
+  // sidebar collapses to its icon rail and the main content narrows to make
+  // room, rather than the panel just floating on top of everything.
+  const helpPinnedOpen = helpPinned && helpOpen;
+  const collapsed = manualCollapsed || helpPinnedOpen;
 
   useEffect(() => {
-    localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? "1" : "0");
-  }, [collapsed]);
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, manualCollapsed ? "1" : "0");
+  }, [manualCollapsed]);
+  useEffect(() => {
+    localStorage.setItem(HELP_PINNED_STORAGE_KEY, helpPinned ? "1" : "0");
+  }, [helpPinned]);
+  useEffect(() => {
+    localStorage.setItem(HELP_WIDTH_STORAGE_KEY, String(helpWidth));
+  }, [helpWidth]);
+  useEffect(() => {
+    localStorage.setItem(DEV_PANEL_STORAGE_KEY, devPanelOpen ? "1" : "0");
+  }, [devPanelOpen]);
+
+  const devPanelHeight = devPanelOpen ? DEV_PANEL_EXPANDED_HEIGHT : DEV_PANEL_COLLAPSED_HEIGHT;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
         style={{
-          width: collapsed ? 60 : 228,
+          width: collapsed ? 60 : 232,
           flexShrink: 0,
           borderRight: "1px solid var(--color-border)",
           background: "var(--color-surface)",
@@ -255,49 +303,15 @@ export default function DashboardLayout() {
           position: "sticky",
           top: 0,
           height: "100vh",
-          overflowY: "auto",
-          overflowX: "visible",
+          overflow: "hidden",
           transition: "width 0.15s ease, padding 0.15s ease",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 7,
-            padding: "3px 8px",
-            marginBottom: 16,
-            justifyContent: collapsed ? "center" : "flex-start",
-          }}
-        >
-          <div
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              background: "var(--color-accent)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: 700,
-              fontSize: 12,
-              flexShrink: 0,
-            }}
-          >
-            P
-          </div>
-          {!collapsed && (
-            <>
-              <span style={{ fontWeight: 700, fontSize: 14 }}>PPay</span>
-              <span className="badge badge-pending" style={{ marginLeft: "auto", fontSize: 10 }}>
-                Sandbox
-              </span>
-            </>
-          )}
+        <div style={{ marginBottom: 14, flexShrink: 0 }}>
+          <WorkspaceSwitcher collapsed={collapsed} />
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+        <nav style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, overflowY: "auto", overflowX: "visible" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {TOP_ITEMS.map((item) => (
               <NavItem key={item.to} item={item} collapsed={collapsed} />
@@ -341,43 +355,70 @@ export default function DashboardLayout() {
           </div>
         </nav>
 
-        <button
-          onClick={() => setCollapsed((v) => !v)}
-          className="nav-tip-anchor"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
-            gap: 8,
-            marginTop: 10,
-            padding: "7px 10px",
-            background: "none",
-            border: "none",
-            borderTop: "1px solid var(--color-border)",
-            color: "var(--color-text-faint)",
-            cursor: "pointer",
-            fontSize: 12.5,
-          }}
-        >
-          <ChevronLeftIcon width={14} height={14} style={{ transform: collapsed ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
-          {!collapsed && "Collapse"}
-          {collapsed && <span className="nav-tip">Expand sidebar</span>}
-        </button>
+        <div style={{ flexShrink: 0 }}>
+          {!collapsed && <SidebarPromo merchant={merchant} />}
+
+          <button
+            onClick={() => setManualCollapsed((v) => !v)}
+            disabled={helpPinnedOpen}
+            className="nav-tip-anchor"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={helpPinnedOpen ? "Unpin the help panel to expand the sidebar" : undefined}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: collapsed ? "center" : "flex-start",
+              width: "100%",
+              gap: 8,
+              padding: "7px 10px",
+              background: "none",
+              border: "none",
+              borderTop: "1px solid var(--color-border)",
+              color: "var(--color-text-faint)",
+              cursor: helpPinnedOpen ? "not-allowed" : "pointer",
+              fontSize: 12.5,
+              opacity: helpPinnedOpen ? 0.5 : 1,
+            }}
+          >
+            <ChevronLeftIcon width={14} height={14} style={{ transform: collapsed ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
+            {!collapsed && "Collapse"}
+            {collapsed && <span className="nav-tip">{helpPinnedOpen ? "Unpin help to expand" : "Expand sidebar"}</span>}
+          </button>
+        </div>
       </aside>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflow: "hidden" }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          height: "100vh",
+          overflow: "hidden",
+          marginRight: helpPinnedOpen ? helpWidth : 0,
+          transition: "margin-right 0.2s ease",
+        }}
+      >
         <TopBar onOpenHelp={() => setHelpOpen(true)} />
         <main style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
           <div style={{ maxWidth: 1120, width: "100%" }}>
             <Outlet />
           </div>
         </main>
-        <DeveloperPanel />
+        <DeveloperPanel open={devPanelOpen} onToggle={() => setDevPanelOpen((v) => !v)} />
       </div>
 
-      <HelpPanel open={helpOpen} onClose={() => setHelpOpen(false)} />
-      <OnboardingWidget />
+      <HelpPanel
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        pinned={helpPinned}
+        onPinnedChange={setHelpPinned}
+        width={helpWidth}
+        onWidthChange={setHelpWidth}
+        topOffset={TOPBAR_HEIGHT}
+        bottomOffset={devPanelHeight}
+      />
+      <OnboardingWidget bottomOffset={devPanelHeight} />
     </div>
   );
 }

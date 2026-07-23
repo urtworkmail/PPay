@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import ActivationChecklist from "../components/ActivationChecklist";
 import {
   BankIcon,
   BoxIcon,
@@ -63,8 +62,6 @@ export default function Settings() {
       <p style={{ color: "var(--color-text-muted)", marginTop: 0, marginBottom: 28 }}>
         Manage your account, business, and platform preferences.
       </p>
-
-      <ActivationChecklist />
 
       <SettingsSection title="Personal settings">
         <SettingsCard

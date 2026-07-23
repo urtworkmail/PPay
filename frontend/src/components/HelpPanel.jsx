@@ -157,7 +157,7 @@ function ArticleView({ slug, onOpenArticle }) {
   );
 }
 
-export default function HelpPanel({ open, onClose }) {
+export default function HelpPanel({ open, onClose, pinned, onPinnedChange, width, onWidthChange, topOffset = 0, bottomOffset = 0 }) {
   // Stack-based nav so Back always returns to exactly where the user came
   // from (root -> category -> article, or straight from a search result).
   const [stack, setStack] = useState([{ type: "root" }]);
@@ -170,14 +170,8 @@ export default function HelpPanel({ open, onClose }) {
     }
   }, [open]);
 
-  const [pinned, setPinned] = useState(() => localStorage.getItem("ppay_help_pinned") === "1");
-  const [width, setWidth] = useState(() => Number(localStorage.getItem("ppay_help_width")) || 400);
   const resizing = useRef(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    localStorage.setItem("ppay_help_pinned", pinned ? "1" : "0");
-  }, [pinned]);
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -191,14 +185,12 @@ export default function HelpPanel({ open, onClose }) {
     function onMove(e) {
       if (!resizing.current) return;
       const next = Math.min(720, Math.max(320, window.innerWidth - e.clientX));
-      setWidth(next);
+      onWidthChange(next);
     }
     function onUp() {
-      if (!resizing.current) return;
       resizing.current = false;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
-      localStorage.setItem("ppay_help_width", String(width));
     }
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
@@ -207,7 +199,7 @@ export default function HelpPanel({ open, onClose }) {
       window.removeEventListener("mouseup", onUp);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width]);
+  }, []);
 
   function startResize(e) {
     e.preventDefault();
@@ -256,9 +248,9 @@ export default function HelpPanel({ open, onClose }) {
         aria-label="Help"
         style={{
           position: "fixed",
-          top: 0,
+          top: topOffset,
           right: 0,
-          height: "100vh",
+          bottom: bottomOffset,
           width,
           maxWidth: "90vw",
           background: "var(--color-surface)",
@@ -297,7 +289,7 @@ export default function HelpPanel({ open, onClose }) {
           ) : null}
           <div style={{ fontWeight: 700, fontSize: 15 }}>Help</div>
           <button
-            onClick={() => setPinned((v) => !v)}
+            onClick={() => onPinnedChange(!pinned)}
             aria-label={pinned ? "Unpin help panel" : "Pin help panel open"}
             title={pinned ? "Pinned — click to unpin" : "Pin open so it stays while you work"}
             style={{
