@@ -157,7 +157,7 @@ function ArticleView({ slug, onOpenArticle }) {
   );
 }
 
-export default function HelpPanel({ open, onClose, pinned, onPinnedChange, width, onWidthChange, topOffset = 0, bottomOffset = 0 }) {
+export default function HelpPanel({ open, onClose, pinned, onPinnedChange, width, onWidthChange, topOffset = 0, bottomOffset = 0, inline = false }) {
   // Stack-based nav so Back always returns to exactly where the user came
   // from (root -> category -> article, or straight from a search result).
   const [stack, setStack] = useState([{ type: "root" }]);
@@ -227,9 +227,46 @@ export default function HelpPanel({ open, onClose, pinned, onPinnedChange, width
     navigate(path);
   }
 
+  // Inline mode (pinned + open) renders as a real flex sibling of the main
+  // content column instead of a `position: fixed` overlay with manually
+  // computed top/bottom offsets — two independently-positioned fixed
+  // elements (this panel and the Developer panel bar) trying to align
+  // pixel-perfectly was exactly what produced visible gaps. As a normal flex
+  // child stretched to its row's height, there is no offset math to get
+  // wrong: it structurally starts and ends exactly where its container does.
+  const asideStyle = inline
+    ? {
+        position: "relative",
+        width,
+        maxWidth: "90vw",
+        flexShrink: 0,
+        height: "100%",
+        background: "var(--color-surface)",
+        borderLeft: "1px solid var(--color-border)",
+        display: "flex",
+        flexDirection: "column",
+      }
+    : {
+        position: "fixed",
+        top: topOffset,
+        right: 0,
+        bottom: bottomOffset,
+        width,
+        maxWidth: "90vw",
+        background: "var(--color-surface)",
+        borderLeft: "1px solid var(--color-border)",
+        boxShadow: "-8px 0 24px rgba(0,0,0,0.12)",
+        zIndex: 91,
+        display: "flex",
+        flexDirection: "column",
+        transform: open ? "translateX(0)" : "translateX(100%)",
+        transition: resizing.current ? "none" : "transform 0.2s ease",
+        pointerEvents: open ? "auto" : "none",
+      };
+
   return (
     <>
-      {!pinned && (
+      {!inline && !pinned && (
         <div
           onClick={onClose}
           style={{
@@ -243,27 +280,7 @@ export default function HelpPanel({ open, onClose, pinned, onPinnedChange, width
           }}
         />
       )}
-      <aside
-        role="dialog"
-        aria-label="Help"
-        style={{
-          position: "fixed",
-          top: topOffset,
-          right: 0,
-          bottom: bottomOffset,
-          width,
-          maxWidth: "90vw",
-          background: "var(--color-surface)",
-          borderLeft: "1px solid var(--color-border)",
-          boxShadow: pinned ? "none" : "-8px 0 24px rgba(0,0,0,0.12)",
-          zIndex: 91,
-          display: "flex",
-          flexDirection: "column",
-          transform: open ? "translateX(0)" : "translateX(100%)",
-          transition: resizing.current ? "none" : "transform 0.2s ease",
-          pointerEvents: open ? "auto" : "none",
-        }}
-      >
+      <aside role="dialog" aria-label="Help" style={asideStyle}>
         <div
           onMouseDown={startResize}
           title="Drag to resize"

@@ -424,37 +424,41 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minWidth: 0,
-          height: "100vh",
-          overflow: "hidden",
-          marginRight: helpPinnedOpen ? helpWidth : 0,
-          transition: "margin-right 0.2s ease",
-        }}
-      >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflow: "hidden" }}>
         <TopBar onOpenHelp={() => setHelpOpen(true)} />
-        <main style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
-          <div style={{ maxWidth: 1440, width: "100%" }}>
-            <Outlet />
-          </div>
-        </main>
+        <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+          <main style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
+            <div style={{ maxWidth: 1440, width: "100%" }}>
+              <Outlet />
+            </div>
+          </main>
+          {helpPinnedOpen && (
+            <HelpPanel
+              inline
+              open={helpOpen}
+              onClose={() => setHelpOpen(false)}
+              pinned={helpPinned}
+              onPinnedChange={setHelpPinned}
+              width={helpWidth}
+              onWidthChange={setHelpWidth}
+            />
+          )}
+        </div>
         <DeveloperPanel open={devPanelOpen} onToggle={() => setDevPanelOpen((v) => !v)} onHeightChange={setDevPanelHeight} />
       </div>
 
-      <HelpPanel
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
-        pinned={helpPinned}
-        onPinnedChange={setHelpPinned}
-        width={helpWidth}
-        onWidthChange={setHelpWidth}
-        topOffset={TOPBAR_HEIGHT}
-        bottomOffset={devPanelHeight}
-      />
+      {!helpPinnedOpen && (
+        <HelpPanel
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
+          pinned={helpPinned}
+          onPinnedChange={setHelpPinned}
+          width={helpWidth}
+          onWidthChange={setHelpWidth}
+          topOffset={TOPBAR_HEIGHT}
+          bottomOffset={devPanelHeight}
+        />
+      )}
       <OnboardingWidget bottomOffset={devPanelHeight} />
     </div>
   );

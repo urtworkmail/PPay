@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { formatDate, formatMinorAmount } from "../api/format";
-import { BoxIcon, InvoiceIcon, KeyIcon, LinkIcon } from "../components/Icons";
+import { BankIcon, BoxIcon, InvoiceIcon, KeyIcon, LinkIcon, UsersIcon, WebhookIcon } from "../components/Icons";
 import PaymentsBreakdownBar from "../components/PaymentsBreakdownBar";
 import StatusBadge from "../components/StatusBadge";
 import TrendChart from "../components/TrendChart";
@@ -19,6 +19,9 @@ const QUICK_ACTIONS = [
   { to: "/dashboard/invoices", label: "Create Invoice", icon: InvoiceIcon },
   { to: "/dashboard/products", label: "Add Product", icon: BoxIcon },
   { to: "/dashboard/api-keys", label: "API Keys", icon: KeyIcon },
+  { to: "/dashboard/webhooks", label: "Add Webhook", icon: WebhookIcon },
+  { to: "/dashboard/balances", label: "View Payouts", icon: BankIcon },
+  { to: "/dashboard/team", label: "Invite Team Member", icon: UsersIcon },
 ];
 
 function shortDate(iso) {
@@ -162,7 +165,7 @@ export default function Overview() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20, marginBottom: 20, alignItems: "start" }}>
-        <div className="card" style={{ padding: "20px 22px" }}>
+        <div className="card" style={{ padding: "20px 22px", alignSelf: "start", height: "fit-content" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Overview</div>
             <div style={{ display: "flex", gap: 6 }}>
@@ -210,7 +213,7 @@ export default function Overview() {
           <TrendChart points={grossPoints} formatValue={(v) => formatMinorAmount(v, analytics.currency)} formatDate={shortDate} height={110} />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignSelf: "start", height: "fit-content" }}>
           <div className="card">
             <div style={{ padding: "16px 18px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontWeight: 700, fontSize: 13.5 }}>Recent activity</div>
