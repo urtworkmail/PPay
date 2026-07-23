@@ -66,26 +66,64 @@ function SectionLabel({ children }) {
   );
 }
 
+// Renders at the hovered icon's real viewport position via `position: fixed`
+// rather than CSS `position: absolute` relative to the icon. An absolutely
+// positioned tooltip overflowing the sidebar's right edge is what caused the
+// scrollable nav to grow a phantom horizontal scrollbar (any element visually
+// extending past a scrolling container's edge counts toward its scrollable
+// overflow, even though it's just a tooltip). Fixed positioning is computed
+// from the icon's actual bounding box on hover, so it paints at the same
+// spot on screen without ever being part of nav's scrollable content.
+function FixedTip({ rect, children }) {
+  if (!rect) return null;
+  return (
+    <span
+      style={{
+        position: "fixed",
+        top: rect.top + rect.height / 2,
+        left: rect.right + 10,
+        transform: "translateY(-50%)",
+        background: "var(--color-text)",
+        color: "var(--color-surface)",
+        fontSize: 12,
+        fontWeight: 600,
+        padding: "5px 9px",
+        borderRadius: 6,
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+        zIndex: 200,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
 function NavItem({ item, collapsed }) {
+  const [tipRect, setTipRect] = useState(null);
+
   if (collapsed) {
     return (
-      <NavLink
-        key={item.to}
-        to={item.to}
-        end={item.end}
-        className="nav-tip-anchor"
-        style={({ isActive }) => ({
-          ...itemStyle({ isActive }),
-          justifyContent: "center",
-          padding: "7px 0",
-        })}
-      >
-        {item.icon && <item.icon width={16} height={16} />}
-        <span className="nav-tip">
+      <>
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.end}
+          onMouseEnter={(e) => setTipRect(e.currentTarget.getBoundingClientRect())}
+          onMouseLeave={() => setTipRect(null)}
+          style={({ isActive }) => ({
+            ...itemStyle({ isActive }),
+            justifyContent: "center",
+            padding: "7px 0",
+          })}
+        >
+          {item.icon && <item.icon width={16} height={16} />}
+        </NavLink>
+        <FixedTip rect={tipRect}>
           {item.label}
           {item.soon ? " · Soon" : ""}
-        </span>
-      </NavLink>
+        </FixedTip>
+      </>
     );
   }
   return (
@@ -310,20 +348,7 @@ export default function DashboardLayout() {
           <WorkspaceSwitcher collapsed={collapsed} />
         </div>
 
-        <nav
-          style={
-            collapsed
-              ? // Collapsed nav-item tooltips are absolutely positioned past the
-                // sidebar's right edge (see .nav-tip in global.css). Any non-visible
-                // value on the other axis forces browsers to compute this axis as
-                // "auto" too (CSS overflow spec), which turned that overflowing
-                // tooltip content into a real horizontal scrollbar — so this mode
-                // uses `overflow: visible` on both axes instead (no scrolling here,
-                // but collapsed content is short enough that it isn't needed).
-                { display: "flex", flexDirection: "column", gap: 12, flex: 1, overflow: "visible" }
-              : { display: "flex", flexDirection: "column", gap: 12, flex: 1, overflowY: "auto", overflowX: "hidden" }
-          }
-        >
+        <nav style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, overflowY: "auto", overflowX: "hidden" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {TOP_ITEMS.map((item) => (
               <NavItem key={item.to} item={item} collapsed={collapsed} />
@@ -413,7 +438,7 @@ export default function DashboardLayout() {
       >
         <TopBar onOpenHelp={() => setHelpOpen(true)} />
         <main style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
-          <div style={{ maxWidth: 1120, width: "100%" }}>
+          <div style={{ maxWidth: 1440, width: "100%" }}>
             <Outlet />
           </div>
         </main>
