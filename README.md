@@ -1,12 +1,16 @@
 # PPay
 
-A PayFast-style payment gateway for Pakistan — merchant onboarding, hosted checkout, payment links, invoicing, refunds, webhooks, and settlements. This is a **sandbox-mode** build: all payment authorization is simulated (see `TEST_CARDS.md`), meant to demo the product end-to-end before pursuing real licensing (see "Going live" below).
+A  payment gateway for Pakistan — merchant onboarding, hosted checkout, payment links, invoicing, refunds, webhooks, and settlements. This is a **sandbox-mode** build: all payment authorization is simulated (see `TEST_CARDS.md`), meant to demo the product end-to-end before pursuing real licensing (see "Going live" below).
 
 ## Stack
 
 - **Backend**: FastAPI + SQLAlchemy (async) + PostgreSQL + Alembic
 - **Frontend**: React (plain JS, Vite) + React Router
 - **Local infra**: Docker Compose (Postgres only)
+
+---
+### Website: https://github.com/urtworkmail/ppay-website/
+---
 
 ## Running locally
 
