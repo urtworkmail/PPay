@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import {
   BankIcon,
+  BellIcon,
   BoxIcon,
-  HelpIcon,
   InvoiceIcon,
   KeyIcon,
+  MonitorIcon,
   RocketIcon,
   SettingsIcon,
   UsersIcon,
@@ -71,10 +72,16 @@ export default function Settings() {
           description="Your name, email, password, and account security."
         />
         <SettingsCard
-          to="/dashboard/coming-soon/profiles"
-          icon={HelpIcon}
-          title="Communication preferences"
-          description="Customize the emails and notifications you receive."
+          to="/dashboard/settings/notifications"
+          icon={BellIcon}
+          title="Notifications"
+          description="Which activity is emailed to you, and where it's sent."
+        />
+        <SettingsCard
+          to="/dashboard/settings/sessions"
+          icon={MonitorIcon}
+          title="Active sessions"
+          description="Devices signed in to your account, and revoking access."
         />
         <SettingsCard
           to="/dashboard/api-keys"
@@ -132,10 +139,10 @@ export default function Settings() {
           description="Invoice footer and subscription billing behavior."
         />
         <SettingsCard
-          to="/dashboard/coming-soon/financial-connections"
+          to="/dashboard/financial-connections"
           icon={BankIcon}
           title="Financial Connections"
-          description="Link and verify customer bank accounts."
+          description="Verify the bank account your payouts are sent to."
         />
       </SettingsSection>
     </div>

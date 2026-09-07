@@ -1,30 +1,87 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import DeveloperPanel from "./DeveloperPanel";
-import { ChevronDownIcon, ChevronLeftIcon, RocketIcon, WebhookIcon } from "./Icons";
+import {
+  BellIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  LifeBuoyIcon,
+  LogoutIcon,
+  MonitorIcon,
+  MoonIcon,
+  PencilIcon,
+  RocketIcon,
+  SettingsIcon,
+  SunIcon,
+  UsersIcon,
+  WebhookIcon,
+} from "./Icons";
 import HelpPanel from "./HelpPanel";
 import OnboardingWidget from "./OnboardingWidget";
 import TopBar from "./TopBar";
-import { ACCOUNT, DEVELOPERS, PRODUCT_GROUPS, SHORTCUTS, TOP_ITEMS } from "../nav/navConfig";
+import { ALL_NAV_ITEMS, DEVELOPERS, PRODUCT_GROUPS, SHORTCUTS, TOP_ITEMS } from "../nav/navConfig";
 
 const COLLAPSE_STORAGE_KEY = "ppay_sidebar_collapsed";
 const HELP_PINNED_STORAGE_KEY = "ppay_help_pinned";
 const HELP_WIDTH_STORAGE_KEY = "ppay_help_width";
 const DEV_PANEL_STORAGE_KEY = "ppay_dev_panel_open";
+const SHORTCUTS_STORAGE_KEY = "ppay_shortcuts";
+const DEFAULT_SHORTCUT_IDS = SHORTCUTS.map((item) => item.to);
 const TOPBAR_HEIGHT = 60;
+const THEME_OPTIONS = [
+  { value: "light", label: "Light", icon: SunIcon },
+  { value: "dark", label: "Dark", icon: MoonIcon },
+  { value: "system", label: "System", icon: MonitorIcon },
+];
 
-const itemStyle = ({ isActive }) => ({
+// De-duplicated by `to` — Shortcuts intentionally mirrors some Products
+// entries (same page, two entry points), so the raw nav list has repeats.
+const UNIQUE_NAV_ITEMS = (() => {
+  const seen = new Set();
+  return ALL_NAV_ITEMS.filter((item) => (seen.has(item.to) ? false : (seen.add(item.to), true)));
+})();
+
+function useShortcutIds() {
+  const [ids, setIds] = useState(() => {
+    try {
+      const raw = localStorage.getItem(SHORTCUTS_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : DEFAULT_SHORTCUT_IDS;
+    } catch {
+      return DEFAULT_SHORTCUT_IDS;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem(SHORTCUTS_STORAGE_KEY, JSON.stringify(ids));
+  }, [ids]);
+  return [ids, setIds];
+}
+
+// Indentation and weight carry the nav's hierarchy: a section header sits
+// flush, the items under it step in once, and anything nested inside a group
+// keeps that same step but drops in opacity — so depth reads at a glance
+// without every level needing its own colour.
+const INDENT_STEP = 14;
+const BASE_PADDING_LEFT = 11;
+
+const itemStyle = ({ isActive, depth = 1 }) => ({
   display: "flex",
   alignItems: "center",
-  gap: 8,
-  padding: "5px 10px",
-  borderRadius: "var(--radius-sm)",
-  fontSize: 13,
-  fontWeight: 500,
+  gap: 10,
+  padding: "7px 11px",
+  paddingLeft: BASE_PADDING_LEFT + Math.min(depth, 1) * INDENT_STEP,
+  borderRadius: "var(--radius-md)",
+  fontSize: 13.5,
+  fontWeight: isActive ? 700 : 500,
   textDecoration: "none",
-  color: isActive ? "var(--color-accent)" : "var(--color-text-muted)",
-  background: isActive ? "var(--color-accent-soft)" : "transparent",
+  color: isActive ? "var(--color-text)" : "var(--color-text-muted)",
+  background: isActive ? "var(--color-bg)" : "transparent",
+  // Third level sits at the same indent as its parent, distinguished by
+  // weight of colour rather than by stepping in again.
+  opacity: depth >= 2 ? 0.68 : 1,
 });
 
 function SoonBadge() {
@@ -45,24 +102,6 @@ function SoonBadge() {
     >
       Soon
     </span>
-  );
-}
-
-function SectionLabel({ children }) {
-  return (
-    <div
-      style={{
-        fontSize: 10,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        color: "var(--color-text-faint)",
-        padding: "0 10px",
-        marginBottom: 4,
-      }}
-    >
-      {children}
-    </div>
   );
 }
 
@@ -99,7 +138,7 @@ function FixedTip({ rect, children }) {
   );
 }
 
-function NavItem({ item, collapsed }) {
+function NavItem({ item, collapsed, depth = 1 }) {
   const [tipRect, setTipRect] = useState(null);
 
   if (collapsed) {
@@ -114,10 +153,11 @@ function NavItem({ item, collapsed }) {
           style={({ isActive }) => ({
             ...itemStyle({ isActive }),
             justifyContent: "center",
-            padding: "7px 0",
+            padding: "11px 0",
+            opacity: 1, // the icon rail has no hierarchy to express
           })}
         >
-          {item.icon && <item.icon width={16} height={16} />}
+          {item.icon && <item.icon width={20} height={20} />}
         </NavLink>
         <FixedTip rect={tipRect}>
           {item.label}
@@ -127,8 +167,8 @@ function NavItem({ item, collapsed }) {
     );
   }
   return (
-    <NavLink key={item.to} to={item.to} end={item.end} style={itemStyle}>
-      {item.icon && <item.icon width={15} height={15} />}
+    <NavLink key={item.to} to={item.to} end={item.end} style={({ isActive }) => itemStyle({ isActive, depth })}>
+      {item.icon && <item.icon width={16} height={16} />}
       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
       {item.soon && <SoonBadge />}
     </NavLink>
@@ -140,7 +180,7 @@ function CollapsibleGroup({ group, collapsed }) {
 
   if (collapsed) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         {group.items.map((item) => (
           <NavItem key={item.to + item.label} item={item} collapsed />
         ))}
@@ -157,11 +197,12 @@ function CollapsibleGroup({ group, collapsed }) {
           alignItems: "center",
           gap: 6,
           width: "100%",
-          padding: "5px 10px",
+          padding: "7px 11px",
+          paddingLeft: BASE_PADDING_LEFT + INDENT_STEP,
           background: "none",
           border: "none",
-          borderRadius: "var(--radius-sm)",
-          fontSize: 13,
+          borderRadius: "var(--radius-md)",
+          fontSize: 13.5,
           fontWeight: 500,
           color: "var(--color-text-muted)",
           cursor: "pointer",
@@ -176,13 +217,123 @@ function CollapsibleGroup({ group, collapsed }) {
         />
       </button>
       {open && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 14, marginTop: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 1, marginTop: 1 }}>
           {group.items.map((item) => (
-            <NavItem key={item.to + item.label} item={item} />
+            <NavItem key={item.to + item.label} item={item} depth={2} />
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+// A top-level nav section (Main menu / Shortcuts / Products / Developers)
+// that can be collapsed independently, remembering its state per-section.
+function CollapsibleSection({ title, storageKey, collapsed, headerExtra, children }) {
+  const [open, setOpen] = useState(() => localStorage.getItem(storageKey) !== "0");
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, open ? "1" : "0");
+  }, [storageKey, open]);
+
+  if (collapsed) {
+    return <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>{children}</div>;
+  }
+
+  return (
+    // A closed section is just a header row, so it only needs enough room to
+    // separate it from the next one — the generous gap is for when its items
+    // are actually on screen.
+    <div style={{ marginBottom: open ? 16 : 2 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, paddingRight: 4 }}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flex: 1,
+            minWidth: 0,
+            padding: "8px 11px",
+            borderRadius: "var(--radius-md)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 13.5,
+            fontWeight: 600,
+            color: "var(--color-text-faint)",
+            textAlign: "left",
+          }}
+        >
+          <ChevronDownIcon
+            width={16}
+            height={16}
+            style={{ transform: open ? "none" : "rotate(-90deg)", transition: "transform 0.12s ease", flexShrink: 0 }}
+          />
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+        </button>
+        {headerExtra}
+      </div>
+      {open && <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>{children}</div>}
+    </div>
+  );
+}
+
+function ShortcutsEditor({ anchorRect, selectedIds, onToggle, onClose }) {
+  if (!anchorRect) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 200 }} />
+      <div
+        className="card"
+        style={{
+          position: "fixed",
+          top: anchorRect.bottom + 6,
+          left: anchorRect.left,
+          width: 260,
+          maxHeight: 360,
+          overflowY: "auto",
+          zIndex: 201,
+          padding: 6,
+        }}
+      >
+        <div
+          style={{
+            padding: "6px 8px 8px",
+            fontSize: 10.5,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "var(--color-text-faint)",
+          }}
+        >
+          Choose shortcuts
+        </div>
+        {UNIQUE_NAV_ITEMS.map((item) => (
+          <label
+            key={item.to}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "7px 8px",
+              borderRadius: "var(--radius-sm)",
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={selectedIds.includes(item.to)}
+              onChange={() => onToggle(item.to)}
+              style={{ width: 14, height: 14, padding: 0, flexShrink: 0 }}
+            />
+            {item.icon && <item.icon width={14} height={14} style={{ color: "var(--color-text-muted)", flexShrink: 0 }} />}
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+          </label>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -196,16 +347,16 @@ function WorkspaceSwitcher({ collapsed }) {
       <div
         className="nav-tip-anchor"
         style={{
-          width: 30,
-          height: 30,
-          borderRadius: 8,
+          width: 32,
+          height: 32,
+          borderRadius: 9,
           background: "var(--color-accent)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: "white",
           fontWeight: 700,
-          fontSize: 12.5,
+          fontSize: 13,
           margin: "0 auto",
         }}
       >
@@ -216,48 +367,33 @@ function WorkspaceSwitcher({ collapsed }) {
   }
 
   return (
-    <button
-      className="card"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 9,
-        width: "100%",
-        padding: "8px 9px",
-        background: "var(--color-bg)",
-        border: "1px solid var(--color-border)",
-        cursor: "pointer",
-        textAlign: "left",
-      }}
-      title="Switch mode from the top bar toggle"
-    >
+    <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "4px 2px" }}>
       <div
         style={{
-          width: 26,
-          height: 26,
-          borderRadius: 7,
+          width: 32,
+          height: 32,
+          borderRadius: 9,
           background: "var(--color-accent)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: "white",
           fontWeight: 700,
-          fontSize: 12,
+          fontSize: 13,
           flexShrink: 0,
         }}
       >
         {initials}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ fontSize: 13.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {merchant?.business_name ?? "PPay"}
         </div>
         <div style={{ fontSize: 10.5, color: isLive ? "var(--color-success)" : "var(--color-pending)", fontWeight: 600 }}>
           {isLive ? "Live mode" : "Sandbox mode"}
         </div>
       </div>
-      <ChevronDownIcon width={12} height={12} style={{ color: "var(--color-text-faint)", flexShrink: 0 }} />
-    </button>
+    </div>
   );
 }
 
@@ -298,20 +434,208 @@ function SidebarPromo({ merchant }) {
   );
 }
 
+function AccountMenuTrigger({ collapsed, merchant, onOpen }) {
+  const initials = (merchant?.business_name || "P").slice(0, 1).toUpperCase();
+
+  return (
+    <button
+      onClick={(e) => onOpen(e.currentTarget.getBoundingClientRect())}
+      className="nav-tip-anchor"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        width: "100%",
+        padding: collapsed ? "6px 0" : "6px 8px",
+        justifyContent: collapsed ? "center" : "flex-start",
+        background: "none",
+        border: "none",
+        borderRadius: "var(--radius-md)",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          background: "var(--color-accent-soft)",
+          color: "var(--color-accent)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 700,
+          fontSize: 12,
+          flexShrink: 0,
+        }}
+      >
+        {initials}
+      </div>
+      {!collapsed && (
+        <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {merchant?.business_name ?? "Account"}
+        </span>
+      )}
+      {collapsed && <span className="nav-tip">{merchant?.business_name ?? "Account"}</span>}
+    </button>
+  );
+}
+
+function MenuRow({ icon: Icon, label, value, danger, onClick, expanded }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        width: "100%",
+        padding: "8px 10px",
+        background: "none",
+        border: "none",
+        borderRadius: "var(--radius-sm)",
+        cursor: "pointer",
+        fontSize: 13.5,
+        fontWeight: 500,
+        color: danger ? "var(--color-danger)" : "var(--color-text)",
+        textAlign: "left",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-bg)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+    >
+      {Icon && <Icon width={15} height={15} style={{ flexShrink: 0 }} />}
+      <span style={{ flex: 1 }}>{label}</span>
+      {value && (
+        <span style={{ color: "var(--color-text-faint)", fontSize: 12, textTransform: "capitalize" }}>{value}</span>
+      )}
+      {expanded !== undefined && (
+        <ChevronDownIcon
+          width={11}
+          height={11}
+          style={{ color: "var(--color-text-faint)", transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.12s ease" }}
+        />
+      )}
+    </button>
+  );
+}
+
+function AccountMenu({ rect, collapsed, merchant, user, mode, setMode, onClose, onNavigate, onLogout }) {
+  const [themeTrayOpen, setThemeTrayOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetched when the menu opens rather than polled — this component only
+  // exists while the menu is on screen.
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/notifications/unread-count")
+      .then((data) => !cancelled && setUnreadCount(data.unread))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!rect) return null;
+
+  const width = 250;
+  const left = collapsed ? rect.right + 10 : rect.left;
+  const bottom = window.innerHeight - rect.top + 8;
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 200 }} />
+      <div className="card" style={{ position: "fixed", left, bottom, width, zIndex: 201, padding: 6 }}>
+        <div style={{ padding: "8px 10px 10px", borderBottom: "1px solid var(--color-border)", marginBottom: 4 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {merchant?.business_name ?? "PPay"}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--color-text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {user?.email}
+          </div>
+        </div>
+
+        <MenuRow
+          icon={BellIcon}
+          label="Notifications"
+          value={unreadCount > 0 ? (unreadCount > 99 ? "99+" : String(unreadCount)) : undefined}
+          onClick={() => onNavigate("/dashboard/notifications")}
+        />
+        <MenuRow icon={MonitorIcon} label="Active sessions" onClick={() => onNavigate("/dashboard/settings/sessions")} />
+        <MenuRow icon={SettingsIcon} label="Settings" onClick={() => onNavigate("/dashboard/settings")} />
+        <MenuRow icon={UsersIcon} label="Team" onClick={() => onNavigate("/dashboard/team")} />
+        <MenuRow icon={RocketIcon} label="Go Live" onClick={() => onNavigate("/dashboard/go-live")} />
+        <MenuRow icon={LifeBuoyIcon} label="Help & Support" onClick={() => onNavigate("/dashboard/help")} />
+        <MenuRow
+          icon={mode === "dark" ? MoonIcon : mode === "light" ? SunIcon : MonitorIcon}
+          label="Theme"
+          value={mode}
+          expanded={themeTrayOpen}
+          onClick={() => setThemeTrayOpen((v) => !v)}
+        />
+        {themeTrayOpen && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 10, marginBottom: 2 }}>
+            {THEME_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setMode(opt.value);
+                  setThemeTrayOpen(false);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 9,
+                  width: "100%",
+                  padding: "7px 10px",
+                  background: "none",
+                  border: "none",
+                  borderRadius: "var(--radius-sm)",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "var(--color-text)",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-bg)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+              >
+                <opt.icon width={14} height={14} style={{ flexShrink: 0, color: "var(--color-text-muted)" }} />
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {mode === opt.value && <CheckIcon width={13} height={13} style={{ color: "var(--color-accent)" }} />}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div style={{ borderTop: "1px solid var(--color-border)", margin: "4px 0" }} />
+        <MenuRow icon={LogoutIcon} label="Log out" danger onClick={onLogout} />
+      </div>
+    </>
+  );
+}
+
 export default function DashboardLayout() {
-  const { merchant } = useAuth();
+  const { merchant, user, logout } = useAuth();
+  const { mode, setMode } = useTheme();
+  const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
   const [helpPinned, setHelpPinned] = useState(() => localStorage.getItem(HELP_PINNED_STORAGE_KEY) === "1");
   const [helpWidth, setHelpWidth] = useState(() => Number(localStorage.getItem(HELP_WIDTH_STORAGE_KEY)) || 400);
   const [devPanelOpen, setDevPanelOpen] = useState(() => localStorage.getItem(DEV_PANEL_STORAGE_KEY) === "1");
   const [devPanelHeight, setDevPanelHeight] = useState(37);
   const [manualCollapsed, setManualCollapsed] = useState(() => localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1");
+  const [shortcutIds, setShortcutIds] = useShortcutIds();
+  const [shortcutsEditorRect, setShortcutsEditorRect] = useState(null);
+  const [accountMenuRect, setAccountMenuRect] = useState(null);
 
   // Pinning the help panel takes over the horizontal space it needs: the
   // sidebar collapses to its icon rail and the main content narrows to make
   // room, rather than the panel just floating on top of everything.
   const helpPinnedOpen = helpPinned && helpOpen;
   const collapsed = manualCollapsed || helpPinnedOpen;
+
+  const shortcutItems = shortcutIds.map((id) => UNIQUE_NAV_ITEMS.find((item) => item.to === id)).filter(Boolean);
 
   useEffect(() => {
     localStorage.setItem(COLLAPSE_STORAGE_KEY, manualCollapsed ? "1" : "0");
@@ -326,15 +650,30 @@ export default function DashboardLayout() {
     localStorage.setItem(DEV_PANEL_STORAGE_KEY, devPanelOpen ? "1" : "0");
   }, [devPanelOpen]);
 
+  function toggleShortcut(to) {
+    setShortcutIds((prev) => (prev.includes(to) ? prev.filter((id) => id !== to) : [...prev, to]));
+  }
+
+  function goTo(path) {
+    setAccountMenuRect(null);
+    navigate(path);
+  }
+
+  function handleLogout() {
+    setAccountMenuRect(null);
+    logout();
+    navigate("/login");
+  }
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
         style={{
-          width: collapsed ? 60 : 232,
+          width: collapsed ? 68 : 252,
           flexShrink: 0,
           borderRight: "1px solid var(--color-border)",
           background: "var(--color-surface)",
-          padding: collapsed ? "14px 8px" : "14px 10px",
+          padding: collapsed ? "18px 10px" : "18px 14px",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -344,85 +683,162 @@ export default function DashboardLayout() {
           transition: "width 0.15s ease, padding 0.15s ease",
         }}
       >
-        <div style={{ marginBottom: 14, flexShrink: 0 }}>
-          <WorkspaceSwitcher collapsed={collapsed} />
+        <div style={{ marginBottom: 20, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <WorkspaceSwitcher collapsed={collapsed} />
+          </div>
+          {!collapsed && (
+            <button
+              onClick={() => setManualCollapsed((v) => !v)}
+              disabled={helpPinnedOpen}
+              aria-label="Collapse sidebar"
+              title={helpPinnedOpen ? "Unpin the help panel to expand the sidebar" : "Collapse sidebar"}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                border: "1px solid var(--color-border)",
+                background: "var(--color-surface)",
+                color: "var(--color-text-faint)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: helpPinnedOpen ? "not-allowed" : "pointer",
+                opacity: helpPinnedOpen ? 0.5 : 1,
+                flexShrink: 0,
+              }}
+            >
+              <ChevronLeftIcon width={13} height={13} />
+            </button>
+          )}
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, overflowY: "auto", overflowX: "hidden" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {TOP_ITEMS.map((item) => (
-              <NavItem key={item.to} item={item} collapsed={collapsed} />
-            ))}
-          </div>
-
-          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
-            {!collapsed && <SectionLabel>Shortcuts</SectionLabel>}
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {SHORTCUTS.map((item) => (
-                <NavItem key={item.to + item.label} item={item} collapsed={collapsed} />
-              ))}
-            </div>
-          </div>
-
-          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
-            {!collapsed && <SectionLabel>Products</SectionLabel>}
-            <div style={{ display: "flex", flexDirection: "column", gap: collapsed ? 8 : 1 }}>
-              {PRODUCT_GROUPS.map((group) => (
-                <CollapsibleGroup key={group.label} group={group} collapsed={collapsed} />
-              ))}
-            </div>
-          </div>
-
-          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
-            {!collapsed && <SectionLabel>Developers</SectionLabel>}
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {DEVELOPERS.map((item) => (
-                <NavItem key={item.to} item={item} collapsed={collapsed} />
-              ))}
-            </div>
-          </div>
-
-          <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: 10 }}>
-            {!collapsed && <SectionLabel>Account</SectionLabel>}
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {ACCOUNT.map((item) => (
-                <NavItem key={item.to} item={item} collapsed={collapsed} />
-              ))}
-            </div>
-          </div>
-        </nav>
-
-        <div style={{ flexShrink: 0 }}>
-          {!collapsed && <SidebarPromo merchant={merchant} />}
-
+        {collapsed && (
           <button
             onClick={() => setManualCollapsed((v) => !v)}
             disabled={helpPinnedOpen}
             className="nav-tip-anchor"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label="Expand sidebar"
             title={helpPinnedOpen ? "Unpin the help panel to expand the sidebar" : undefined}
             style={{
+              width: 28,
+              height: 28,
+              margin: "0 auto 18px",
               display: "flex",
               alignItems: "center",
-              justifyContent: collapsed ? "center" : "flex-start",
-              width: "100%",
-              gap: 8,
-              padding: "7px 10px",
-              background: "none",
-              border: "none",
-              borderTop: "1px solid var(--color-border)",
+              justifyContent: "center",
+              borderRadius: 8,
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
               color: "var(--color-text-faint)",
               cursor: helpPinnedOpen ? "not-allowed" : "pointer",
-              fontSize: 12.5,
               opacity: helpPinnedOpen ? 0.5 : 1,
+              flexShrink: 0,
             }}
           >
-            <ChevronLeftIcon width={14} height={14} style={{ transform: collapsed ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }} />
-            {!collapsed && "Collapse"}
-            {collapsed && <span className="nav-tip">{helpPinnedOpen ? "Unpin help to expand" : "Expand sidebar"}</span>}
+            <ChevronLeftIcon width={13} height={13} style={{ transform: "rotate(180deg)" }} />
+            <span className="nav-tip">{helpPinnedOpen ? "Unpin help to expand" : "Expand sidebar"}</span>
           </button>
+        )}
+
+        <nav
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            // Expanded sections space themselves (see CollapsibleSection), so
+            // the nav only supplies the icon-rail's spacing.
+            gap: collapsed ? 10 : 0,
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+        >
+          <CollapsibleSection title="Home" storageKey="ppay_section_main" collapsed={collapsed}>
+            {TOP_ITEMS.map((item) => (
+              <NavItem key={item.to} item={item} collapsed={collapsed} />
+            ))}
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Shortcuts"
+            storageKey="ppay_section_shortcuts"
+            collapsed={collapsed}
+            headerExtra={
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShortcutsEditorRect(e.currentTarget.getBoundingClientRect());
+                }}
+                aria-label="Edit shortcuts"
+                title="Edit shortcuts"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 3,
+                  marginLeft: "auto",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--color-text-faint)",
+                  padding: "2px 4px",
+                }}
+              >
+                <PencilIcon width={11} height={11} />
+              </button>
+            }
+          >
+            {shortcutItems.length === 0 ? (
+              !collapsed && (
+                <div style={{ padding: "4px 11px", fontSize: 12, color: "var(--color-text-faint)" }}>
+                  No shortcuts yet — click the pencil to add some.
+                </div>
+              )
+            ) : (
+              shortcutItems.map((item) => <NavItem key={item.to + item.label} item={item} collapsed={collapsed} />)
+            )}
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Products" storageKey="ppay_section_products" collapsed={collapsed}>
+            {PRODUCT_GROUPS.map((group) => (
+              <CollapsibleGroup key={group.label} group={group} collapsed={collapsed} />
+            ))}
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Developers" storageKey="ppay_section_developers" collapsed={collapsed}>
+            {DEVELOPERS.map((item) => (
+              <NavItem key={item.to} item={item} collapsed={collapsed} />
+            ))}
+          </CollapsibleSection>
+        </nav>
+
+        <div style={{ flexShrink: 0, paddingTop: collapsed ? 6 : 10, marginTop: collapsed ? 6 : 10 }}>
+          {!collapsed && <SidebarPromo merchant={merchant} />}
+          <AccountMenuTrigger collapsed={collapsed} merchant={merchant} onOpen={setAccountMenuRect} />
         </div>
       </aside>
+
+      {shortcutsEditorRect && (
+        <ShortcutsEditor
+          anchorRect={shortcutsEditorRect}
+          selectedIds={shortcutIds}
+          onToggle={toggleShortcut}
+          onClose={() => setShortcutsEditorRect(null)}
+        />
+      )}
+
+      {accountMenuRect && (
+        <AccountMenu
+          rect={accountMenuRect}
+          collapsed={collapsed}
+          merchant={merchant}
+          user={user}
+          mode={mode}
+          setMode={setMode}
+          onClose={() => setAccountMenuRect(null)}
+          onNavigate={goTo}
+          onLogout={handleLogout}
+        />
+      )}
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflow: "hidden" }}>
         <TopBar onOpenHelp={() => setHelpOpen(true)} />

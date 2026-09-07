@@ -45,6 +45,14 @@ class User(Base):
     invite_token_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     totp_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)
     totp_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # Set once the address has been confirmed by an emailed one-time code. An
+    # unverified account can still sign in (so it can reach the verify screen)
+    # but is blocked from going live — see api/v1/auth.py.
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    job_title: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    timezone_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

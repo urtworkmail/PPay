@@ -37,6 +37,10 @@ class Transaction(Base):
     failure_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
     payment_method_details: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
     settled: Mapped[bool] = mapped_column(default=False, nullable=False)
+    # Computed at charge time by services/fraud_engine.py — see there for what
+    # the score actually means and doesn't (rule-based signals, not ML).
+    risk_score: Mapped[int] = mapped_column(default=0, nullable=False)
+    risk_flags: Mapped[list] = mapped_column(JSONB, default=list, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

@@ -36,6 +36,11 @@ class Charge(Base):
     amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False)
     fee_minor: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     net_amount_minor: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    # Accumulates against a `succeeded` charge rather than changing its status —
+    # matches Stripe's own shape (a refunded Charge stays `succeeded`; the
+    # money-back fact lives in this counter, checked against `amount_minor`
+    # for "fully refunded"). See services/payment_intent_engine.py::apply_refund.
+    refunded_amount_minor: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     status: Mapped[ChargeStatus] = mapped_column(
         Enum(ChargeStatus, name="charge_status"), default=ChargeStatus.PENDING, nullable=False
     )

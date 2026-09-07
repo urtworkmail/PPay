@@ -8,7 +8,8 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import Mode, session_factory_for_mode
+from app.core.db import Mode, livemode_of, session_factory_for_mode, stamp_mode
+from app.models.event import Event
 from app.models.webhook import WebhookDeliveryStatus, WebhookEndpoint, WebhookLog
 
 MAX_ATTEMPTS = 5
@@ -24,6 +25,26 @@ def sign_payload(secret: str, payload_bytes: bytes, timestamp: int) -> str:
 async def enqueue_webhook_event(
     db: AsyncSession, merchant_id, event_type: str, data: dict, transaction_id=None
 ) -> list[WebhookLog]:
+    """Records the event, then fans it out to every subscribed endpoint.
+
+    The `Event` row is written unconditionally — it is the immutable record
+    that the thing happened, and it has to exist whether or not anyone was
+    listening. Only the delivery attempts (`WebhookLog`) depend on having a
+    configured endpoint. Writing the event only when an endpoint existed
+    meant a merchant with no webhooks configured had no event history at
+    all, which is what the dashboard's Events view reads from.
+    """
+    payload = {"type": event_type, "data": data}
+
+    event = Event(
+        merchant_id=merchant_id,
+        type=event_type,
+        livemode=livemode_of(db),
+        payload=payload,
+    )
+    db.add(event)
+    await db.flush()  # assigns event.id for the delivery rows to reference
+
     result = await db.execute(
         select(WebhookEndpoint).where(
             WebhookEndpoint.merchant_id == merchant_id,
@@ -38,9 +59,10 @@ async def enqueue_webhook_event(
             continue
         log = WebhookLog(
             endpoint_id=endpoint.id,
+            event_id=event.id,
             transaction_id=transaction_id,
             event_type=event_type,
-            payload={"type": event_type, "data": data},
+            payload=payload,
             status=WebhookDeliveryStatus.PENDING,
             attempt_count=0,
         )
@@ -87,6 +109,7 @@ async def retry_pending_webhooks() -> None:
     now = datetime.now(timezone.utc)
     for mode in Mode:
         async with session_factory_for_mode(mode)() as db:
+            stamp_mode(db, mode)
             result = await db.execute(
                 select(WebhookLog).where(
                     WebhookLog.status == WebhookDeliveryStatus.PENDING,

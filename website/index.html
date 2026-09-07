@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PPay — Pakistan's Payment Infrastructure Platform</title>
+  <meta name="description" content="PPay is a payment infrastructure platform built for Pakistan. Accept cards, wallets, and bank transfers through one API and dashboard, with Sentinel fraud scoring on every attempt." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<script src="icons.js"></script>
+<script src="shared.js"></script>
+
+<!-- HERO -->
+<section class="page-top" style="border-bottom:1px solid var(--border);background:var(--surface);">
+  <div class="container">
+    <div class="grid-2" style="gap:64px;align-items:center;">
+      <div>
+        <div class="hero-eyebrow">Built for Pakistan</div>
+        <h1 class="hero-title">Payments built<br>for Pakistan</h1>
+        <p class="hero-sub">
+          One API and one dashboard for Pakistani businesses to accept cards, wallets, and bank transfers — with Sentinel fraud scoring on every checkout attempt, not bolted on afterwards.
+        </p>
+        <div class="badge badge-pending" style="margin-top:16px;">Sandbox stage — not yet processing real money</div>
+        <div class="hero-actions">
+          <a href="developers.html" class="btn btn-primary btn-lg">Read the docs →</a>
+          <a href="products.html" class="btn btn-secondary btn-lg">See what's built</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:28px;flex-wrap:wrap;">
+          <span style="font-size:13px;color:var(--text-muted);display:inline-flex;align-items:center;gap:6px;"><span data-icon="card" data-icon-size="15" style="color:var(--accent);"></span>Card &amp; wallet checkout</span>
+          <span style="font-size:13px;color:var(--text-muted);display:inline-flex;align-items:center;gap:6px;"><span data-icon="bank" data-icon-size="15" style="color:var(--accent);"></span>Bank transfer settlement</span>
+          <span style="font-size:13px;color:var(--text-muted);display:inline-flex;align-items:center;gap:6px;"><span data-icon="shield" data-icon-size="15" style="color:var(--accent);"></span>Sentinel fraud scoring</span>
+        </div>
+      </div>
+
+      <!-- Dashboard mockup (what the product actually looks like) -->
+      <div class="mockup">
+        <div class="mockup-chrome">
+          <div class="mockup-dot" style="background:#ff5f57;"></div>
+          <div class="mockup-dot" style="background:#febc2e;"></div>
+          <div class="mockup-dot" style="background:#28c840;"></div>
+          <span class="mockup-url">app.ppay.pk/dashboard</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mock-grid-3">
+            <div class="mock-card">
+              <div class="mock-label">Volume</div>
+              <div class="mock-value">₨0</div>
+              <div class="mock-sub">Sandbox</div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-label">Success rate</div>
+              <div class="mock-value" style="color:var(--success);">—</div>
+              <div class="mock-sub">No live data yet</div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-label">Risk flags</div>
+              <div class="mock-value">0</div>
+              <div class="mock-sub">Sentinel active</div>
+            </div>
+          </div>
+          <div class="mock-list">
+            <div class="mock-list-header">Recent transactions (sandbox)</div>
+            <div class="mock-row">
+              <div><div class="mock-row-title">Test payment · Visa 4242</div><div class="mock-row-sub">Card · test mode</div></div>
+              <span class="badge badge-success">Paid</span>
+            </div>
+            <div class="mock-row">
+              <div><div class="mock-row-title">Test payment · Card declined</div><div class="mock-row-sub">Test card 4000…0002</div></div>
+              <span class="badge badge-danger">Failed</span>
+            </div>
+            <div class="mock-row">
+              <div><div class="mock-row-title">Sentinel test · High risk</div><div class="mock-row-sub">Flags: velocity_email</div></div>
+              <span class="badge badge-pending">Blocked</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY MARQUEE -->
+<section style="padding:34px 0;background:var(--bg);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:20px;">
+      <div class="section-eyebrow">Built for how Pakistan actually sells</div>
+    </div>
+  </div>
+  <div class="marquee">
+    <div class="marquee-track" id="home-marquee"></div>
+  </div>
+</section>
+<script>
+  (function () {
+    const industries = [
+      ['store', 'Ecommerce'], ['terminal', 'SaaS & software'], ['book', 'Education & edtech'],
+      ['idCard', 'Healthcare & clinics'], ['store', 'Food & delivery'], ['globe', 'Travel & ticketing'],
+      ['compass', 'Creators & freelancers'], ['store', 'Retail & D2C brands'], ['users', 'Marketplaces'],
+      ['box', 'Logistics'], ['refresh', 'Gyms & memberships'], ['lifeBuoy', 'Nonprofits & donations'],
+      ['clipboard', 'Professional services'], ['workflow', 'Gaming'],
+    ];
+    const item = ([ico, name]) =>
+      `<div class="marquee-item"><span class="mq-ico" style="color:var(--accent);display:inline-flex;">${icon(ico, 15)}</span>${name}</div>`;
+    const track = industries.map(item).join('') + industries.map(item).join('');
+    document.getElementById('home-marquee').innerHTML = track;
+  })();
+</script>
+
+<!-- WHAT IS PPAY -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-48" data-animate>
+      <div class="section-eyebrow">The platform</div>
+      <h2 class="section-title">One API for every payment method<br>Pakistanis actually use</h2>
+      <p class="section-sub">Pakistan's payment landscape is fragmented — cards through one gateway, wallets through another, bank transfers through a third. PPay unifies all of it into one API and one dashboard.</p>
+    </div>
+    <div class="grid-3" style="gap:20px;">
+      <a href="checkout.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent"><span data-icon="card" data-icon-size="18"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Hosted Checkout</div>
+        <div class="feature-card-body">A hosted payment page for card, wallet, and bank transfer, without you touching PCI scope.</div>
+      </a>
+      <a href="payment-links.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.06s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent"><span data-icon="link" data-icon-size="18"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Payment Links</div>
+        <div class="feature-card-body">A shareable payment URL, no code and no website — send it on WhatsApp or SMS.</div>
+      </a>
+      <a href="invoicing.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.12s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent"><span data-icon="invoice" data-icon-size="18"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Invoicing</div>
+        <div class="feature-card-body">Auto-numbered, one-off invoices with a hosted pay link — live the moment you send them.</div>
+      </a>
+      <a href="subscriptions.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent"><span data-icon="refresh" data-icon-size="18"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Subscriptions</div>
+        <div class="feature-card-body">Recurring billing with saved payment methods and automatic retries on a failed cycle.</div>
+      </a>
+      <a href="sentinel.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.06s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent"><span data-icon="shield" data-icon-size="18"></span></div>
+          <span class="badge badge-success">Partially live</span>
+        </div>
+        <div class="feature-card-title">Sentinel, fraud scoring</div>
+        <div class="feature-card-body">Six deterministic signals score every checkout attempt before authorization runs.</div>
+      </a>
+      <a href="balances-payouts.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.12s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent"><span data-icon="bank" data-icon-size="18"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Balances &amp; Payouts</div>
+        <div class="feature-card-body">Itemised nightly settlement batches, released on the schedule you choose.</div>
+      </a>
+    </div>
+    <div class="text-center mt-32" data-animate>
+      <a href="products.html" class="btn btn-secondary">See every product →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT METHODS -->
+<section class="section-sm" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container" data-animate>
+    <div class="text-center mb-32">
+      <h2 class="section-title">Payment methods supported</h2>
+      <p class="section-sub" style="margin-top:8px;">Cards, mobile wallets, and bank transfer — the ones merchants actually need in sandbox today.</p>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <div class="method-chip"><span data-icon="card" data-icon-size="15" style="color:var(--accent);"></span>Visa &amp; Mastercard</div>
+      <div class="method-chip"><span data-icon="card" data-icon-size="15" style="color:var(--accent);"></span>Mobile wallet</div>
+      <div class="method-chip"><span data-icon="bank" data-icon-size="15" style="color:var(--accent);"></span>Bank transfer</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY PPAY -->
+<section class="section">
+  <div class="container">
+    <div class="grid-2" style="gap:60px;align-items:center;">
+      <div data-animate>
+        <div class="section-eyebrow">Why PPay</div>
+        <h2 class="section-title">Built for Pakistan,<br>not adapted for it</h2>
+        <p class="section-sub">International payment gateways aren't built around how Pakistani businesses actually collect money — a WhatsApp-shared link, a wallet payment, a bank transfer settled locally. We built this specifically for that.</p>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:28px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--success-soft);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--success);flex-shrink:0;"><span data-icon="check" data-icon-size="14"></span></div>
+            <div><strong style="font-size:14px;">PKR as a first-class currency</strong> — amounts in paisas, settlement in PKR, no FX conversion to reason about.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--success-soft);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--success);flex-shrink:0;"><span data-icon="check" data-icon-size="14"></span></div>
+            <div><strong style="font-size:14px;">Fraud scoring before the rail is called</strong> — a blocked attempt never becomes a charge you have to refund.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--success-soft);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--success);flex-shrink:0;"><span data-icon="check" data-icon-size="14"></span></div>
+            <div><strong style="font-size:14px;">Honest about the roadmap</strong> — every product page says what's live and what's still being built. See our <a href="roadmap.html" style="color:var(--accent);">full roadmap</a>.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--success-soft);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--success);flex-shrink:0;"><span data-icon="check" data-icon-size="14"></span></div>
+            <div><strong style="font-size:14px;">One unified integration</strong> — checkout, invoicing, subscriptions, and fraud detection in one API, one dashboard, one settlement.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Code example -->
+      <div data-animate style="transition-delay:.15s">
+        <div class="code-block">
+          <div class="code-block-header"><span>create a checkout session</span></div>
+          <pre class="code-block-body"><span style="color:#9089ff;">POST</span> /v1/checkout/sessions
+Idempotency-Key: <span style="color:#3ddc97;">order-1029</span>
+
+{
+  <span style="color:#3ddc97;">"amount_minor"</span>: <span style="color:#ffcf5c;">499900</span>,
+  <span style="color:#3ddc97;">"currency"</span>: <span style="color:#3ddc97;">"PKR"</span>,
+  <span style="color:#3ddc97;">"customer_email"</span>: <span style="color:#3ddc97;">"buyer@example.com"</span>,
+  <span style="color:#3ddc97;">"return_url"</span>: <span style="color:#3ddc97;">"https://shop.example/thanks"</span>
+}
+
+<span style="color:#656d80;">// → { checkout_url: "https://ppay.pk/c/cs_..." }</span></pre>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:12px;">→ <a href="developers.html" style="color:var(--accent);">Read the full API docs</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SENTINEL TEASER -->
+<section class="section-sm" style="background:var(--accent-soft);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="grid-2" style="gap:48px;align-items:center;" data-animate>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+          <h2 class="section-title" style="font-size:clamp(22px,2.5vw,32px);">PPay Sentinel</h2>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <p style="font-size:14px;color:var(--text-muted);line-height:1.7;">Six deterministic signals combine into a 0–100 score, checked before any payment rail is called. A blocked attempt never reaches authorization — every flag that fired is visible on the transaction, with no black box.</p>
+        <a href="sentinel.html" class="btn btn-primary mt-20">Explore Sentinel →</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;">velocity_email</div>
+            <div style="font-size:11px;color:var(--text-faint);">4+ attempts · same email · 10 min window</div>
+          </div>
+          <span class="badge badge-danger">Triggered</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;">first_time_customer</div>
+            <div style="font-size:11px;color:var(--text-faint);">No prior succeeded transaction</div>
+          </div>
+          <span class="badge badge-danger">Triggered</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;">amount_deviation</div>
+            <div style="font-size:11px;color:var(--text-faint);">5× this merchant's trailing average</div>
+          </div>
+          <span class="badge badge-pending">Triggered</span>
+        </div>
+        <div style="margin-top:4px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin-bottom:6px;">Decision</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:20px;font-weight:900;color:var(--danger);">BLOCKED</div>
+            <div style="font-size:12px;color:var(--text-faint);">Risk score: 82 / 100</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HONEST STATUS BAR -->
+<section class="section-sm" style="background:var(--surface);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="text-center mb-32" data-animate>
+      <div class="section-eyebrow">Where we are</div>
+      <h2 class="section-title" style="font-size:clamp(22px,3vw,32px);">Honest build status</h2>
+      <p class="section-sub" style="margin-top:8px;">The full picture, including what isn't built yet, lives on the <a href="roadmap.html" style="color:var(--accent);">roadmap</a>.</p>
+    </div>
+    <div class="grid-4" style="gap:16px;" data-animate>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--success);"></div><span style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;">Live in sandbox</span></div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px;">Core payment API</div>
+        <div style="font-size:12px;color:var(--text-muted);">Checkout, payment links, invoicing, subscriptions, webhooks, and the merchant dashboard.</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--success);"></div><span style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;">Live in sandbox</span></div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px;">Sentinel rule engine</div>
+        <div style="font-size:12px;color:var(--text-muted);">Six deterministic signals scored on every checkout attempt, with a fixed 75-point block threshold.</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></div><span style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;">Being worked on</span></div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px;">Licensed partner arrangement</div>
+        <div style="font-size:12px;color:var(--text-muted);">Structuring the bank/PSP partnership that will hold funds. PPay does not custody money itself.</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--text-faint);"></div><span style="font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;">Not started</span></div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px;">Real money movement</div>
+        <div style="font-size:12px;color:var(--text-muted);">Every payment today is a sandbox construct until that partnership is in place.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container" data-animate>
+    <div class="cta-band">
+      <h2>Try it in sandbox today</h2>
+      <p>Full sandbox access, test cards, test wallets, and Sentinel in action. No credit card, no approval needed.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+        <a href="developers.html" class="btn btn-white btn-lg">Read the docs →</a>
+        <a href="pricing.html" class="btn btn-outline-white btn-lg">See pricing</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://app.1chat.autruckers.com/widget/widgetbundle.js"
+        data-api-key="8101df3241be07369315cebe5a5b905c21afddfc2b5633d762d8856521401ed0"
+        async defer></script>
+</body>
+</html>

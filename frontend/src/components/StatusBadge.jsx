@@ -14,6 +14,10 @@ const VARIANT_BY_STATUS = {
   created: "badge-neutral",
   incomplete: "badge-neutral",
   requires_reconciliation: "badge-pending",
+  needs_response: "badge-danger",
+  under_review: "badge-pending",
+  won: "badge-success",
+  lost: "badge-danger",
 };
 
 const LABEL_OVERRIDE = {

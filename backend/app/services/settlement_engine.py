@@ -4,10 +4,12 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import Mode, session_factory_for_mode
+from app.core.db import Mode, session_factory_for_mode, stamp_mode
 from app.models.merchant import Merchant, PayoutSchedule
+from app.models.notification import NotificationCategory
 from app.models.settlement import Settlement, SettlementItem, SettlementStatus
 from app.models.transaction import Transaction, TransactionStatus
+from app.services.notifications import notify
 
 # How long a settlement sits as "pending" before it's swept into a simulated
 # payout, based on the merchant's chosen payout schedule — mirrors the way a
@@ -77,6 +79,7 @@ async def run_settlement_batch_job() -> None:
     and production are entirely separate transaction sets — see core/db.py)."""
     for mode in Mode:
         async with session_factory_for_mode(mode)() as db:
+            stamp_mode(db, mode)
             await run_settlement_batch(db)
             await db.commit()
 
@@ -99,6 +102,20 @@ async def process_due_payouts(db: AsyncSession, now: datetime | None = None) -> 
             settlement.paid_at = now
             paid.append(settlement)
 
+            await notify(
+                db,
+                merchant_id=merchant.id,
+                category=NotificationCategory.PAYOUT,
+                title="Payout sent",
+                body=(
+                    f"Rs {settlement.net_amount_minor / 100:,.2f} for {settlement.transaction_count} "
+                    f"payment{'s' if settlement.transaction_count != 1 else ''} was paid out to your bank account."
+                ),
+                resource_type="settlement",
+                resource_id=settlement.id,
+                link="/dashboard/balances",
+            )
+
     await db.flush()
     return paid
 
@@ -107,5 +124,6 @@ async def process_due_payouts_job() -> None:
     """APScheduler job wrapper: sweeps due payouts once per mode."""
     for mode in Mode:
         async with session_factory_for_mode(mode)() as db:
+            stamp_mode(db, mode)
             await process_due_payouts(db)
             await db.commit()

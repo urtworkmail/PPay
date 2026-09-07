@@ -351,6 +351,27 @@ export const PlugIcon = (p) => (
   </svg>
 );
 
+export const CheckIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M5 13l4.5 4.5L19 7" />
+  </svg>
+);
+
+export const PencilIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 20l.9-4 10.6-10.6a2 2 0 0 1 2.8 0l.3.3a2 2 0 0 1 0 2.8L8 19l-4 1z" />
+    <path d="M13.5 6.5l4 4" />
+  </svg>
+);
+
+export const LogoutIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M9 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3" />
+    <path d="M14 8l4 4-4 4" />
+    <path d="M18 12H9" />
+  </svg>
+);
+
 export const BookIcon = (p) => (
   <svg {...base} {...p}>
     <path d="M4 5.5c2-1 5-1 8 .5 3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z" />

@@ -136,3 +136,41 @@ async def cancel_payment_intent(db: AsyncSession, intent: PaymentIntent) -> None
     intent.status = PaymentIntentStatus.CANCELED
     intent.updated_at = datetime.now(timezone.utc)
     await db.flush()
+
+
+async def apply_refund(
+    db: AsyncSession, *, source_type: PaymentIntentSourceType, source_id: uuid.UUID, amount_minor: int
+) -> Charge | None:
+    """Mirror a refund onto the orchestrator's Charge, alongside whatever
+    legacy `Transaction`/`Refund` write the caller already made.
+
+    Looks up the intent the same way `api/v1/transactions.py::get_transaction`
+    already does (by source), then its most recent succeeded charge. Returns
+    None when there's no dual-written intent to update — legacy Transactions
+    predating this table's introduction, or a source type checkout.py hasn't
+    started dual-writing for yet. Silent no-op rather than an error: the
+    legacy refund is the one guaranteed to always exist and always succeed.
+    """
+    intent_result = await db.execute(
+        select(PaymentIntent).where(
+            PaymentIntent.source_type == source_type, PaymentIntent.source_id == source_id
+        )
+    )
+    intent = intent_result.scalar_one_or_none()
+    if intent is None:
+        return None
+
+    charge_result = await db.execute(
+        select(Charge)
+        .where(Charge.payment_intent_id == intent.id, Charge.status == ChargeStatus.SUCCEEDED)
+        .order_by(Charge.attempt_number.desc())
+        .limit(1)
+    )
+    charge = charge_result.scalar_one_or_none()
+    if charge is None:
+        return None
+
+    charge.refunded_amount_minor += amount_minor
+    charge.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    return charge

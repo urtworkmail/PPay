@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products — PPay Payment Infrastructure</title>
+  <meta name="description" content="Everything PPay ships today: Checkout, Payment Links, Invoicing, Subscriptions, Sentinel fraud detection, Disputes, Analytics, Tax, Financial Connections, Notifications, and Team &amp; Security." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<script src="icons.js"></script>
+<script src="shared.js"></script>
+
+<!-- HERO -->
+<section class="page-top" style="border-bottom:1px solid var(--border);background:var(--surface);">
+  <div class="container">
+    <div class="text-center" data-animate>
+      <div class="section-eyebrow">Everything PPay ships today</div>
+      <h1 class="hero-title mt-12">One dashboard.<br>Every product you need to get paid.</h1>
+      <p class="hero-sub mt-20">Not a roadmap slide — every product below is live in sandbox right now. Each links to its own page with what it actually does, and what it doesn't yet.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS (compacted from the former standalone page) -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-48" data-animate>
+      <div class="section-eyebrow">How it works</div>
+      <h2 class="section-title">The actual sequence, not a sales pitch</h2>
+      <p class="section-sub">Sign up, pick a way to collect a payment, and the rest updates itself.</p>
+    </div>
+
+    <div class="grid-2" style="gap:20px;max-width:920px;margin:0 auto;" data-animate>
+      <div class="feature-card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;">1</div>
+        <div><div class="feature-card-title">Sign up</div><div class="feature-card-body">Create an account — a sandbox API key is generated automatically, no approval wait.</div></div>
+      </div>
+      <div class="feature-card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;">2</div>
+        <div><div class="feature-card-title">Pick a way to collect payment</div><div class="feature-card-body">A payment link, an invoice, hosted <a href="checkout.html">Checkout</a>, or your own integration against the API.</div></div>
+      </div>
+      <div class="feature-card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;">3</div>
+        <div><div class="feature-card-title"><a href="sentinel.html">Sentinel</a> scores it, then the customer pays</div><div class="feature-card-body">Test cards/wallets produce deterministic outcomes — one always declines, one always succeeds.</div></div>
+      </div>
+      <div class="feature-card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;">4</div>
+        <div><div class="feature-card-title">Dashboard + <a href="notifications.html">notifications</a> update instantly</div><div class="feature-card-body">No manual refresh — the transaction list, volume chart, and your activity feed update the moment it completes.</div></div>
+      </div>
+      <div class="feature-card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;">5</div>
+        <div><div class="feature-card-title">Nightly settlement</div><div class="feature-card-body">A scheduled job batches the day's payments — see it on <a href="balances-payouts.html">Balances &amp; Payouts</a>.</div></div>
+      </div>
+      <div class="feature-card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;">6</div>
+        <div><div class="feature-card-title">Refund, or respond to a dispute</div><div class="feature-card-body">Any unsettled payment can be refunded; a chargeback goes to <a href="disputes.html">Disputes</a> with a 7-day response clock.</div></div>
+      </div>
+    </div>
+
+    <div class="text-center mt-32" data-animate>
+      <a href="developers.html" class="btn btn-secondary">See the exact API calls →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENTS -->
+<section class="section" style="background:var(--surface);border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="mb-32" data-animate>
+      <div class="section-eyebrow">Payments</div>
+      <h2 class="section-title">Collect money, however your customer wants to pay</h2>
+    </div>
+    <div class="grid-2" style="gap:20px;" data-animate>
+      <a href="checkout.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent" style="margin:0;"><span data-icon="card"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title" style="font-size:16px;">Checkout</div>
+        <div class="feature-card-body">A hosted payment page — card, wallet, and bank transfer, mobile-optimised, with Sentinel scoring before the charge is attempted.</div>
+      </a>
+      <a href="payment-links.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent" style="margin:0;"><span data-icon="link"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title" style="font-size:16px;">Payment Links</div>
+        <div class="feature-card-body">Collect a payment with no code and no website — generate a link, share it on WhatsApp or SMS.</div>
+      </a>
+      <a href="invoicing.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent" style="margin:0;"><span data-icon="invoice"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title" style="font-size:16px;">Invoicing</div>
+        <div class="feature-card-body">Auto-numbered, one-off invoices your customer pays online — with a footer you control.</div>
+      </a>
+      <a href="subscriptions.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box icon-accent" style="margin:0;"><span data-icon="refresh"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title" style="font-size:16px;">Subscriptions</div>
+        <div class="feature-card-body">Recurring billing with saved payment methods and automatic retry on a failed cycle.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- RISK, MONEY, PLATFORM -->
+<section class="section">
+  <div class="container">
+    <div class="mb-32" data-animate>
+      <div class="section-eyebrow">Risk, money &amp; platform</div>
+      <h2 class="section-title">Everything around the payment itself</h2>
+    </div>
+    <div class="grid-3" style="gap:20px;" data-animate>
+      <a href="sentinel.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="shield"></span></div>
+          <span class="badge badge-success">Partially live</span>
+        </div>
+        <div class="feature-card-title">Sentinel</div>
+        <div class="feature-card-body">Real-time risk scoring — a high-risk attempt is blocked before it reaches a payment rail.</div>
+      </a>
+      <a href="disputes.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="scale"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Disputes</div>
+        <div class="feature-card-body">Respond to a chargeback from one place, with a clear response deadline.</div>
+      </a>
+      <a href="analytics.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="chart"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Analytics</div>
+        <div class="feature-card-body">Trends, comparisons, and a payment-method breakdown — not just a single snapshot.</div>
+      </a>
+      <a href="tax.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="receipt"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Tax</div>
+        <div class="feature-card-body">Pakistan provincial Sales Tax on Services, computed on PPay's own fee.</div>
+      </a>
+      <a href="balances-payouts.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="bank"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Balances &amp; Payouts</div>
+        <div class="feature-card-body">Nightly settlement batches, and a payout schedule you control.</div>
+      </a>
+      <a href="financial-connections.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="plug"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Financial Connections</div>
+        <div class="feature-card-body">Micro-deposit verification that you actually control your payout bank account.</div>
+      </a>
+      <a href="notifications.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="bell"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Notifications</div>
+        <div class="feature-card-body">An activity feed for every account change, plus email alerts you control.</div>
+      </a>
+      <a href="team-security.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="users"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Team &amp; Security</div>
+        <div class="feature-card-body">Roles, two-factor auth, and per-device session control.</div>
+      </a>
+      <a href="developers.html" class="feature-card card-hover" style="text-decoration:none;display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="icon-box" style="background:var(--bg);color:var(--text);margin:0;border:1px solid var(--border);"><span data-icon="key"></span></div>
+          <span class="badge badge-success">Live in sandbox</span>
+        </div>
+        <div class="feature-card-title">Developers</div>
+        <div class="feature-card-body">REST API, signed webhooks with retries, and deterministic test credentials.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SIMULATION NOTICE -->
+<section class="section" style="padding-top:0;">
+  <div class="container" data-animate>
+    <div style="background:var(--pending-soft);border:1px solid var(--pending);border-radius:var(--radius-lg);padding:32px;display:flex;gap:20px;align-items:flex-start;">
+      <div style="color:var(--pending);display:flex;"><span data-icon="alert" data-icon-size="24"></span></div>
+      <div>
+        <h4 style="font-size:18px;font-weight:700;color:var(--pending);margin-bottom:8px;">Every product above runs in sandbox</h4>
+        <p style="font-size:14.5px;color:var(--text);line-height:1.6;margin-bottom:12px;">Cards, wallets, and settlement batches are sandbox constructs. Nothing here moves real money between real bank accounts yet — see what changes when that becomes true on our roadmap.</p>
+        <a href="roadmap.html" class="btn btn-outline btn-sm">View Roadmap</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0;">
+  <div class="container" data-animate>
+    <div class="cta-band">
+      <h2>Explore the APIs</h2>
+      <p>Every product on this page is reachable via our REST API. Test the integration in sandbox mode instantly.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+        <a href="developers.html" class="btn btn-white btn-lg">View API Reference →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://app.1chat.autruckers.com/widget/widgetbundle.js"
+        data-api-key="8101df3241be07369315cebe5a5b905c21afddfc2b5633d762d8856521401ed0"
+        async defer></script>
+</body>
+</html>

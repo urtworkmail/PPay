@@ -136,6 +136,34 @@ export default function GoLive() {
     setStepIndex(i);
   }
 
+  function startResubmit() {
+    // Pre-fill from the rejected request rather than making the merchant
+    // retype everything that was already fine — only whatever caused the
+    // rejection needs to change.
+    setForm({
+      businessType: request.business_type,
+      legalBusinessName: request.legal_business_name,
+      businessCategory: request.business_category,
+      registrationNumber: request.registration_number ?? "",
+      nationalTaxNumber: request.national_tax_number ?? "",
+      businessAddress: request.business_address,
+      websiteUrl: request.website_url ?? "",
+      productDescription: request.product_description,
+      representativeFullName: request.representative_full_name,
+      representativeCnic: request.representative_cnic,
+      representativeDob: request.representative_dob,
+      representativeAddress: request.representative_address,
+      bankName: request.bank_name,
+      bankAccountNumber: request.bank_account_number,
+      contactPhone: request.contact_phone,
+      notes: request.notes ?? "",
+      termsAccepted: false,
+    });
+    setStepIndex(0);
+    setFurthestIndex(0);
+    setRequest(null);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
@@ -198,6 +226,19 @@ export default function GoLive() {
             {request.status === "approved" && <span className="badge badge-success">Approved — live mode active</span>}
             {request.status === "rejected" && <span className="badge badge-danger">Application rejected</span>}
           </div>
+          {request.status === "rejected" && request.rejection_reason && (
+            <div
+              className="badge badge-danger"
+              style={{ display: "block", padding: "10px 12px", marginBottom: 14, whiteSpace: "normal" }}
+            >
+              <strong>Reason:</strong> {request.rejection_reason}
+            </div>
+          )}
+          {request.status === "rejected" && (
+            <button className="btn btn-primary" onClick={startResubmit} style={{ marginBottom: 12 }}>
+              Update and resubmit
+            </button>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 13 }}>
             <div>
               <div style={{ color: "var(--color-text-faint)", fontSize: 12 }}>Business type</div>

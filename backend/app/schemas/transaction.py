@@ -16,6 +16,8 @@ class TransactionResponse(BaseModel):
     failure_reason: str | None
     payment_method_details: dict
     settled: bool
+    risk_score: int = 0
+    risk_flags: list[str] = Field(default_factory=list)
     customer_email: str | None = None
     created_at: datetime
     updated_at: datetime

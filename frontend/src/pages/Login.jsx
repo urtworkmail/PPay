@@ -74,7 +74,7 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout title="Log in to PPay" subtitle="Sandbox mode — no real funds are moved.">
+    <AuthLayout title="Welcome back" subtitle="Log in to PPay. Sandbox mode — no real funds are moved.">
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {error && (
           <div className="badge badge-danger" style={{ width: "100%", padding: "10px 12px" }}>
@@ -92,7 +92,12 @@ export default function Login() {
           />
         </label>
         <label style={{ fontSize: 13, fontWeight: 500 }}>
-          Password
+          <span style={{ display: "flex", justifyContent: "space-between" }}>
+            Password
+            <Link to="/forgot-password" style={{ color: "var(--color-accent)", fontWeight: 600 }}>
+              Forgot password?
+            </Link>
+          </span>
           <input
             type="password"
             required

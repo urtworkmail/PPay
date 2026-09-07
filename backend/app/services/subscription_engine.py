@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.db import Mode, session_factory_for_mode
+from app.core.db import Mode, session_factory_for_mode, stamp_mode
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus, PaymentMethod
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.payment_intent import PaymentIntentSourceType
@@ -241,5 +241,6 @@ async def run_subscription_billing_job() -> None:
     and production subscriptions are entirely separate — see core/db.py)."""
     for mode in Mode:
         async with session_factory_for_mode(mode)() as db:
+            stamp_mode(db, mode)
             await run_subscription_billing(db)
             await db.commit()

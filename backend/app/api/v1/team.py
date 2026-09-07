@@ -14,6 +14,7 @@ from app.models.merchant import Merchant
 from app.models.user import User, UserRole, UserStatus
 from app.schemas.auth import TokenPair
 from app.services.audit_log import record_audit_event
+from app.services.email import send_team_invite
 from app.schemas.user import (
     AcceptInviteRequest,
     InviteContextResponse,
@@ -47,7 +48,7 @@ async def _count_active_owners(db: AsyncSession, merchant_id: uuid.UUID) -> int:
 async def invite_team_member(
     payload: TeamInviteRequest,
     merchant: Merchant = Depends(get_current_merchant),
-    _: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
+    inviter: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db),
 ) -> TeamInviteResponse:
     if payload.role not in VALID_ROLES:
@@ -80,11 +81,21 @@ async def invite_team_member(
     await db.commit()
     await db.refresh(invited)
 
+    invite_url = f"{_frontend_origin()}/accept-invite/{token}"
+    # The URL is still returned so the inviter can copy it manually — mail
+    # delivery is best-effort and must not be the only way in.
+    await send_team_invite(
+        to_email=invited.email,
+        business_name=merchant.business_name,
+        invited_by=inviter.email,
+        invite_url=invite_url,
+    )
+
     return TeamInviteResponse(
         id=invited.id,
         email=invited.email,
         role=invited.role,
-        invite_url=f"{_frontend_origin()}/accept-invite/{token}",
+        invite_url=invite_url,
     )
 
 

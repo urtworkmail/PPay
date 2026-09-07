@@ -30,7 +30,7 @@ import {
 } from "../components/Icons";
 
 export const TOP_ITEMS = [
-  { to: "/dashboard", label: "Home", icon: HomeIcon, end: true },
+  { to: "/dashboard", label: "Dashboard", icon: HomeIcon, end: true },
   { to: "/dashboard/balances", label: "Balances", icon: BankIcon },
   { to: "/dashboard/transactions", label: "Transactions", icon: ListIcon },
   { to: "/dashboard/customers", label: "Customers", icon: UsersIcon },
@@ -40,7 +40,7 @@ export const TOP_ITEMS = [
 export const SHORTCUTS = [
   { to: "/dashboard/subscriptions", label: "Subscriptions", icon: RefreshIcon },
   { to: "/dashboard/invoices", label: "Invoices", icon: InvoiceIcon },
-  { to: "/dashboard/coming-soon/payments-analytics", label: "Payments Analytics", icon: ChartIcon, soon: true },
+  { to: "/dashboard/analytics", label: "Payments Analytics", icon: ChartIcon },
   { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
 ];
 
@@ -51,8 +51,8 @@ export const PRODUCT_GROUPS = [
   {
     label: "Payments",
     items: [
-      { to: "/dashboard/coming-soon/payments-analytics", label: "Analytics", icon: ChartIcon, soon: true },
-      { to: "/dashboard/coming-soon/disputes", label: "Disputes", icon: AlertIcon, soon: true },
+      { to: "/dashboard/analytics", label: "Analytics", icon: ChartIcon },
+      { to: "/dashboard/disputes", label: "Disputes", icon: AlertIcon },
       { to: "/dashboard/payment-links", label: "Payment Links", icon: LinkIcon },
       { to: "/dashboard/sentinel", label: "Sentinel", icon: ShieldIcon },
     ],
@@ -80,9 +80,9 @@ export const PRODUCT_GROUPS = [
     label: "More",
     items: [
       { to: "/dashboard/coming-soon/profiles", label: "Profiles", icon: IdCardIcon, soon: true },
-      { to: "/dashboard/coming-soon/tax", label: "Tax", icon: ReceiptIcon, soon: true },
+      { to: "/dashboard/tax", label: "Tax", icon: ReceiptIcon },
       { to: "/dashboard/coming-soon/identity", label: "Identity", icon: FingerprintIcon, soon: true },
-      { to: "/dashboard/coming-soon/financial-connections", label: "Financial Connections", icon: PlugIcon, soon: true },
+      { to: "/dashboard/financial-connections", label: "Financial Connections", icon: PlugIcon },
       { to: "/dashboard/coming-soon/workflows", label: "Workflows", icon: WorkflowIcon, soon: true },
       { to: "/dashboard/coming-soon/issuing", label: "Issuing", icon: CardIcon, soon: true },
     ],
@@ -101,7 +101,7 @@ export const ACCOUNT = [
   { to: "/dashboard/go-live", label: "Go Live", icon: RocketIcon },
 ];
 
-const ALL_NAV_ITEMS = [
+export const ALL_NAV_ITEMS = [
   ...TOP_ITEMS,
   ...SHORTCUTS,
   ...PRODUCT_GROUPS.flatMap((g) => g.items),
@@ -122,6 +122,12 @@ const SEGMENT_LABELS = {
   billing: "Billing",
   documents: "Documents",
   help: "Help",
+  notifications: "Notifications",
+  sessions: "Active sessions",
+  disputes: "Disputes",
+  analytics: "Analytics",
+  tax: "Tax",
+  "financial-connections": "Financial Connections",
   status: "System Status",
   sentinel: "Sentinel",
   "go-live": "Go Live",
@@ -138,12 +144,12 @@ function titleCase(slug) {
 
 export function getBreadcrumb(pathname) {
   const exact = ALL_NAV_ITEMS.find((item) => item.to === pathname);
-  if (exact) return [{ label: "Dashboard", to: "/dashboard" }, { label: exact.label }];
+  if (exact) return [{ label: "Home", to: "/dashboard" }, { label: exact.label }];
 
   const segments = pathname.replace(/^\/dashboard\/?/, "").split("/").filter(Boolean);
   if (segments.length === 0) return [{ label: "Home" }];
 
-  const crumbs = [{ label: "Dashboard", to: "/dashboard" }];
+  const crumbs = [{ label: "Home", to: "/dashboard" }];
   let accPath = "/dashboard";
   segments.forEach((seg, i) => {
     accPath += `/${seg}`;

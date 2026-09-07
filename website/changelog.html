@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Updates & Changelog — PPay</title>
+  <meta name="description" content="Latest updates, feature releases, and architectural changes for PPay." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<script src="icons.js"></script>
+<script src="shared.js"></script>
+
+<!-- HERO -->
+<section class="page-top" style="border-bottom:1px solid var(--border);background:var(--surface);">
+  <div class="container">
+    <div class="text-center" data-animate>
+      <div class="section-eyebrow">Changelog</div>
+      <h1 class="hero-title mt-12">Product Updates</h1>
+      <p class="hero-sub mt-20 max-w-lg">Track our progress as we build Pakistan's payment infrastructure platform. All notable architectural changes and feature releases are logged here.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CHANGELOG CONTENT -->
+<section class="section">
+  <div class="container" style="max-width:800px;">
+    
+    <!-- v3 -->
+    <div style="margin-bottom:64px;" data-animate>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+        <h2 style="font-size:28px;font-weight:800;">v3, Stripe-parity architecture rebuild</h2>
+        <span class="badge badge-pending">In progress</span>
+      </div>
+      
+      <p style="font-size:15px;color:var(--text-muted);margin-bottom:32px;">Multi-phase rebuild bringing PPay onto a single PaymentIntent orchestration core, matching modern payment architectures and workflows.</p>
+
+      <!-- Phase 3 -->
+      <div style="margin-bottom:48px;">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Phase 3, No-delete data policy, platform super admin, audit log</h3>
+        <ul style="display:flex;flex-direction:column;gap:12px;list-style:none;">
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-success" style="width:28px;height:28px;font-size:14px;">✓</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">No hard deletes</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Audited every mutating endpoint. Two real hard deletes were found and converted to soft state changes that preserve history. Every other "delete" route already soft-deactivates.</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-success" style="width:28px;height:28px;font-size:14px;">✓</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">Audit log</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Added tenant-scoped, append-only AuditLogEntry. Records data changes made by team members/owners, with actor identity threaded via a request-scoped contextvar.</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-success" style="width:28px;height:28px;font-size:14px;">✓</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">Platform super admin</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Created a new PlatformAdmin identity, entirely separate from any merchant's User/Owner, living in the shared public schema.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Phase 2 -->
+      <div style="margin-bottom:48px;">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Phase 2, PaymentIntent/Charge orchestrator</h3>
+        <ul style="display:flex;flex-direction:column;gap:12px;list-style:none;">
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-accent" style="width:28px;height:28px;font-size:14px;">+</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">Payment Intent Engine</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Implemented get_or_create_payment_intent and record_charge_attempt, which handles state machine transitions including ambiguous failures.</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-accent" style="width:28px;height:28px;font-size:14px;">+</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">Dual-writes enabled</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Checkout's pay endpoint and subscription off-session billing now write a PaymentIntent/Charge pair alongside their existing Transaction write.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Phase 1 -->
+      <div style="margin-bottom:48px;">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Phase 1, Data model unification & test/live schema separation</h3>
+        <ul style="display:flex;flex-direction:column;gap:12px;list-style:none;">
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-accent" style="width:28px;height:28px;font-size:14px;">+</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">Sandbox/production schema separation</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Implemented two real Postgres schemas (sandbox, production) instead of a boolean flag, resolved automatically via API key prefixes.</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-accent" style="width:28px;height:28px;font-size:14px;">+</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">New core entities</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Added Customer, PaymentIntent, Charge, Coupon, Discount, Dispute, LedgerEntry, ReconciliationRecord, Event.</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;">
+            <div class="icon-box icon-accent" style="width:28px;height:28px;font-size:14px;">+</div>
+            <div>
+              <div style="font-weight:600;font-size:14.5px;">Mode-prefixed public references</div>
+              <div style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Introduced prefixes like cs_sandbox_... to automatically route anonymous buyers to the correct schema.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0;">
+  <div class="container" data-animate>
+    <div class="cta-band">
+      <h2>Build with us</h2>
+      <p>Test the sandbox environment today and experience the new architecture.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+        <a href="developers.html" class="btn btn-white btn-lg">View Docs →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://app.1chat.autruckers.com/widget/widgetbundle.js"
+        data-api-key="8101df3241be07369315cebe5a5b905c21afddfc2b5633d762d8856521401ed0"
+        async defer></script>
+</body>
+</html>

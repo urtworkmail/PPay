@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import DateTime, Enum, String, Text, func
+from sqlalchemy import DateTime, Enum, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -27,6 +27,31 @@ class PayoutSchedule(StrEnum):
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
+
+
+class TaxFilerStatus(StrEnum):
+    """FBR active taxpayer list status — determines the withholding tax rate
+    applied to payments (non-filers are withheld at a materially higher rate
+    under the Income Tax Ordinance). `UNKNOWN` is the honest default: PPay has
+    no way to verify FBR status on its own, so tax figures shown before the
+    merchant sets this explicitly are marked accordingly rather than assuming
+    filer status."""
+
+    UNKNOWN = "unknown"
+    FILER = "filer"
+    NON_FILER = "non_filer"
+
+
+class TaxProvince(StrEnum):
+    """Which provincial (or federal-territory) revenue authority's Sales Tax on
+    Services applies — Pakistan taxes services provincially, not federally, so
+    this alone (not `country`) determines the sales tax rate."""
+
+    PUNJAB = "punjab"
+    SINDH = "sindh"
+    KHYBER_PAKHTUNKHWA = "khyber_pakhtunkhwa"
+    BALOCHISTAN = "balochistan"
+    ISLAMABAD_CAPITAL_TERRITORY = "islamabad_capital_territory"
 
 
 class Merchant(Base):
@@ -60,6 +85,14 @@ class Merchant(Base):
     payout_schedule: Mapped[PayoutSchedule] = mapped_column(
         Enum(PayoutSchedule, name="payout_schedule"), default=PayoutSchedule.WEEKLY, nullable=False
     )
+    # Micro-deposit verification that the merchant controls this bank account
+    # — see services/bank_verification.py. Cleared whenever the account number
+    # changes (a different account has proven nothing).
+    payout_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    payout_verification_amount_1: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    payout_verification_amount_2: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    payout_verification_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    payout_verification_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Payments / checkout policies
     enabled_payment_methods: Mapped[list] = mapped_column(
@@ -70,6 +103,17 @@ class Merchant(Base):
 
     # Billing settings
     invoice_footer: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Tax registration — see services/tax_calculator.py for how these drive
+    # the sales-tax and withholding-tax figures on the Tax report.
+    national_tax_number: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    sales_tax_registration_number: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    tax_filer_status: Mapped[TaxFilerStatus] = mapped_column(
+        Enum(TaxFilerStatus, name="tax_filer_status"), default=TaxFilerStatus.UNKNOWN, nullable=False
+    )
+    tax_province: Mapped[TaxProvince | None] = mapped_column(
+        Enum(TaxProvince, name="tax_province"), nullable=True
+    )
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

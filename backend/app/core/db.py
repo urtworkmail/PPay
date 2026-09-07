@@ -57,6 +57,25 @@ def session_factory_for_mode(mode: Mode) -> async_sessionmaker[AsyncSession]:
     return _SESSION_FACTORIES[mode]
 
 
+def stamp_mode(session: AsyncSession, mode: Mode) -> None:
+    """Records which mode a session was opened for, in `Session.info` (the
+    ORM's built-in slot for exactly this kind of per-session metadata).
+
+    The schema-translate trick above means a query never has to filter by
+    mode, but some things — an `Event`'s `livemode` flag, for one — need to
+    record which mode they happened in rather than just query correctly
+    within it. Reading `mode` back out of the schema a session is bound to
+    would work but is indirect; stamping it once at session creation is
+    simpler and cannot drift from the schema it's actually using.
+    """
+    session.sync_session.info["mode"] = mode
+
+
+def livemode_of(session: AsyncSession) -> bool:
+    """Whether `session` was opened against the live (production) schema."""
+    return session.sync_session.info.get("mode") == Mode.LIVE
+
+
 def resolve_request_mode(request: Request) -> Mode:
     """Determine sandbox vs. live for this request, once, from information
     that's available with zero DB lookups — the whole point being that a
@@ -94,4 +113,5 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """
     mode = resolve_request_mode(request)
     async with session_factory_for_mode(mode)() as session:
+        stamp_mode(session, mode)
         yield session

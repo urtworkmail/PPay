@@ -11,8 +11,9 @@ from app.models.merchant import Merchant
 from app.models.settlement import Settlement, SettlementStatus
 from app.models.transaction import Transaction, TransactionStatus
 from app.schemas.analytics import DashboardAnalyticsResponse
+from app.schemas.payments_analytics import PaymentsAnalyticsResponse
 from app.schemas.settlement import BalanceSummaryResponse, DashboardSummaryResponse, SettlementResponse
-from app.services.analytics import get_dashboard_analytics
+from app.services.analytics import get_dashboard_analytics, get_payments_analytics
 from app.services.settlement_engine import PAYOUT_DELAY_DAYS
 
 router = APIRouter(tags=["settlements"])
@@ -161,3 +162,14 @@ async def dashboard_analytics(
     if period_days not in VALID_PERIODS:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="period_days must be one of 7, 30, 90")
     return await get_dashboard_analytics(db, merchant.id, period_days)
+
+
+@router.get("/dashboard/payments-analytics", response_model=PaymentsAnalyticsResponse)
+async def dashboard_payments_analytics(
+    period_days: int = Query(default=30),
+    merchant: Merchant = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+) -> PaymentsAnalyticsResponse:
+    if period_days not in VALID_PERIODS:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="period_days must be one of 7, 30, 90")
+    return await get_payments_analytics(db, merchant.id, period_days)

@@ -109,6 +109,7 @@ class GoLiveResponse(BaseModel):
     bank_account_number: str
     submitted_at: datetime
     reviewed_at: datetime | None
+    rejection_reason: str | None = None
 
     model_config = {"from_attributes": True}
 

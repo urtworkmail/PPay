@@ -1,20 +1,21 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_merchant_and_key_from_api_key, get_merchant_from_api_key
 from app.core.config import get_settings
-from app.core.db import Mode, get_db, session_factory_for_mode
+from app.core.db import Mode, get_db, session_factory_for_mode, stamp_mode
 from app.core.idempotency import require_idempotency_key
 from app.core.public_ref import CHECKOUT_SESSION_PREFIX, decode_ref, encode_ref
 from app.models.api_key import ApiKey, ApiKeyMode
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus, PaymentMethod
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.merchant import Merchant
+from app.models.notification import NotificationCategory, NotificationSeverity
 from app.models.payment_intent import PaymentIntentSourceType
 from app.models.subscription import SavedPaymentMethod, SavedPaymentMethodType, Subscription, SubscriptionStatus
 from app.models.transaction import Transaction, TransactionStatus
@@ -24,6 +25,8 @@ from app.schemas.checkout import CheckoutPayRequest, CheckoutSessionCreateReques
 from app.schemas.transaction import TransactionResponse
 from app.services import sandbox_engine
 from app.services.fee_calculator import calculate_fee_minor, calculate_net_minor
+from app.services.fraud_engine import assess as assess_fraud
+from app.services.notifications import notify
 from app.services.payment_intent_engine import get_or_create_payment_intent, record_charge_attempt
 from app.services.subscription_engine import activate_subscription
 from app.services.webhook_dispatcher import deliver_webhook, enqueue_webhook_event
@@ -143,6 +146,7 @@ async def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
     # no API key or dashboard session here to read it from.
     mode, real_id = _decode_checkout_ref(session_id)
     async with session_factory_for_mode(mode)() as db:
+        stamp_mode(db, mode)
         session = await db.get(CheckoutSession, real_id)
         if session is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checkout session not found")
@@ -157,13 +161,17 @@ async def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
 
 
 @router.post("/sessions/{session_id}/pay", response_model=TransactionResponse)
-async def pay_checkout_session(session_id: str, payload: CheckoutPayRequest) -> Transaction:
+async def pay_checkout_session(session_id: str, payload: CheckoutPayRequest, request: Request) -> Transaction:
     mode, real_id = _decode_checkout_ref(session_id)
+    buyer_ip = request.client.host if request.client else None
     async with session_factory_for_mode(mode)() as db:
-        return await _pay_checkout_session(real_id, payload, db)
+        stamp_mode(db, mode)
+        return await _pay_checkout_session(real_id, payload, db, buyer_ip=buyer_ip)
 
 
-async def _pay_checkout_session(session_id: uuid.UUID, payload: CheckoutPayRequest, db: AsyncSession) -> Transaction:
+async def _pay_checkout_session(
+    session_id: uuid.UUID, payload: CheckoutPayRequest, db: AsyncSession, buyer_ip: str | None = None
+) -> Transaction:
     session = await db.get(CheckoutSession, session_id)
     if session is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checkout session not found")
@@ -192,9 +200,26 @@ async def _pay_checkout_session(session_id: uuid.UUID, payload: CheckoutPayReque
 
     session.status = CheckoutSessionStatus.PENDING
     session.method = method
+    if buyer_ip:
+        session.buyer_ip = buyer_ip
     await db.commit()
 
-    if method == PaymentMethod.CARD:
+    # Sentinel's risk assessment runs before any rail is touched — a blocked
+    # attempt genuinely never reaches sandbox_engine.authorize_*, matching
+    # what the Sentinel page promises for the parts of it that are live.
+    fraud = await assess_fraud(
+        db,
+        merchant_id=session.merchant_id,
+        customer_email=session.customer_email,
+        buyer_ip=buyer_ip,
+        amount_minor=session.amount_minor,
+    )
+
+    if fraud.blocked:
+        result = sandbox_engine.AuthorizationResult(
+            success=False, failure_reason="blocked_by_fraud_rule", gateway_reference="", masked_details={}
+        )
+    elif method == PaymentMethod.CARD:
         if not payload.card_number:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="card_number is required")
         result = await sandbox_engine.authorize_card(payload.card_number)
@@ -221,6 +246,8 @@ async def _pay_checkout_session(session_id: uuid.UUID, payload: CheckoutPayReque
         gateway_reference=result.gateway_reference,
         failure_reason=result.failure_reason,
         payment_method_details=result.masked_details,
+        risk_score=fraud.score,
+        risk_flags=fraud.flags,
     )
     db.add(transaction)
 
@@ -312,6 +339,43 @@ async def _pay_checkout_session(session_id: uuid.UUID, payload: CheckoutPayReque
         },
         transaction_id=transaction.id,
     )
+
+    # In-app only by default (PAYMENT isn't in DEFAULT_EMAIL_CATEGORIES) —
+    # every sandbox test payment showing up in the activity feed matches how a
+    # real payments dashboard behaves; emailing on every one would not.
+    if fraud.blocked:
+        title = "Payment blocked by Sentinel"
+        body = (
+            f"A {session.currency} {transaction.amount_minor / 100:,.2f} attempt was blocked before it reached "
+            f"the payment rail. Risk score {fraud.score}/100 — {', '.join(fraud.flags) or 'no specific flags'}."
+        )
+        severity = NotificationSeverity.CRITICAL
+    elif result.success:
+        title, body, severity = (
+            "Payment succeeded",
+            f"{session.currency} {transaction.amount_minor / 100:,.2f} was received via {method.value.replace('_', ' ')}.",
+            NotificationSeverity.SUCCESS,
+        )
+    else:
+        title, body, severity = (
+            "Payment failed",
+            f"{session.currency} {transaction.amount_minor / 100:,.2f} failed via "
+            f"{method.value.replace('_', ' ')} ({transaction.failure_reason or 'declined'}).",
+            NotificationSeverity.WARNING,
+        )
+
+    await notify(
+        db,
+        merchant_id=session.merchant_id,
+        category=NotificationCategory.PAYMENT,
+        title=title,
+        body=body,
+        severity=severity,
+        resource_type="transaction",
+        resource_id=transaction.id,
+        link=f"/dashboard/transactions/{transaction.id}",
+    )
+
     await db.commit()
     await db.refresh(transaction)
 

@@ -1,12 +1,18 @@
+import AnalyticsDoc from "./pages/AnalyticsDoc";
 import Authentication from "./pages/Authentication";
 import CheckoutSessions from "./pages/CheckoutSessions";
+import DisputesDoc from "./pages/DisputesDoc";
 import Errors from "./pages/Errors";
+import FinancialConnectionsDoc from "./pages/FinancialConnectionsDoc";
 import GettingStarted from "./pages/GettingStarted";
 import GoLiveChecklist from "./pages/GoLiveChecklist";
 import InvoicesDoc from "./pages/InvoicesDoc";
+import NotificationsDoc from "./pages/NotificationsDoc";
 import PaymentLinksDoc from "./pages/PaymentLinksDoc";
 import ProductsAndPrices from "./pages/ProductsAndPrices";
+import SentinelDoc from "./pages/SentinelDoc";
 import SubscriptionsDoc from "./pages/SubscriptionsDoc";
+import TaxDoc from "./pages/TaxDoc";
 import Testing from "./pages/Testing";
 import WebhooksDoc from "./pages/WebhooksDoc";
 
@@ -30,8 +36,26 @@ export const DOCS_GROUPS = [
     ],
   },
   {
+    label: "Risk & compliance",
+    items: [
+      { slug: "sentinel", title: "Sentinel (fraud)", Component: SentinelDoc },
+      { slug: "disputes", title: "Disputes", Component: DisputesDoc },
+      { slug: "tax", title: "Tax", Component: TaxDoc },
+    ],
+  },
+  {
+    label: "Money & insights",
+    items: [
+      { slug: "analytics", title: "Analytics", Component: AnalyticsDoc },
+      { slug: "financial-connections", title: "Financial Connections", Component: FinancialConnectionsDoc },
+    ],
+  },
+  {
     label: "Events",
-    items: [{ slug: "webhooks", title: "Webhooks", Component: WebhooksDoc }],
+    items: [
+      { slug: "webhooks", title: "Webhooks", Component: WebhooksDoc },
+      { slug: "notifications", title: "Notifications", Component: NotificationsDoc },
+    ],
   },
   {
     label: "Reference",

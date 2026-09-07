@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap — PPay</title>
+  <meta name="description" content="Exactly what PPay has shipped, what is being built now, and what has not been started — with no feature listed as done before it is." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<script src="icons.js"></script>
+<script src="shared.js"></script>
+
+<section class="page-top" style="border-bottom:1px solid var(--border);background:var(--surface);">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow">Roadmap</div>
+      <h1 class="hero-title mt-12">What's built, what isn't,<br>and what's next</h1>
+      <p class="hero-sub mt-20">Nothing on this page is listed as shipped before it actually is. If a capability is on the roadmap rather than in the product, it says so here and on the product's own page.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid-3" style="gap:24px;align-items:start;">
+
+      <!-- SHIPPED -->
+      <div data-animate>
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:9px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--success);"></span>
+          Live in sandbox
+        </h3>
+        <div class="timeline">
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Payment orchestration</div>
+            <div class="timeline-desc">PaymentIntent state machine, idempotency, and a no-delete data policy with a full audit log.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Hosted Checkout &amp; Payment Links</div>
+            <div class="timeline-desc">Card, wallet, and bank transfer on a branded page — no PCI scope for you.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Invoicing</div>
+            <div class="timeline-desc">Auto-numbered one-off invoices with a hosted pay link.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Subscriptions with dunning</div>
+            <div class="timeline-desc">Recurring billing, saved methods, and a 3-attempt retry schedule on failed renewals.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Sentinel risk scoring</div>
+            <div class="timeline-desc">Six deterministic signals, scored before authorization, with a 75-point block threshold.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Disputes, Tax &amp; Financial Connections</div>
+            <div class="timeline-desc">Chargeback responses, provincial sales-tax estimates, and micro-deposit payout verification.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot done"></div><div>
+            <div class="timeline-title">Events, webhooks &amp; notifications</div>
+            <div class="timeline-desc">An immutable event log, signed webhook delivery with retries, and a per-category alert feed.</div></div></div>
+        </div>
+      </div>
+
+      <!-- IN PROGRESS -->
+      <div data-animate style="transition-delay:.08s">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:9px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);"></span>
+          Being worked on
+        </h3>
+        <div class="timeline">
+          <div class="timeline-item"><div class="timeline-dot active"></div><div>
+            <div class="timeline-title">Licensed partner arrangement</div>
+            <div class="timeline-desc">Structuring the partnership with a licensed bank/PSP that will hold funds. PPay does not and will not custody money itself.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot active"></div><div>
+            <div class="timeline-title">Mobile dashboard</div>
+            <div class="timeline-desc">The dashboard is desktop-only today. A mobile experience is in progress.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot active"></div><div>
+            <div class="timeline-title">Live-mode go-live review</div>
+            <div class="timeline-desc">The KYC and account-review flow that gates a merchant moving from sandbox to real money.</div></div></div>
+        </div>
+      </div>
+
+      <!-- NOT STARTED -->
+      <div data-animate style="transition-delay:.16s">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:9px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--text-faint);"></span>
+          Not started yet
+        </h3>
+        <div class="timeline">
+          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
+            <div class="timeline-title">Real money movement</div>
+            <div class="timeline-desc">Every payment today is a sandbox construct. No real funds move until the partner arrangement is finalised.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
+            <div class="timeline-title">Sentinel custom rules</div>
+            <div class="timeline-desc">A no-code rule builder and per-account thresholds. Today's threshold is fixed.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
+            <div class="timeline-title">Device fingerprinting</div>
+            <div class="timeline-desc">Sentinel's signals use IP address only right now.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
+            <div class="timeline-title">Marketplaces &amp; split payments</div>
+            <div class="timeline-desc">Routing one payment to multiple recipients.</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
+            <div class="timeline-title">In-person payments</div>
+            <div class="timeline-desc">Card-present terminals and QR-based collection.</div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="container" data-animate>
+    <div style="background:var(--pending-soft);border:1px solid var(--pending);border-radius:var(--radius-lg);padding:30px;display:flex;gap:18px;align-items:flex-start;max-width:840px;margin:0 auto;">
+      <div style="color:var(--pending);display:flex;flex-shrink:0;"><span data-icon="alert" data-icon-size="22"></span></div>
+      <div>
+        <h4 style="font-size:17px;font-weight:700;color:var(--pending);margin-bottom:8px;">Everything above runs in sandbox</h4>
+        <p style="font-size:14.5px;color:var(--text);line-height:1.65;">PPay is a technology layer, not a bank. We do not hold a PSO/PSP or EMI licence and we do not custody merchant or customer funds — a licensed partner will. Until that arrangement is finalised there are no live transactions and no real money movement, only test credentials.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="container" data-animate>
+    <div class="cta-band">
+      <h2>Want something moved up the list?</h2>
+      <p>Beta merchants shape what gets built next. Tell us what would make PPay usable for your business.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+        <a href="https://app.ppay.silicatelabs.site" class="btn btn-white btn-lg">Access app in beta</a>
+        <a href="changelog.html" class="btn btn-outline-white btn-lg">See what shipped →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://app.1chat.autruckers.com/widget/widgetbundle.js"
+        data-api-key="8101df3241be07369315cebe5a5b905c21afddfc2b5633d762d8856521401ed0"
+        async defer></script>
+</body>
+</html>

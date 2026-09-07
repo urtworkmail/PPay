@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/client";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import { getBreadcrumb } from "../nav/navConfig";
-import { BellIcon, HelpIcon, MoonIcon, SearchIcon, SettingsIcon, SunIcon } from "./Icons";
+import NotificationPanel from "./NotificationPanel";
+import { BellIcon, HelpIcon, LifeBuoyIcon, SearchIcon } from "./Icons";
 
 function Breadcrumb() {
   const location = useLocation();
@@ -51,35 +50,6 @@ const RESULT_TYPE_LABEL = {
   invoice: "Invoice",
   payment_link: "Payment link",
 };
-
-function DropdownAnchor({ open, onClose, children, panel, panelStyle }) {
-  return (
-    <div style={{ position: "relative" }}>
-      {children}
-      {open && (
-        <>
-          <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
-          <div
-            className="card"
-            style={{
-              position: "absolute",
-              top: "calc(100% + 8px)",
-              right: 0,
-              width: 320,
-              maxHeight: 400,
-              overflowY: "auto",
-              zIndex: 61,
-              padding: 6,
-              ...panelStyle,
-            }}
-          >
-            {panel}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 function SearchBox() {
   const navigate = useNavigate();
@@ -221,162 +191,59 @@ function IconButton({ children, ...props }) {
 
 function NotificationsMenu() {
   const [open, setOpen] = useState(false);
-  const [failedCount, setFailedCount] = useState(0);
-  const navigate = useNavigate();
+  const [unread, setUnread] = useState(0);
 
+  // Polled rather than pushed: there's no websocket in the stack, and a badge
+  // that's up to a minute stale is a fair trade for not adding one.
   useEffect(() => {
-    apiFetch("/transactions?status=failed&page_size=1")
-      .then((data) => setFailedCount(data.total))
-      .catch(() => setFailedCount(0));
+    let cancelled = false;
+    function poll() {
+      apiFetch("/notifications/unread-count")
+        .then((data) => !cancelled && setUnread(data.unread))
+        .catch(() => {});
+    }
+    poll();
+    const timer = setInterval(poll, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   return (
-    <DropdownAnchor
-      open={open}
-      onClose={() => setOpen(false)}
-      panel={
-        failedCount > 0 ? (
-          <button
-            onClick={() => {
-              setOpen(false);
-              navigate("/dashboard/transactions?status=failed");
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              textAlign: "left",
-              padding: "10px 10px",
-              background: "none",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              cursor: "pointer",
-              fontSize: 13.5,
-            }}
-          >
-            <strong>{failedCount}</strong> failed payment{failedCount === 1 ? "" : "s"} — review transactions
-          </button>
-        ) : (
-          <div style={{ padding: 14, fontSize: 13, color: "var(--color-text-muted)" }}>You're all caught up.</div>
-        )
-      }
-    >
+    <div style={{ position: "relative" }}>
       <IconButton onClick={() => setOpen((v) => !v)} aria-label="Notifications" title="Notifications">
         <BellIcon width={16} height={16} />
-        {failedCount > 0 && (
+        {unread > 0 && (
           <span
             style={{
               position: "absolute",
-              top: -3,
-              right: -3,
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
+              top: -5,
+              right: -5,
+              minWidth: 16,
+              height: 16,
+              padding: "0 4px",
+              borderRadius: 999,
               background: "var(--color-danger)",
+              color: "#fff",
+              fontSize: 10,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               border: "1.5px solid var(--color-surface)",
             }}
-          />
+          >
+            {unread > 9 ? "9+" : unread}
+          </span>
         )}
       </IconButton>
-    </DropdownAnchor>
-  );
-}
-
-function ProfileMenu() {
-  const { merchant, user, logout } = useAuth();
-  const { mode, cycleTheme } = useTheme();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const ThemeIcon = mode === "dark" ? MoonIcon : SunIcon;
-  const initials = (merchant?.business_name || "?").slice(0, 1).toUpperCase();
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
-
-  return (
-    <DropdownAnchor
-      open={open}
-      onClose={() => setOpen(false)}
-      panel={
-        <div>
-          <div style={{ padding: "8px 10px 10px", borderBottom: "1px solid var(--color-border)", marginBottom: 6 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 600 }}>{merchant?.business_name}</div>
-            <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{user?.email}</div>
-            {user?.role && (
-              <span className="badge badge-neutral" style={{ marginTop: 6, textTransform: "capitalize" }}>
-                {user.role}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={cycleTheme}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              width: "100%",
-              padding: "9px 10px",
-              background: "none",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              cursor: "pointer",
-              fontSize: 13.5,
-              textAlign: "left",
-            }}
-          >
-            <ThemeIcon width={15} height={15} /> Theme: {mode}
-          </button>
-          <button
-            onClick={handleLogout}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              width: "100%",
-              padding: "9px 10px",
-              background: "none",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              cursor: "pointer",
-              fontSize: 13.5,
-              textAlign: "left",
-              color: "var(--color-danger)",
-            }}
-          >
-            Log out
-          </button>
-        </div>
-      }
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Account menu"
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: "50%",
-          background: "var(--color-accent-soft)",
-          color: "var(--color-accent)",
-          border: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: 700,
-          fontSize: 12.5,
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
-      >
-        {initials}
-      </button>
-    </DropdownAnchor>
+      <NotificationPanel open={open} onClose={() => setOpen(false)} onUnreadChange={setUnread} />
+    </div>
   );
 }
 
 export default function TopBar({ onOpenHelp }) {
-  const navigate = useNavigate();
-
   return (
     <div
       style={{
@@ -398,14 +265,39 @@ export default function TopBar({ onOpenHelp }) {
         <SearchBox />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <a
+          href="tel:+923275754989"
+          title="Call support: +92 (327) 575-4989"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            padding: "6px 12px",
+            borderRadius: "var(--radius-sm)",
+            border: "1px solid var(--color-border)",
+            color: "var(--color-text-muted)",
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+            fontVariantNumeric: "tabular-nums",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--color-accent)";
+            e.currentTarget.style.borderColor = "var(--color-accent)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--color-text-muted)";
+            e.currentTarget.style.borderColor = "var(--color-border)";
+          }}
+        >
+          <LifeBuoyIcon width={15} height={15} />
+          +92 (327) 575-4989
+        </a>
         <IconButton onClick={onOpenHelp} aria-label="Help" title="Help">
           <HelpIcon width={16} height={16} />
         </IconButton>
         <NotificationsMenu />
-        <IconButton onClick={() => navigate("/dashboard/settings")} aria-label="Settings" title="Settings">
-          <SettingsIcon width={16} height={16} />
-        </IconButton>
-        <ProfileMenu />
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.checkout import _to_response as checkout_to_response
 from app.api.v1.deps import get_current_merchant, get_request_mode
 from app.core.config import get_settings
-from app.core.db import Mode, get_db, session_factory_for_mode
+from app.core.db import Mode, get_db, session_factory_for_mode, stamp_mode
 from app.core.public_ref import INVOICE_PREFIX, decode_ref, encode_ref
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
 from app.models.invoice import Invoice, InvoiceStatus
@@ -158,6 +158,7 @@ async def get_invoice_public(invoice_id: str) -> InvoiceResponse:
     decoded = decode_ref(INVOICE_PREFIX, invoice_id)
     mode, real_id = decoded.mode, decoded.id
     async with session_factory_for_mode(mode)() as db:
+        stamp_mode(db, mode)
         invoice = await db.get(Invoice, real_id)
         if invoice is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
@@ -170,6 +171,7 @@ async def create_session_from_invoice(invoice_id: str) -> CheckoutSessionRespons
     decoded = decode_ref(INVOICE_PREFIX, invoice_id)
     mode, real_id = decoded.mode, decoded.id
     async with session_factory_for_mode(mode)() as db:
+        stamp_mode(db, mode)
         return await _create_session_from_invoice(real_id, mode, db)
 
 

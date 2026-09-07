@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — PPay</title>
+  <meta name="description" content="Simple, transparent pricing for Pakistani businesses. No setup fees, no monthly fees, pay only for successful transactions." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<script src="icons.js"></script>
+<script src="shared.js"></script>
+
+<!-- HERO -->
+<section class="page-top" style="border-bottom:1px solid var(--border);background:var(--surface);">
+  <div class="container">
+    <div class="text-center" data-animate>
+      <div class="section-eyebrow">Pricing</div>
+      <h1 class="hero-title mt-12">Pay as you grow</h1>
+      <p class="hero-sub mt-20 max-w-lg">No setup fees, no monthly fees, no hidden foreign exchange margins. Currently 100% free while in sandbox mode.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATUS BANNER -->
+<section style="padding:24px 0;background:var(--pending-soft);border-bottom:1px solid var(--border);">
+  <div class="container" style="display:flex;align-items:center;justify-content:center;gap:12px;">
+    <span class="badge badge-pending">Sandbox Notice</span>
+    <span style="font-size:13px;color:var(--pending);font-weight:600;">PPay is currently in development. No real money is processed, and all API usage is free. Pricing below reflects our target launch rates.</span>
+  </div>
+</section>
+
+<!-- PRICING CARDS -->
+<section class="section">
+  <div class="container">
+    <div class="grid-2" style="max-width:900px;margin:0 auto;" data-animate>
+      <!-- Standard -->
+      <div class="plan-card">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Standard</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">For startups and growing businesses in Pakistan.</p>
+        <div class="plan-price">2.2% <sup>+ ₨15</sup></div>
+        <div class="plan-price-sub">per successful card transaction</div>
+        
+        <div class="plan-divider"></div>
+        
+        <div class="plan-feature"><span class="check">✓</span> 1.5% for JazzCash & Easypaisa</div>
+        <div class="plan-feature"><span class="check">✓</span> ₨50 flat for Raast/1LINK bank transfers</div>
+        <div class="plan-feature"><span class="check">✓</span> T+1 Settlements to any PKR account</div>
+        <div class="plan-feature"><span class="check">✓</span> Basic Sentinel Fraud Rules included</div>
+        <div class="plan-feature"><span class="check">✓</span> APIs, Webhooks, Invoicing</div>
+        
+        <div class="plan-cta">
+          <a href="contact.html" class="btn btn-primary" style="width:100%;">Request beta access</a>
+        </div>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="plan-card featured">
+        <div class="popular-tag">For Scale</div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Enterprise</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">Custom rates for businesses with high processing volume.</p>
+        <div class="plan-price">Custom</div>
+        <div class="plan-price-sub">tailored to your business model</div>
+        
+        <div class="plan-divider"></div>
+        
+        <div class="plan-feature"><span class="check">✓</span> Volume discounts on all rails</div>
+        <div class="plan-feature"><span class="check">✓</span> Custom settlement schedules (T+0)</div>
+        <div class="plan-feature"><span class="check">✓</span> Dedicated account manager</div>
+        <div class="plan-feature"><span class="check">✓</span> Sentinel Anomaly Model (when live)</div>
+        <div class="plan-feature"><span class="check">✓</span> SLA & priority support</div>
+        
+        <div class="plan-cta">
+          <a href="contact.html" class="btn btn-outline" style="width:100%;">Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--surface);border-top:1px solid var(--border);">
+  <div class="container" style="max-width:760px;">
+    <div class="text-center mb-48" data-animate>
+      <h2 class="section-title">Frequently asked questions</h2>
+    </div>
+    
+    <div style="display:flex;flex-direction:column;gap:12px;" data-animate>
+      <details open>
+        <summary>Are there any setup or monthly fees?</summary>
+        <p>No. We only charge a percentage and/or fixed fee on successful transactions. If you don't process payments, you don't pay anything.</p>
+      </details>
+      <details>
+        <summary>Do I need to pay separately for Sentinel?</summary>
+        <p>The base deterministic rules engine is included at no extra cost to protect our ecosystem. Advanced ML models (Anomaly Detection, LLM Reasoner) will be available on custom tiers once launched.</p>
+      </details>
+      <details>
+        <summary>How and when do I get my money?</summary>
+        <p>Target settlement is T+1 (the next business day). Funds will be deposited directly into your designated PKR business bank account via Raast/IBFT.</p>
+      </details>
+      <details>
+        <summary>Are foreign cards supported?</summary>
+        <p>Yes. International Visa and Mastercard payments are supported. An additional cross-border fee (approx 1%) typically applies. Settlements are still made in PKR.</p>
+      </details>
+      <details>
+        <summary>Can I test everything for free?</summary>
+        <p>Absolutely. Our Sandbox mode is entirely free and doesn't require a real bank account to set up. You can test the API, dashboard, and webhooks using our provided test cards.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<script src="https://app.1chat.autruckers.com/widget/widgetbundle.js"
+        data-api-key="8101df3241be07369315cebe5a5b905c21afddfc2b5633d762d8856521401ed0"
+        async defer></script>
+</body>
+</html>

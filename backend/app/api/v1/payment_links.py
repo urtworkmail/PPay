@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.checkout import _to_response as checkout_to_response
 from app.api.v1.deps import get_current_merchant, get_request_mode
 from app.core.config import get_settings
-from app.core.db import Mode, get_db, session_factory_for_mode
+from app.core.db import Mode, get_db, session_factory_for_mode, stamp_mode
 from app.core.public_ref import PAYMENT_LINK_PREFIX, decode_ref, encode_ref
 from app.models.checkout_session import CheckoutSession
 from app.models.merchant import Merchant
@@ -204,6 +204,7 @@ async def get_payment_link_public(link_id: str) -> PaymentLinkResponse:
     decoded = decode_ref(PAYMENT_LINK_PREFIX, link_id)
     mode, real_id = decoded.mode, decoded.id
     async with session_factory_for_mode(mode)() as db:
+        stamp_mode(db, mode)
         link = await db.get(PaymentLink, real_id)
         if link is None or not link.is_active:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment link not found")
@@ -217,6 +218,7 @@ async def create_session_from_payment_link(link_id: str) -> CheckoutSessionRespo
     decoded = decode_ref(PAYMENT_LINK_PREFIX, link_id)
     mode, real_id = decoded.mode, decoded.id
     async with session_factory_for_mode(mode)() as db:
+        stamp_mode(db, mode)
         link = await db.get(PaymentLink, real_id)
         if link is None or not link.is_active:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment link not found")

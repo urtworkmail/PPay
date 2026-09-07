@@ -37,11 +37,25 @@ def create_access_token(subject: str) -> str:
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
-def create_refresh_token(subject: str, jti: str | None = None) -> str:
+def create_refresh_token(subject: str, jti: str | None = None, session_id: str | None = None) -> str:
+    """Mint a refresh token.
+
+    `session_id` binds the token to the Session row it belongs to, which is
+    what makes rotation auditable: on refresh the server looks the session up
+    by `sid` and compares the presented `jti` to the one it last issued. A
+    mismatch means an already-rotated token was replayed, which is treated as
+    theft rather than as a simple expiry (see api/v1/auth.py::refresh).
+    """
     expire = datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
     jti = jti or secrets.token_urlsafe(16)
     payload = {"sub": subject, "exp": expire, "type": "refresh", "jti": jti}
+    if session_id:
+        payload["sid"] = session_id
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
+
+def refresh_token_expiry() -> datetime:
+    return datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
 
 
 def decode_token(token: str) -> dict:
@@ -75,6 +89,31 @@ def verify_api_key(full_key: str, hashed_key: str) -> bool:
 
 def generate_webhook_secret() -> str:
     return f"whsec_{secrets.token_urlsafe(24)}"
+
+
+# --- Emailed one-time codes and verification links --------------------------
+# A 6-digit code has only a million possibilities, so its security comes from
+# being short-lived and attempt-limited (see EmailVerification), not from a
+# slow hash. Storing an HMAC keyed by the app secret — rather than bcrypt or a
+# bare SHA — keeps verification fast while making a leaked database row
+# useless on its own: without the server key, the digest can't be brute-forced
+# offline through its tiny keyspace.
+
+
+def generate_otp_code(digits: int = 6) -> str:
+    return str(secrets.randbelow(10**digits)).zfill(digits)
+
+
+def generate_verification_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def hash_verification_secret(value: str) -> str:
+    return hmac.new(settings.jwt_secret_key.encode("utf-8"), value.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify_verification_secret(value: str, digest: str) -> bool:
+    return hmac.compare_digest(hash_verification_secret(value), digest)
 
 
 # --- TOTP (RFC 6238) two-factor authentication -----------------------------

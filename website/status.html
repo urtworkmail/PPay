@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PPay Status — Platform availability</title>
+  <meta name="description" content="Live availability of PPay's checkout, payment links, invoicing, subscriptions, webhooks, and payout services." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block; }
+    .status-operational { background: var(--success); }
+    .status-degraded    { background: var(--pending); }
+    .status-down        { background: var(--danger); }
+    .status-maintenance { background: var(--accent); }
+    .status-unknown     { background: var(--text-faint); }
+
+    .status-banner {
+      display:flex; align-items:center; gap:14px;
+      padding:22px 24px; border-radius: var(--radius-lg);
+      border:1px solid var(--border); background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .status-banner-icon {
+      width:44px; height:44px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; line-height:1;
+    }
+    .svc-group { margin-bottom:28px; }
+    .svc-group-title {
+      font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+      color: var(--text-faint); margin-bottom:10px; padding:0 2px;
+    }
+    .svc-list {
+      border:1px solid var(--border); border-radius: var(--radius-lg);
+      background: var(--surface); overflow:hidden;
+    }
+    .svc-row {
+      display:flex; align-items:center; gap:14px;
+      padding:16px 20px; border-bottom:1px solid var(--border);
+    }
+    .svc-row:last-child { border-bottom:none; }
+    .svc-name { font-size:14px; font-weight:600; color: var(--text); }
+    .svc-desc { font-size:12.5px; color: var(--text-muted); margin-top:2px; }
+    .svc-state { margin-left:auto; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .svc-state-label { font-size:13px; font-weight:600; text-transform:capitalize; }
+    .svc-uptime { font-size:12px; color: var(--text-faint); min-width:74px; text-align:right; }
+
+    .incident-row {
+      display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border);
+      font-size:13.5px; align-items:flex-start;
+    }
+    .incident-row:last-child { border-bottom:none; }
+
+    @media (max-width: 640px) {
+      .svc-row { flex-wrap: wrap; }
+      .svc-uptime { display:none; }
+    }
+  </style>
+</head>
+<body>
+<script src="icons.js"></script>
+<script src="shared.js"></script>
+
+<section class="page-top">
+  <div class="container">
+    <h1 class="hero-title" style="font-size:38px;">Platform status</h1>
+    <p class="hero-sub" style="max-width:680px;">
+      Live availability of the services behind PPay. Checked automatically every 60 seconds, and every 10 seconds
+      while anything is failing.
+    </p>
+
+    <div id="overall" class="status-banner" style="margin-top:28px;">
+      <div class="status-banner-icon" style="background:var(--accent-soft);color:var(--accent);">…</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;" id="overall-title">Checking status…</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px;" id="overall-sub">
+          Fetching the latest results.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div id="services"></div>
+
+    <div style="margin-top:40px;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">Recent incidents</h2>
+      <p style="font-size:13.5px;color:var(--text-muted);margin:0 0 14px;">
+        Anything that went down or degraded in the last 30 days.
+      </p>
+      <div id="incidents" style="border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);padding:6px 20px;">
+        <div style="padding:18px 0;font-size:13.5px;color:var(--text-muted);">Loading…</div>
+      </div>
+    </div>
+
+    <p style="font-size:12.5px;color:var(--text-faint);margin-top:28px;max-width:680px;line-height:1.6;">
+      PPay is in sandbox stage: these checks cover the platform's own services, not live money movement, which is
+      handled by our licensed banking partners. Uptime is measured over a rolling 30-day window.
+    </p>
+  </div>
+</section>
+
+<script>
+(function () {
+  // The status API lives with the backend, not this static site. Points at the
+  // local API when previewing locally, at the production API otherwise.
+  var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000'
+    : 'https://app.ppay.silicatelabs.site';
+
+  var STATUS_TEXT = {
+    operational: 'Operational',
+    degraded: 'Degraded',
+    down: 'Down',
+    maintenance: 'Maintenance',
+    unknown: 'Unknown'
+  };
+
+  var OVERALL = {
+    operational: { icon: '✓', title: 'All systems operational', sub: 'Every monitored service is responding normally.', color: 'var(--success)', soft: 'var(--success-soft)' },
+    degraded:    { icon: '!', title: 'Degraded performance',     sub: 'Some services are slower than expected.',        color: 'var(--pending)', soft: 'var(--pending-soft)' },
+    down:        { icon: '✕', title: 'Service disruption',        sub: 'We are aware and working on it.',                color: 'var(--danger)',  soft: 'var(--danger-soft)' },
+    maintenance: { icon: '⚙', title: 'Scheduled maintenance',     sub: 'Planned work is in progress.',                   color: 'var(--accent)',  soft: 'var(--accent-soft)' },
+    unknown:     { icon: '?', title: 'Status unavailable',        sub: 'We could not determine the current state.',      color: 'var(--text-faint)', soft: 'var(--border)' }
+  };
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function formatDateTime(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch (e) { return iso; }
+  }
+
+  function renderOverall(state, updatedAt) {
+    var meta = OVERALL[state] || OVERALL.unknown;
+    var box = document.getElementById('overall');
+    box.querySelector('.status-banner-icon').style.background = meta.soft;
+    box.querySelector('.status-banner-icon').style.color = meta.color;
+    box.querySelector('.status-banner-icon').textContent = meta.icon;
+    document.getElementById('overall-title').textContent = meta.title;
+    document.getElementById('overall-sub').textContent =
+      meta.sub + (updatedAt ? ' Last checked ' + formatDateTime(updatedAt) + '.' : '');
+  }
+
+  function renderServices(services) {
+    var container = document.getElementById('services');
+    if (!services.length) {
+      container.innerHTML = '<div style="padding:20px;font-size:13.5px;color:var(--text-muted);">No services are being reported right now.</div>';
+      return;
+    }
+
+    // Group by category, preserving the order the API returned them in.
+    var order = [];
+    var groups = {};
+    services.forEach(function (svc) {
+      if (!groups[svc.category]) { groups[svc.category] = []; order.push(svc.category); }
+      groups[svc.category].push(svc);
+    });
+
+    container.innerHTML = order.map(function (category) {
+      var rows = groups[category].map(function (svc) {
+        var state = STATUS_TEXT[svc.status] ? svc.status : 'unknown';
+        var uptime = (svc.uptime_30d === null || svc.uptime_30d === undefined)
+          ? '' : svc.uptime_30d.toFixed(2) + '%';
+        return '' +
+          '<div class="svc-row">' +
+            '<div style="min-width:0;flex:1;">' +
+              '<div class="svc-name">' + esc(svc.name) + '</div>' +
+              (svc.description ? '<div class="svc-desc">' + esc(svc.description) + '</div>' : '') +
+            '</div>' +
+            '<div class="svc-uptime" title="Uptime over the last 30 days">' + uptime + '</div>' +
+            '<div class="svc-state">' +
+              '<span class="status-dot status-' + state + '"></span>' +
+              '<span class="svc-state-label" style="color:' + (OVERALL[state] || OVERALL.unknown).color + ';">' +
+                STATUS_TEXT[state] +
+              '</span>' +
+            '</div>' +
+          '</div>';
+      }).join('');
+
+      return '<div class="svc-group">' +
+        '<div class="svc-group-title">' + esc(category) + '</div>' +
+        '<div class="svc-list">' + rows + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderIncidents(incidents) {
+    var container = document.getElementById('incidents');
+    if (!incidents.length) {
+      container.innerHTML = '<div style="padding:18px 0;font-size:13.5px;color:var(--text-muted);">' +
+        'No incidents in the last 30 days.</div>';
+      return;
+    }
+    container.innerHTML = incidents.map(function (incident) {
+      var resolved = !!incident.resolved_at;
+      var color = resolved ? 'var(--success)' : (incident.status === 'degraded' ? 'var(--pending)' : 'var(--danger)');
+      return '' +
+        '<div class="incident-row">' +
+          '<span class="status-dot" style="background:' + color + ';margin-top:6px;"></span>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-weight:600;">' + esc(incident.service) + ' — ' +
+              (resolved ? 'resolved' : esc(STATUS_TEXT[incident.status] || incident.status)) +
+            '</div>' +
+            '<div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">' +
+              'Started ' + esc(formatDateTime(incident.started_at)) +
+              (resolved ? ' · Resolved ' + esc(formatDateTime(incident.resolved_at)) : ' · Ongoing') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function load() {
+    fetch(API_BASE + '/api/v1/status', { cache: 'no-store' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (data) {
+        renderOverall(data.overall, data.updated_at);
+        renderServices(data.services || []);
+        renderIncidents(data.incidents || []);
+      })
+      .catch(function () {
+        // Not being able to reach the status API is itself a status worth
+        // stating plainly, rather than leaving a spinner running forever.
+        renderOverall('unknown', null);
+        document.getElementById('overall-sub').textContent =
+          'We could not reach the status service from your browser. The platform itself may still be running.';
+        document.getElementById('services').innerHTML =
+          '<div class="svc-list"><div class="svc-row"><div style="flex:1;">' +
+          '<div class="svc-name">Status feed unreachable</div>' +
+          '<div class="svc-desc">Retrying automatically every 60 seconds.</div>' +
+          '</div><div class="svc-state"><span class="status-dot status-unknown"></span>' +
+          '<span class="svc-state-label" style="color:var(--text-faint);">Unknown</span></div></div></div>';
+        document.getElementById('incidents').innerHTML =
+          '<div style="padding:18px 0;font-size:13.5px;color:var(--text-muted);">Unavailable.</div>';
+      });
+  }
+
+  load();
+  setInterval(load, 60000);
+})();
+</script>
+
+<script src="https://app.1chat.autruckers.com/widget/widgetbundle.js"
+        data-api-key="8101df3241be07369315cebe5a5b905c21afddfc2b5633d762d8856521401ed0"
+        async defer></script>
+</body>
+</html>

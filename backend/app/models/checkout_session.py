@@ -54,6 +54,9 @@ class CheckoutSession(Base):
     method: Mapped[PaymentMethod | None] = mapped_column(Enum(PaymentMethod, name="payment_method"), nullable=True)
     customer_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     customer_phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    # Captured when the pay attempt is made (not at session creation) — set by
+    # services/fraud_engine.py's caller in api/v1/checkout.py.
+    buyer_ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
     return_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     idempotency_key: Mapped[str] = mapped_column(String(255), nullable=False)

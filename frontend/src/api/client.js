@@ -14,6 +14,31 @@ function getAccessToken() {
   return localStorage.getItem("openpay_access_token");
 }
 
+const DEVICE_ID_KEY = "ppay_device_id";
+
+/** A stable, opaque id for this browser.
+ *
+ *  Sent as `X-Device-Id` so signing in again from a browser that's already
+ *  signed in continues the same session instead of adding another row to the
+ *  user's Active sessions list. It is not a credential and grants nothing on
+ *  its own — the server only reads it after the request has authenticated, to
+ *  decide which of that user's own sessions this is.
+ */
+function getDeviceId() {
+  try {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+      id = crypto.randomUUID ? crypto.randomUUID() : `dev-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+      localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    // Private mode with storage blocked: the server falls back to a
+    // user-agent-derived id, so requests still work.
+    return null;
+  }
+}
+
 export function setTokens(access, refresh) {
   localStorage.setItem("openpay_access_token", access);
   localStorage.setItem("openpay_refresh_token", refresh);
@@ -27,8 +52,10 @@ export function clearTokens() {
 export async function apiFetch(path, options = {}) {
   const { method = "GET", body, auth = true, headers = {} } = options;
 
+  const deviceId = getDeviceId();
   const finalHeaders = {
     "Content-Type": "application/json",
+    ...(deviceId ? { "X-Device-Id": deviceId } : {}),
     ...headers,
   };
 

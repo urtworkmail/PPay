@@ -113,6 +113,49 @@ export default function TransactionDetail() {
             </div>
           </SectionCard>
 
+          {tx.risk_score > 0 && (
+            <SectionCard title="Sentinel risk assessment">
+              <div style={{ padding: 18 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: tx.risk_flags?.length ? 14 : 0 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      flexShrink: 0,
+                      background: tx.risk_score >= 75 ? "var(--color-danger-soft)" : tx.risk_score >= 40 ? "var(--color-pending-soft)" : "var(--color-success-soft)",
+                      color: tx.risk_score >= 75 ? "var(--color-danger)" : tx.risk_score >= 40 ? "var(--color-pending)" : "var(--color-success)",
+                    }}
+                  >
+                    {tx.risk_score}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>
+                      {tx.failure_reason === "blocked_by_fraud_rule" ? "Blocked before reaching the rail" : "Risk score out of 100"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>
+                      Rule-based signals — velocity, amount deviation, and recent activity for this identity.
+                    </div>
+                  </div>
+                </div>
+                {tx.risk_flags?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {tx.risk_flags.map((flag) => (
+                      <span key={flag} className="badge" style={{ background: "var(--color-bg)", color: "var(--color-text-muted)" }}>
+                        {flag.replace(/_/g, " ")}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </SectionCard>
+          )}
+
           <SectionCard title="Timeline">
             <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 18 }}>
               {tx.timeline.map((e, i) => (

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>PPay Pitch Deck</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<style>
+  :root {
+    --ink:      #0a2540;
+    --muted:    #5b6b80;
+    --faint:    #94a3b8;
+    --line:     #e3e8ee;
+    --ground:   #ffffff;
+    --wash:     #f6f9fc;
+    --accent:   #635bff;
+    --accent-soft: #eeedff;
+    --good:     #12805c;
+    --good-soft:#e3f8ef;
+    --warn:     #b98900;
+    --warn-soft:#fdf3d9;
+    --bad:      #cd3d64;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Manrope', -apple-system, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    background: var(--wash);
+    -webkit-font-smoothing: antialiased;
+  }
+  .slide {
+    width: 1280px;
+    height: 720px;
+    background: var(--ground);
+    padding: 68px 84px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+
+  .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ''; width: 26px; height: 2px; background: var(--accent); display: block;
+  }
+  h1 { font-size: 74px; font-weight: 800; letter-spacing: -2.4px; line-height: 1.02; text-wrap: balance; }
+  h2 { font-size: 44px; font-weight: 800; letter-spacing: -1.2px; line-height: 1.1; margin-top: 18px; text-wrap: balance; }
+  .lede { font-size: 20px; line-height: 1.6; color: var(--muted); max-width: 60ch; margin-top: 18px; }
+  .body { font-size: 16.5px; line-height: 1.65; color: var(--muted); }
+
+  .slide-num {
+    position: absolute; bottom: 40px; right: 84px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .brandmark { position: absolute; bottom: 36px; left: 84px; display: flex; align-items: center; gap: 9px; }
+  .brandmark svg { display: block; }
+  .brandmark span { font-size: 14px; font-weight: 800; letter-spacing: -.3px; }
+
+  .fill { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  /* grids */
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; }
+  .cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+  .card {
+    border: 1px solid var(--line); border-radius: 14px; padding: 22px;
+    background: var(--ground);
+  }
+  .card-title { font-size: 16.5px; font-weight: 700; margin-bottom: 7px; }
+  .card-body { font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+  .stat-num {
+    font-size: 46px; font-weight: 800; letter-spacing: -1.6px; color: var(--accent);
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .stat-label { font-size: 13.5px; color: var(--muted); margin-top: 9px; line-height: 1.45; }
+
+  ul.ticks { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+  ul.ticks li { position: relative; padding-left: 30px; font-size: 16.5px; line-height: 1.55; color: var(--muted); }
+  ul.ticks li strong { color: var(--ink); font-weight: 700; }
+  ul.ticks li::before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 13px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .01em;
+  }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-idle { background: #eef1f5; color: var(--muted); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent); }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .rule { height: 1px; background: var(--line); margin: 26px 0; }
+
+  /* title slide */
+  .title-slide { background: var(--ink); color: #fff; justify-content: center; }
+  .title-slide h1 { color: #fff; font-size: 92px; }
+  .title-slide .lede { color: rgba(255,255,255,.72); font-size: 22px; }
+  .title-slide .eyebrow { color: #a8a2ff; }
+  .title-slide .eyebrow::before { background: #a8a2ff; }
+  .title-slide .slide-num, .title-slide .brandmark span { color: rgba(255,255,255,.55); }
+  .title-meta {
+    position: absolute; bottom: 68px; left: 84px; right: 84px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 14px; color: rgba(255,255,255,.6);
+  }
+
+  /* dark closing slide */
+  .dark { background: var(--ink); color: #fff; }
+  .dark h2 { color: #fff; }
+  .dark .lede, .dark .body { color: rgba(255,255,255,.72); }
+  .dark .eyebrow { color: #a8a2ff; }
+  .dark .eyebrow::before { background: #a8a2ff; }
+  .dark .card { border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.04); }
+  .dark .card-body { color: rgba(255,255,255,.68); }
+  .dark .slide-num, .dark .brandmark span { color: rgba(255,255,255,.55); }
+  .dark .stat-num { color: #a8a2ff; }
+  .dark .stat-label { color: rgba(255,255,255,.68); }
+
+  /* product mock */
+  .mock { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; background: var(--wash); }
+  .mock-bar { background: #fff; border-bottom: 1px solid var(--line); padding: 9px 13px; display: flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mock-url { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--faint); margin-left: 7px; }
+  .mock-in { padding: 15px; display: flex; flex-direction: column; gap: 9px; }
+  .mrow { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .mrow-t { font-size: 12.5px; font-weight: 700; }
+  .mrow-s { font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+
+  @page { size: 1280px 720px; margin: 0; }
+  @media print { body { background: #fff; } .slide { box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<!-- 1 — TITLE -->
+<section class="slide title-slide">
+  <div class="eyebrow">Silicate Labs (Pvt.) Ltd.</div>
+  <h1>PPay</h1>
+  <p class="lede">Payment infrastructure for Pakistan. One API and one dashboard for cards, wallets, and bank transfers, with fraud scoring built into the payment path.</p>
+  <div class="title-meta">
+    <div>Usama Rehman Tarar &middot; Muhammad Junaid</div>
+    <div class="mono">ppay.silicatelabs.site</div>
+  </div>
+</section>
+
+<!-- 2 — PROBLEM -->
+<section class="slide">
+  <div class="eyebrow">The problem</div>
+  <h2>Getting paid in Pakistan takes four integrations<br>and still leaves gaps</h2>
+  <div class="fill">
+    <div class="cols-3">
+      <div class="card">
+        <div class="card-title">Fragmented rails</div>
+        <div class="card-body">Cards go through one gateway, JazzCash and Easypaisa through another, bank transfer through a third. Each has its own API, its own dashboard, its own reconciliation.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Months, not hours</div>
+        <div class="card-body">Legacy bank gateways are quoted in months of integration work. International platforms integrate faster but do not support the wallets most Pakistani customers actually use.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Fraud is an afterthought</div>
+        <div class="card-body">Risk tooling is usually something you bolt on after a chargeback, not something that runs before the charge is attempted.</div>
+      </div>
+    </div>
+    <div class="rule"></div>
+    <p class="body" style="max-width:78ch;">The result is that a business either accepts fewer payment methods than its customers want, or maintains four integrations and reconciles them by hand.</p>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">02</div>
+</section>
+
+<!-- 3 — SOLUTION -->
+<section class="slide">
+  <div class="eyebrow">The solution</div>
+  <h2>One integration. Every method.<br>Risk checked before the rail.</h2>
+  <div class="fill">
+    <div class="cols-2" style="align-items:center;">
+      <div>
+        <ul class="ticks">
+          <li><strong>One API, one dashboard.</strong> Card, wallet, and bank transfer on a single hosted checkout, or against the REST API if you want your own flow.</li>
+          <li><strong>Sentinel runs inside the payment path.</strong> Six deterministic signals score every attempt. A score of 75 or higher blocks it before any rail is called.</li>
+          <li><strong>PKR as a first class currency.</strong> Amounts in paisas, settlement in PKR, no FX layer to reason about.</li>
+          <li><strong>Built for the people who live in the dashboard.</strong> Signed webhooks, an immutable event log, an audit trail on every action, role based access.</li>
+        </ul>
+      </div>
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="mock-url">app.ppay.pk/dashboard</span>
+        </div>
+        <div class="mock-in">
+          <div class="mrow"><div><div class="mrow-t">Test payment &middot; Visa 4242</div><div class="mrow-s">Card &middot; sandbox</div></div><span class="pill pill-good">Paid</span></div>
+          <div class="mrow"><div><div class="mrow-t">Test payment &middot; declined</div><div class="mrow-s">Test card 4000&hellip;0002</div></div><span class="pill" style="background:#fce8ed;color:#cd3d64;">Failed</span></div>
+          <div class="mrow"><div><div class="mrow-t">Sentinel &middot; high risk</div><div class="mrow-s mono">velocity_email, amount_deviation</div></div><span class="pill pill-warn">Blocked</span></div>
+          <div class="mrow"><div><div class="mrow-t">Settlement batch &middot; 14 payments</div><div class="mrow-s">Gross &#8360;96,000 &middot; fee &#8360;2,496</div></div><span class="pill pill-good">Paid out</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">03</div>
+</section>
+
+<!-- 4 — PRODUCT SURFACE -->
+<section class="slide">
+  <div class="eyebrow">What we built</div>
+  <h2>Twelve products, live in sandbox today</h2>
+  <div class="fill">
+    <div class="cols-4" style="gap:16px;">
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Checkout</div><div class="card-body" style="font-size:13px;">Hosted page for card, wallet, and bank transfer.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Payment Links</div><div class="card-body" style="font-size:13px;">A shareable URL. No code, no website.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Invoicing</div><div class="card-body" style="font-size:13px;">Auto numbered bills with a hosted pay link.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Subscriptions</div><div class="card-body" style="font-size:13px;">Recurring billing with a 3 attempt dunning schedule.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Sentinel</div><div class="card-body" style="font-size:13px;">Fraud scoring before authorization runs.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Disputes</div><div class="card-body" style="font-size:13px;">Chargeback responses on a 7 day clock.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Tax</div><div class="card-body" style="font-size:13px;">Provincial sales tax estimates across five authorities.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Balances &amp; Payouts</div><div class="card-body" style="font-size:13px;">Itemised settlement batches on your schedule.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Analytics</div><div class="card-body" style="font-size:13px;">Trends, per method success rates, comparisons.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Financial Connections</div><div class="card-body" style="font-size:13px;">Micro deposit payout account verification.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Notifications</div><div class="card-body" style="font-size:13px;">Seven categories, per category email control.</div></div>
+      <div class="card" style="padding:18px;"><div class="card-title" style="font-size:15px;">Team &amp; Security</div><div class="card-body" style="font-size:13px;">Four roles, TOTP two factor, device sessions.</div></div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">04</div>
+</section>
+
+<!-- 5 — SENTINEL -->
+<section class="slide">
+  <div class="eyebrow">Differentiator &middot; Sentinel</div>
+  <h2>Fraud scoring that runs before<br>the payment rail, not after</h2>
+  <div class="fill">
+    <div class="cols-2" style="align-items:center;">
+      <div>
+        <p class="body" style="margin-bottom:22px;">Six signals combine into a 0 to 100 score. A blocked attempt never reaches authorization, so it never becomes a charge you have to refund. Every flag that fired is visible on the transaction. No black box.</p>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div class="mrow"><div class="mrow-t mono" style="font-size:12px;">velocity_email</div><span class="mono" style="font-size:11px;color:var(--muted);">4+ in 10 min</span></div>
+          <div class="mrow"><div class="mrow-t mono" style="font-size:12px;">velocity_ip</div><span class="mono" style="font-size:11px;color:var(--muted);">6+ in 10 min</span></div>
+          <div class="mrow"><div class="mrow-t mono" style="font-size:12px;">first_time_customer</div><span class="mono" style="font-size:11px;color:var(--muted);">no prior success</span></div>
+          <div class="mrow"><div class="mrow-t mono" style="font-size:12px;">amount_deviation</div><span class="mono" style="font-size:11px;color:var(--muted);">5x trailing avg</span></div>
+          <div class="mrow"><div class="mrow-t mono" style="font-size:12px;">high_amount_first_time</div><span class="mono" style="font-size:11px;color:var(--muted);">both together</span></div>
+          <div class="mrow"><div class="mrow-t mono" style="font-size:12px;">recent_declines</div><span class="mono" style="font-size:11px;color:var(--muted);">3+ in 30 min</span></div>
+        </div>
+      </div>
+      <div class="card" style="padding:30px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);">Risk score</span>
+          <span class="pill" style="background:#fce8ed;color:#cd3d64;">Blocked</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:11px;">
+          <span style="font-size:64px;font-weight:800;color:var(--bad);line-height:1;letter-spacing:-2px;">82</span>
+          <span style="font-size:15px;color:var(--faint);">/ 100 &middot; threshold 75</span>
+        </div>
+        <div style="height:8px;background:var(--line);border-radius:4px;margin-top:18px;overflow:hidden;">
+          <div style="height:100%;width:82%;background:var(--bad);border-radius:4px;"></div>
+        </div>
+        <div class="rule" style="margin:22px 0 16px;"></div>
+        <div class="mono" style="font-size:12px;color:var(--muted);line-height:1.9;">
+          "status": "failed",<br>
+          "failure_reason": "blocked_by_fraud_rule",<br>
+          "risk_score": 82
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">05</div>
+</section>
+
+<!-- 6 — HONESTY -->
+<section class="slide">
+  <div class="eyebrow">Differentiator &middot; positioning</div>
+  <h2>We say exactly what is built,<br>and exactly what is not</h2>
+  <div class="fill">
+    <p class="body" style="max-width:80ch;margin-bottom:26px;">PPay runs in sandbox. It does not hold a PSO or EMI licence and does not custody funds, so no real money moves yet. Rather than hide that, we made it a product principle: every page in the app and on the marketing site labels its own status.</p>
+    <div class="cols-3">
+      <div class="card">
+        <span class="pill pill-good" style="margin-bottom:14px;">Live in sandbox</span>
+        <div class="card-body">Twelve products, an immutable event log, signed webhooks with retries, settlement batching, and the full merchant dashboard.</div>
+      </div>
+      <div class="card">
+        <span class="pill pill-accent" style="margin-bottom:14px;">Being worked on</span>
+        <div class="card-body">The licensed banking partnership that will custody funds, the go live review flow, and a mobile dashboard.</div>
+      </div>
+      <div class="card">
+        <span class="pill pill-idle" style="margin-bottom:14px;">Not started</span>
+        <div class="card-body">Real money movement, Sentinel custom rules, device fingerprinting, split payments, and card present terminals.</div>
+      </div>
+    </div>
+    <div class="rule"></div>
+    <p class="body" style="max-width:80ch;">A payments company that overstates what it does is a payments company you cannot trust with money. The discipline is the pitch.</p>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">06</div>
+</section>
+
+<!-- 7 — ARCHITECTURE -->
+<section class="slide">
+  <div class="eyebrow">How it is built</div>
+  <h2>Cross mode data leakage is<br>a structurally impossible bug</h2>
+  <div class="fill">
+    <div class="cols-2">
+      <div>
+        <ul class="ticks">
+          <li><strong>Schema separated by mode.</strong> Sandbox and production data live in separate Postgres schemas, swapped per request. There is no shared table for a missed filter to forget.</li>
+          <li><strong>Idempotency is required, not optional.</strong> Checkout session creation demands an <span class="mono" style="font-size:14px;">Idempotency-Key</span>, so a retried request can never double charge.</li>
+          <li><strong>No delete policy.</strong> Records are archived, never destroyed, with an audit log entry on every account affecting action.</li>
+          <li><strong>Events are immutable.</strong> An event is written whether or not any webhook endpoint was listening, so history never depends on configuration.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card" style="padding:26px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:16px;">Stack</div>
+          <div style="display:flex;flex-direction:column;gap:13px;font-size:15px;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">API</span><strong>FastAPI, async SQLAlchemy 2.0</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Database</span><strong>PostgreSQL 16, Alembic</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Dashboard</span><strong>React, Vite</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Website</span><strong>Static HTML, no build step</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Deploy</span><strong>GCP VM, nginx, systemd</strong></div>
+          </div>
+          <div class="rule" style="margin:20px 0;"></div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;">
+            <span class="pill pill-idle">Nightly backups</span>
+            <span class="pill pill-idle">Rate limiting</span>
+            <span class="pill pill-idle">Secrets management</span>
+            <span class="pill pill-idle">Restore runbook</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">07</div>
+</section>
+
+<!-- 8 — SCOPE / NUMBERS -->
+<section class="slide dark">
+  <div class="eyebrow">Scope of the build</div>
+  <h2>What actually shipped</h2>
+  <div class="fill">
+    <div class="cols-4" style="gap:34px;">
+      <div><div class="stat-num">12</div><div class="stat-label">Products live in sandbox, each with its own page and docs</div></div>
+      <div><div class="stat-num">6</div><div class="stat-label">Fraud signals scored on every checkout attempt</div></div>
+      <div><div class="stat-num">5</div><div class="stat-label">Provincial tax authorities modelled for sales tax on services</div></div>
+      <div><div class="stat-num">4</div><div class="stat-label">Team roles, each with its own permission boundary</div></div>
+    </div>
+    <div class="rule" style="background:rgba(255,255,255,.16);margin:44px 0;"></div>
+    <div class="cols-4" style="gap:34px;">
+      <div><div class="stat-num">3</div><div class="stat-label">Payment methods on one hosted checkout page</div></div>
+      <div><div class="stat-num">3</div><div class="stat-label">Dunning retries before a subscription is marked unpaid</div></div>
+      <div><div class="stat-num">7</div><div class="stat-label">Notification categories with independent email control</div></div>
+      <div><div class="stat-num">0</div><div class="stat-label">Features claimed on the site that are not actually built</div></div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">08</div>
+</section>
+
+<!-- 9 — WHO IT IS FOR -->
+<section class="slide">
+  <div class="eyebrow">Who it is for</div>
+  <h2>Built for how Pakistan actually sells</h2>
+  <div class="fill">
+    <div class="cols-3" style="gap:20px;">
+      <div class="card">
+        <div class="card-title">Ecommerce and retail</div>
+        <div class="card-body">Send shoppers to a checkout that already handles card, wallet, and bank transfer, instead of maintaining three integrations.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">SaaS and subscriptions</div>
+        <div class="card-body">Recurring billing where a failed renewal retries on a schedule rather than silently churning the customer.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Creators and freelancers</div>
+        <div class="card-body">Most sales here start in a WhatsApp thread. A payment link turns that conversation into a paid order with no website at all.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Agencies and services</div>
+        <div class="card-body">Bill a named client for delivered work with an auto numbered invoice and a hosted pay link.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Marketplaces and platforms</div>
+        <div class="card-body">Itemised settlement batches so you can reconcile which seller each payment belonged to.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Nonprofits and fundraising</div>
+        <div class="card-body">One reusable link on a poster or a QR code, taking payments from many donors.</div>
+      </div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">09</div>
+</section>
+
+<!-- 10 — ROADMAP -->
+<section class="slide">
+  <div class="eyebrow">What comes next</div>
+  <h2>The path from sandbox to real money</h2>
+  <div class="fill">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;gap:24px;align-items:flex-start;">
+        <span class="pill pill-accent" style="min-width:150px;justify-content:center;">Now</span>
+        <div><div class="card-title">Licensed partner arrangement</div><div class="card-body" style="max-width:78ch;">Structuring the partnership with a bank or PSP that will hold funds. PPay stays the software layer and never custodies money itself.</div></div>
+      </div>
+      <div style="display:flex;gap:24px;align-items:flex-start;">
+        <span class="pill pill-accent" style="min-width:150px;justify-content:center;">Now</span>
+        <div><div class="card-title">Go live review flow</div><div class="card-body" style="max-width:78ch;">The KYC and account review that gates a merchant moving from sandbox to live. There is deliberately no code path that auto approves real money processing.</div></div>
+      </div>
+      <div style="display:flex;gap:24px;align-items:flex-start;">
+        <span class="pill pill-idle" style="min-width:150px;justify-content:center;">Next</span>
+        <div><div class="card-title">Sentinel custom rules and device fingerprinting</div><div class="card-body" style="max-width:78ch;">A no code rule builder with per account thresholds. Today's threshold is fixed and today's signals use IP address only.</div></div>
+      </div>
+      <div style="display:flex;gap:24px;align-items:flex-start;">
+        <span class="pill pill-idle" style="min-width:150px;justify-content:center;">Later</span>
+        <div><div class="card-title">Marketplaces, split payments, and in person</div><div class="card-body" style="max-width:78ch;">Routing one payment to multiple recipients, and card present collection through terminals and QR.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">10</div>
+</section>
+
+<!-- 11 — TEAM + CLOSE -->
+<section class="slide dark">
+  <div class="eyebrow">Team</div>
+  <h2>Built by Silicate Labs</h2>
+  <div class="fill">
+    <div class="cols-2" style="gap:24px;">
+      <div class="card" style="padding:28px;">
+        <div style="width:52px;height:52px;border-radius:12px;background:rgba(168,162,255,.16);color:#a8a2ff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;margin-bottom:16px;">UR</div>
+        <div class="card-title" style="color:#fff;font-size:19px;">Usama Rehman Tarar</div>
+        <div style="font-size:13.5px;color:#a8a2ff;font-weight:700;margin:5px 0 11px;">Founder and Builder</div>
+        <div class="card-body">Product, backend, and dashboard end to end, from the payment orchestration engine to the sandbox first design principle behind every page.</div>
+        <div class="mono" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:14px;">linkedin.com/in/usamarehmantarar</div>
+      </div>
+      <div class="card" style="padding:28px;">
+        <div style="width:52px;height:52px;border-radius:12px;background:rgba(168,162,255,.16);color:#a8a2ff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;margin-bottom:16px;">MJ</div>
+        <div class="card-title" style="color:#fff;font-size:19px;">Muhammad Junaid</div>
+        <div style="font-size:13.5px;color:#a8a2ff;font-weight:700;margin:5px 0 11px;">Co-Product Manager</div>
+        <div class="card-body">Shapes what PPay builds and in what order, working across product direction, the fraud engine, and compliance tooling.</div>
+        <div class="mono" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:14px;">linkedin.com/in/muhammad-junaid-ai</div>
+      </div>
+    </div>
+    <div class="rule" style="background:rgba(255,255,255,.16);margin:34px 0 26px;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div style="font-size:26px;font-weight:800;letter-spacing:-.8px;">Try it in sandbox today.</div>
+        <div class="body" style="margin-top:8px;">Test cards, test wallets, and Sentinel in action. No approval needed.</div>
+      </div>
+      <div class="mono" style="font-size:14px;color:#a8a2ff;text-align:right;line-height:1.9;">
+        ppay.silicatelabs.site<br>
+        <span style="color:rgba(255,255,255,.5);">customer@silicatelabs.site</span>
+      </div>
+    </div>
+  </div>
+  <div class="brandmark"><svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="8.5" fill="#635bff"/><path d="M11 23V9.5h6.2a4.4 4.4 0 0 1 0 8.8H14" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PPay</span></div>
+  <div class="slide-num">11</div>
+</section>
+
+</body>
+</html>

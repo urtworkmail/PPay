@@ -10,6 +10,7 @@ from app.models.api_key import ApiKey
 from app.models.checkout_session import CheckoutSession
 from app.models.invoice import Invoice
 from app.models.merchant import Merchant
+from app.models.notification import NotificationCategory
 from app.models.payment_intent import PaymentIntent, PaymentIntentSourceType
 from app.models.charge import Charge
 from app.models.payment_link import PaymentLink
@@ -30,6 +31,8 @@ from app.schemas.transaction import (
     TransactionResponse,
     WebhookLogResponse,
 )
+from app.services.notifications import notify
+from app.services.payment_intent_engine import apply_refund
 from app.services.webhook_dispatcher import deliver_webhook, enqueue_webhook_event
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -208,6 +211,30 @@ async def refund_transaction(
     db.add(refund)
     transaction.status = TransactionStatus.REFUNDED
     await db.flush()
+
+    # Keep the PaymentIntent/Charge dual-write (checkout.py) honest: without
+    # this, a refunded Transaction left its Charge silently still claiming to
+    # be fully succeeded with no refund recorded against it.
+    await apply_refund(
+        db,
+        source_type=PaymentIntentSourceType.CHECKOUT,
+        source_id=transaction.checkout_session_id,
+        amount_minor=refund.amount_minor,
+    )
+
+    await notify(
+        db,
+        merchant_id=merchant.id,
+        category=NotificationCategory.REFUND,
+        title="Refund issued",
+        body=(
+            f"{transaction.currency} {refund.amount_minor / 100:,.2f} was refunded"
+            + (f" — {payload.reason}." if payload.reason else ".")
+        ),
+        resource_type="refund",
+        resource_id=refund.id,
+        link=f"/dashboard/transactions/{transaction.id}",
+    )
 
     logs = await enqueue_webhook_event(
         db,

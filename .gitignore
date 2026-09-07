@@ -23,4 +23,8 @@ Thumbs.db
 # Logs
 *.log
 
+# Database backups pulled from the server (see RESTORE.md) — may contain
+# merchant data, never committed.
+db-backups/
+
 .claude
