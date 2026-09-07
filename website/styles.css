@@ -345,7 +345,7 @@ main { flex: 1 0 auto; }   /* pushes footer down */
   text-decoration: none;
   display: block;
 }
-.mega-promo:hover { border-color: var(--accent); }
+.mega-promo:hover { box-shadow: var(--shadow-sm); }
 .mega-promo-eyebrow {
   display: flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 8px;
@@ -462,11 +462,7 @@ main { flex: 1 0 auto; }   /* pushes footer down */
 .card-hover {
   transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
 }
-.card-hover:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
+.card-hover:hover { box-shadow: var(--shadow-md); }
 
 /* ── Hero section ────────────────────────────────────────── */
 .page-top {
@@ -575,11 +571,7 @@ main { flex: 1 0 auto; }   /* pushes footer down */
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
 }
-.feature-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
+.feature-card:hover { box-shadow: var(--shadow-md); }
 .feature-card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
 .feature-card-body  { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
 
@@ -1235,9 +1227,20 @@ footer {
   border-radius: var(--radius-lg); padding: 26px;
   transition: border-color .18s ease, transform .18s ease;
 }
-.segment-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.segment-card:hover { box-shadow: var(--shadow-md); }
 .segment-ico { font-size: 22px; margin-bottom: 14px; }
 .segment-title { font-size: 15.5px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
 .segment-body { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
 .segment-need { font-size: 12.5px; color: var(--accent); font-weight: 650; margin-top: 12px; }
 @media (max-width: 900px) { .segment-grid { grid-template-columns: 1fr; } }
+
+/* ── Team photos ─────────────────────────────────────────── */
+.team-photo {
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+}

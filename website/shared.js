@@ -65,22 +65,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     solutions: {
       label: 'Solutions',
-      columns: 3,
+      columns: 4,
       groups: [
         {
-          label: 'By business type',
+          label: 'By industry',
           items: [
-            { href: 'checkout.html', ico: 'store', title: 'Ecommerce & retail', desc: 'Hosted checkout for card, wallet, and bank transfer' },
+            { href: 'checkout.html', ico: 'store', title: 'Ecommerce & retail', desc: 'Hosted checkout for card, wallet, and bank' },
             { href: 'subscriptions.html', ico: 'terminal', title: 'SaaS & software', desc: 'Recurring billing with automatic dunning' },
-            { href: 'balances-payouts.html', ico: 'users', title: 'Marketplaces & platforms', desc: 'Settlement batches across many sellers' },
+            { href: 'invoicing.html', ico: 'book', title: 'Education & edtech', desc: 'Course and admission fees, billed online' },
+            { href: 'invoicing.html', ico: 'idCard', title: 'Healthcare & clinics', desc: 'Bill a patient after the appointment' },
+            { href: 'checkout.html', ico: 'globe', title: 'Travel & ticketing', desc: 'High-value bookings, risk-checked first' },
           ],
         },
         {
-          label: 'By how you sell',
+          label: 'More industries',
           items: [
-            { href: 'payment-links.html', ico: 'compass', title: 'Creators & freelancers', desc: 'Get paid with a link, no website required' },
+            { href: 'balances-payouts.html', ico: 'users', title: 'Marketplaces & platforms', desc: 'Settlement batches across many sellers' },
+            { href: 'checkout.html', ico: 'store', title: 'Food & delivery', desc: 'Fast checkout for high-frequency orders' },
+            { href: 'subscriptions.html', ico: 'refresh', title: 'Gyms & memberships', desc: 'Recurring dues collected automatically' },
+            { href: 'balances-payouts.html', ico: 'box', title: 'Logistics & wholesale', desc: 'Batch-level records for larger invoices' },
+            { href: 'sentinel.html', ico: 'workflow', title: 'Gaming & digital goods', desc: 'Catch card testing on instant delivery' },
+          ],
+        },
+        {
+          label: 'By business size',
+          items: [
+            { href: 'payment-links.html', ico: 'compass', title: 'Creators & freelancers', desc: 'Get paid with a link, no website' },
             { href: 'invoicing.html', ico: 'clipboard', title: 'Agencies & services', desc: 'Bill a named client for delivered work' },
+            { href: 'checkout.html', ico: 'store', title: 'Small businesses', desc: 'Start taking payments in an afternoon' },
+            { href: 'team-security.html', ico: 'users', title: 'Growing teams', desc: 'Roles, 2FA, and session control' },
             { href: 'payment-links.html', ico: 'lifeBuoy', title: 'Nonprofits & fundraising', desc: 'One reusable link for many donors' },
+          ],
+        },
+        {
+          label: 'By use case',
+          items: [
+            { href: 'checkout.html', ico: 'card', title: 'Online payments', desc: 'Card, wallet, and bank on one page' },
+            { href: 'subscriptions.html', ico: 'refresh', title: 'Recurring revenue', desc: 'Subscriptions with retry logic' },
+            { href: 'sentinel.html', ico: 'shield', title: 'Fraud prevention', desc: 'Block risky attempts before the rail' },
+            { href: 'tax.html', ico: 'receipt', title: 'Tax & compliance', desc: 'Provincial sales tax estimates' },
+            { href: 'analytics.html', ico: 'chart', title: 'Reporting & insights', desc: 'Trends and per-method success rates' },
           ],
         },
       ],
@@ -88,28 +112,44 @@ document.addEventListener('DOMContentLoaded', () => {
         href: 'roadmap.html',
         eyebrow: 'Honest by design',
         title: "See what's live vs. on the roadmap",
-        body: 'Every solution above is backed by a product page that says exactly what is built today.',
+        body: 'Every solution here is backed by a product page that says exactly what is built today.',
       },
     },
 
     developers: {
       label: 'Developers',
-      columns: 2,
+      columns: 4,
       groups: [
         {
-          label: 'Build',
+          label: 'Get started',
           items: [
-            { href: 'developers.html', ico: 'key', title: 'API Reference', desc: 'REST endpoints, request/response shapes' },
-            { href: 'developers.html#webhooks', ico: 'plug', title: 'Webhooks', desc: 'Signed events with automatic retries' },
+            { href: 'developers.html', ico: 'rocket', title: 'Quickstart', desc: 'Your first API call in minutes' },
+            { href: 'developers.html', ico: 'key', title: 'API keys', desc: 'Sandbox keys issued automatically' },
             { href: 'developers.html#test-cards', ico: 'card', title: 'Test cards & wallets', desc: 'Deterministic sandbox outcomes' },
           ],
         },
         {
-          label: 'Track',
+          label: 'Build',
           items: [
-            { href: 'status.html', ico: 'monitor', title: 'Status', desc: 'Live uptime for every capability' },
+            { href: 'developers.html', ico: 'terminal', title: 'API Reference', desc: 'Endpoints, requests, and responses' },
+            { href: 'checkout.html', ico: 'card', title: 'Checkout Sessions', desc: 'The core payment integration' },
+            { href: 'developers.html#webhooks', ico: 'plug', title: 'Webhooks', desc: 'Signed events with automatic retries' },
+          ],
+        },
+        {
+          label: 'Operate',
+          items: [
+            { href: 'notifications.html', ico: 'bell', title: 'Events & notifications', desc: 'An immutable log of what happened' },
+            { href: 'status.html', ico: 'monitor', title: 'API status', desc: 'Live uptime for every capability' },
+            { href: 'team-security.html', ico: 'shield', title: 'Security', desc: 'Roles, 2FA, and session control' },
+          ],
+        },
+        {
+          label: 'Stay current',
+          items: [
             { href: 'changelog.html', ico: 'refresh', title: 'Changelog', desc: 'Everything shipped, in order' },
             { href: 'roadmap.html', ico: 'compass', title: 'Roadmap', desc: "What's next, what isn't started" },
+            { href: 'contact.html', ico: 'lifeBuoy', title: 'Developer support', desc: 'Talk to the people who built it' },
           ],
         },
       ],
@@ -117,28 +157,44 @@ document.addEventListener('DOMContentLoaded', () => {
         href: 'developers.html',
         eyebrow: 'Quickstart',
         title: 'Your first API call in minutes',
-        body: 'Sandbox keys are generated automatically — no approval wait.',
+        body: 'Sandbox keys are generated automatically. No approval wait.',
       },
     },
 
     resources: {
       label: 'Resources',
-      columns: 2,
+      columns: 4,
       groups: [
         {
           label: 'Company',
           items: [
             { href: 'team.html', ico: 'users', title: 'Team', desc: 'Who is building PPay' },
+            { href: 'contact.html', ico: 'lifeBuoy', title: 'Contact', desc: 'Beta access and partnerships' },
             { href: 'roadmap.html', ico: 'compass', title: 'Roadmap', desc: "What's shipped and what's next" },
-            { href: 'contact.html', ico: 'lifeBuoy', title: 'Contact', desc: 'Beta access, partnerships, investors' },
           ],
         },
         {
-          label: 'Legal',
+          label: 'Learn',
           items: [
-            { href: 'pricing.html', ico: 'receipt', title: 'Pricing', desc: 'Sandbox is free; live pricing is being finalised' },
+            { href: 'products.html', ico: 'book', title: 'How it works', desc: 'The sequence, start to settlement' },
+            { href: 'changelog.html', ico: 'refresh', title: 'Changelog', desc: 'Everything shipped, in order' },
+            { href: 'sentinel.html', ico: 'shield', title: 'Fraud guide', desc: 'How risk scoring actually works' },
+          ],
+        },
+        {
+          label: 'Support',
+          items: [
+            { href: 'status.html', ico: 'monitor', title: 'Platform status', desc: 'Live uptime for every capability' },
+            { href: 'tel:+923275754989', ico: 'phone', title: 'Call us', desc: '+92 (327) 575-4989' },
+            { href: 'mailto:support@silicatelabs.site', ico: 'bell', title: 'Email support', desc: 'support@silicatelabs.site' },
+          ],
+        },
+        {
+          label: 'Legal & pricing',
+          items: [
+            { href: 'pricing.html', ico: 'receipt', title: 'Pricing', desc: 'Sandbox is free while we build' },
             { href: 'privacy.html', ico: 'idCard', title: 'Privacy Policy', desc: 'How data is handled' },
-            { href: 'terms.html', ico: 'clipboard', title: 'Terms of Service', desc: 'The legal terms of using PPay' },
+            { href: 'terms.html', ico: 'clipboard', title: 'Terms of Service', desc: 'The terms of using PPay' },
           ],
         },
       ],
@@ -146,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         href: 'contact.html',
         eyebrow: 'Silicate Labs',
         title: 'PPay is built by Silicate Labs',
-        body: 'A product of Silicate Labs (Pvt.) Ltd. — see silicatelabs.site for the parent company.',
+        body: 'Reach support at support@silicatelabs.site, or investors at ir@silicatelabs.site.',
       },
     },
   };
@@ -212,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <button id="theme-toggle" class="btn btn-ghost btn-sm" style="display:flex;align-items:center;justify-content:center;padding:6px;width:32px;height:32px;" aria-label="Toggle theme">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>
         </button>
-        <a href="tel:+923275754989" class="btn btn-ghost btn-sm nav-call" title="Call support: +92 (327) 575-4989" style="display:flex;align-items:center;gap:6px;"><span data-icon="lifeBuoy" data-icon-size="15"></span><span class="nav-call-num">+92 (327) 575-4989</span></a>
+        <a href="tel:+923275754989" class="btn btn-ghost btn-sm nav-call" title="Call support: +92 (327) 575-4989" style="display:flex;align-items:center;gap:6px;"><span data-icon="phone" data-icon-size="15"></span><span class="nav-call-num">+92 (327) 575-4989</span></a>
         <a href="https://app.ppay.silicatelabs.site" class="btn btn-primary btn-sm">Access app in beta</a>
       </div>
       <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu">
@@ -244,36 +300,37 @@ document.addEventListener('DOMContentLoaded', () => {
           <p>Pakistan's payment infrastructure platform, built for developers, honest about where it is, clear about where it's going. A product of <a href="https://silicatelabs.site" target="_blank" rel="noopener" style="color:var(--accent);">Silicate Labs</a>.</p>
         </div>
         <div class="footer-col">
-          <h4>Payments</h4>
+          <h4>Products</h4>
           <ul>
             <li><a href="checkout.html">Checkout</a></li>
             <li><a href="payment-links.html">Payment Links</a></li>
             <li><a href="invoicing.html">Invoicing</a></li>
             <li><a href="subscriptions.html">Subscriptions</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Risk &amp; compliance</h4>
-          <ul>
             <li><a href="sentinel.html">Sentinel</a></li>
             <li><a href="disputes.html">Disputes</a></li>
             <li><a href="tax.html">Tax</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Money &amp; insights</h4>
-          <ul>
             <li><a href="balances-payouts.html">Balances &amp; Payouts</a></li>
             <li><a href="analytics.html">Analytics</a></li>
             <li><a href="financial-connections.html">Financial Connections</a></li>
+            <li><a href="notifications.html">Notifications</a></li>
+            <li><a href="team-security.html">Team &amp; Security</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>Platform</h4>
+          <h4>Solutions</h4>
           <ul>
-            <li><a href="notifications.html">Notifications</a></li>
-            <li><a href="team-security.html">Team &amp; Security</a></li>
-            <li><a href="status.html">Status</a></li>
+            <li><a href="checkout.html">Ecommerce &amp; retail</a></li>
+            <li><a href="subscriptions.html">SaaS &amp; software</a></li>
+            <li><a href="balances-payouts.html">Marketplaces</a></li>
+            <li><a href="payment-links.html">Creators &amp; freelancers</a></li>
+            <li><a href="invoicing.html">Agencies &amp; services</a></li>
+            <li><a href="invoicing.html">Education &amp; edtech</a></li>
+            <li><a href="invoicing.html">Healthcare &amp; clinics</a></li>
+            <li><a href="checkout.html">Travel &amp; ticketing</a></li>
+            <li><a href="checkout.html">Food &amp; delivery</a></li>
+            <li><a href="subscriptions.html">Gyms &amp; memberships</a></li>
+            <li><a href="sentinel.html">Gaming &amp; digital goods</a></li>
+            <li><a href="payment-links.html">Nonprofits</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -281,25 +338,37 @@ document.addEventListener('DOMContentLoaded', () => {
           <ul>
             <li><a href="developers.html">API Reference</a></li>
             <li><a href="developers.html#webhooks">Webhooks</a></li>
-            <li><a href="developers.html#test-cards">Test Cards</a></li>
+            <li><a href="developers.html#test-cards">Test cards</a></li>
+            <li><a href="status.html">API status</a></li>
             <li><a href="changelog.html">Changelog</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="products.html">How it works</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="roadmap.html">Roadmap</a></li>
+            <li><a href="status.html">Platform status</a></li>
+            <li><a href="contact.html">Support</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Company</h4>
           <ul>
             <li><a href="team.html">Team</a></li>
-            <li><a href="pricing.html">Pricing</a></li>
-            <li><a href="roadmap.html">Roadmap</a></li>
             <li><a href="contact.html">Contact</a></li>
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="https://silicatelabs.site" target="_blank" rel="noopener">Silicate Labs</a></li>
+            <li><a href="mailto:ir@silicatelabs.site">Investor relations</a></li>
+            <li><a href="tel:+923275754989">+92 (327) 575-4989</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <p> PPay is a technology orchestration layer built for Pakistani businesses. We build the checkout panels, payment links, developer APIs, webhooks, invoicing, and subscription tooling that Pakistani merchants currently hand-code or piece together from multiple vendors. We do not hold a PSO/PSP or EMI license, we are not a bank, and we do not custody merchant or customer funds. Money movement, settlement, and fund custody are handled by our licensed banking and payment partners. PPay sits on top of those rails as the software layer: one API and one dashboard instead of a different integration for every card network, wallet, and bank. We're currently structuring the specific partnership and regulatory arrangement with our banking partners, and that structure will determine the final legal position of the platform. This page will be updated as that structure is finalized. Until then, PPay is in sandbox: no live transactions, no real money movement, test credentials only. PPay is a product of Silicate Labs (Pvt.) Ltd., which will hold or arrange any licenses, approvals, or partner agreements required for PPay to operate live.</p>
+        <p> PPay is a technology orchestration layer built for Pakistani businesses. We build the checkout panels, payment links, developer APIs, webhooks, invoicing, and subscription tooling that Pakistani merchants currently hand-code or piece together from multiple vendors. We do not hold a PSO/PSP or EMI license, we are not a bank, and we do not custody merchant or customer funds. Money movement, settlement, and fund custody are handled by our licensed banking and payment partners. PPay sits on top of those rails as the software layer: one API and one dashboard instead of a different integration for every card network, wallet, and bank. We're currently structuring the specific partnership and regulatory arrangement with our banking partners, and that structure will determine the final legal position of the platform. This page will be updated as that structure is finalized. Until then, PPay is in sandbox: no live transactions, no real money movement, test credentials only. PPay is a product of Silicate Labs, which will hold or arrange any licenses, approvals, or partner agreements required for PPay to operate live.</p>
         <div class="footer-badges">
+          <a href="privacy.html" class="footer-badge">Privacy</a>
+          <a href="terms.html" class="footer-badge">Terms</a>
           <span class="footer-badge">Pakistan-first</span>
           <span class="footer-badge">Sandbox Stage</span>
         </div>

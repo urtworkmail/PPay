@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roadmap — PPay</title>
-  <meta name="description" content="Exactly what PPay has shipped, what is being built now, and what has not been started — with no feature listed as done before it is." />
+  <meta name="description" content="Exactly what PPay has shipped, what is being built now, and what has not been started. No feature is listed as done before it is." />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -17,87 +17,94 @@
     <div class="text-center">
       <div class="section-eyebrow">Roadmap</div>
       <h1 class="hero-title mt-12">What's built, what isn't,<br>and what's next</h1>
-      <p class="hero-sub mt-20">Nothing on this page is listed as shipped before it actually is. If a capability is on the roadmap rather than in the product, it says so here and on the product's own page.</p>
+      <p class="hero-sub mt-20">Most roadmaps are marketing. This one is a status report. Nothing here is listed as shipped before it actually is, and the things we haven't started get the same detail as the things we have.</p>
     </div>
   </div>
 </section>
 
+<!-- STATUS SUMMARY -->
+<section class="section-sm" style="border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="stat-band" data-animate>
+      <div class="stat-band-item"><div class="stat-band-num" style="color:var(--success);">12</div><div class="stat-band-label">Products live in sandbox</div></div>
+      <div class="stat-band-item"><div class="stat-band-num">4</div><div class="stat-band-label">Workstreams in progress</div></div>
+      <div class="stat-band-item"><div class="stat-band-num" style="color:var(--text-faint);">8</div><div class="stat-band-label">Not started yet</div></div>
+      <div class="stat-band-item"><div class="stat-band-num" style="color:var(--pending);">0</div><div class="stat-band-label">Real payments processed</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 1 — SHIPPED -->
 <section class="section">
   <div class="container">
-    <div class="grid-3" style="gap:24px;align-items:start;">
+    <div class="mb-32" data-animate style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span class="badge badge-success">Phase 1 · Shipped</span>
+      <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);">Live in sandbox today</h2>
+    </div>
+    <div class="grid-3" style="gap:20px;" data-animate>
 
-      <!-- SHIPPED -->
-      <div data-animate>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:9px;">
-          <span style="width:10px;height:10px;border-radius:50%;background:var(--success);"></span>
-          Live in sandbox
-        </h3>
-        <div class="timeline">
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Payment orchestration</div>
-            <div class="timeline-desc">PaymentIntent state machine, idempotency, and a no-delete data policy with a full audit log.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Hosted Checkout &amp; Payment Links</div>
-            <div class="timeline-desc">Card, wallet, and bank transfer on a branded page — no PCI scope for you.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Invoicing</div>
-            <div class="timeline-desc">Auto-numbered one-off invoices with a hosted pay link.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Subscriptions with dunning</div>
-            <div class="timeline-desc">Recurring billing, saved methods, and a 3-attempt retry schedule on failed renewals.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Sentinel risk scoring</div>
-            <div class="timeline-desc">Six deterministic signals, scored before authorization, with a 75-point block threshold.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Disputes, Tax &amp; Financial Connections</div>
-            <div class="timeline-desc">Chargeback responses, provincial sales-tax estimates, and micro-deposit payout verification.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot done"></div><div>
-            <div class="timeline-title">Events, webhooks &amp; notifications</div>
-            <div class="timeline-desc">An immutable event log, signed webhook delivery with retries, and a per-category alert feed.</div></div></div>
+      <div class="feature-card">
+        <div class="icon-box icon-accent"><span data-icon="card" data-icon-size="18"></span></div>
+        <div class="feature-card-title">Payment acceptance</div>
+        <div class="feature-card-body">Hosted Checkout for card, wallet, and bank transfer. Payment Links with usage tracking. Invoicing with auto-numbering and a hosted pay link. Subscriptions with saved methods and a 3-attempt dunning schedule.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="checkout.html" class="badge badge-neutral">Checkout</a>
+          <a href="payment-links.html" class="badge badge-neutral">Links</a>
+          <a href="invoicing.html" class="badge badge-neutral">Invoicing</a>
+          <a href="subscriptions.html" class="badge badge-neutral">Subscriptions</a>
         </div>
       </div>
 
-      <!-- IN PROGRESS -->
-      <div data-animate style="transition-delay:.08s">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:9px;">
-          <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);"></span>
-          Being worked on
-        </h3>
-        <div class="timeline">
-          <div class="timeline-item"><div class="timeline-dot active"></div><div>
-            <div class="timeline-title">Licensed partner arrangement</div>
-            <div class="timeline-desc">Structuring the partnership with a licensed bank/PSP that will hold funds. PPay does not and will not custody money itself.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot active"></div><div>
-            <div class="timeline-title">Mobile dashboard</div>
-            <div class="timeline-desc">The dashboard is desktop-only today. A mobile experience is in progress.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot active"></div><div>
-            <div class="timeline-title">Live-mode go-live review</div>
-            <div class="timeline-desc">The KYC and account-review flow that gates a merchant moving from sandbox to real money.</div></div></div>
+      <div class="feature-card">
+        <div class="icon-box icon-accent"><span data-icon="shield" data-icon-size="18"></span></div>
+        <div class="feature-card-title">Risk &amp; compliance</div>
+        <div class="feature-card-body">Sentinel scores every checkout attempt on six deterministic signals and blocks at 75 before any rail is called. Disputes carry a 7-day response clock. Tax estimates cover five provincial authorities.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="sentinel.html" class="badge badge-neutral">Sentinel</a>
+          <a href="disputes.html" class="badge badge-neutral">Disputes</a>
+          <a href="tax.html" class="badge badge-neutral">Tax</a>
         </div>
       </div>
 
-      <!-- NOT STARTED -->
-      <div data-animate style="transition-delay:.16s">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:9px;">
-          <span style="width:10px;height:10px;border-radius:50%;background:var(--text-faint);"></span>
-          Not started yet
-        </h3>
-        <div class="timeline">
-          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
-            <div class="timeline-title">Real money movement</div>
-            <div class="timeline-desc">Every payment today is a sandbox construct. No real funds move until the partner arrangement is finalised.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
-            <div class="timeline-title">Sentinel custom rules</div>
-            <div class="timeline-desc">A no-code rule builder and per-account thresholds. Today's threshold is fixed.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
-            <div class="timeline-title">Device fingerprinting</div>
-            <div class="timeline-desc">Sentinel's signals use IP address only right now.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
-            <div class="timeline-title">Marketplaces &amp; split payments</div>
-            <div class="timeline-desc">Routing one payment to multiple recipients.</div></div></div>
-          <div class="timeline-item"><div class="timeline-dot planned"></div><div>
-            <div class="timeline-title">In-person payments</div>
-            <div class="timeline-desc">Card-present terminals and QR-based collection.</div></div></div>
+      <div class="feature-card">
+        <div class="icon-box icon-accent"><span data-icon="bank" data-icon-size="18"></span></div>
+        <div class="feature-card-title">Money movement &amp; insight</div>
+        <div class="feature-card-body">Nightly settlement batching with itemised gross, fee, and net. Payout scheduling on a daily, weekly, or monthly cadence. Micro-deposit verification of the payout account. Analytics with per-method success rates.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="balances-payouts.html" class="badge badge-neutral">Payouts</a>
+          <a href="analytics.html" class="badge badge-neutral">Analytics</a>
+          <a href="financial-connections.html" class="badge badge-neutral">Connections</a>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon-box icon-accent"><span data-icon="plug" data-icon-size="18"></span></div>
+        <div class="feature-card-title">Developer platform</div>
+        <div class="feature-card-body">REST API with required idempotency keys on session creation. An immutable event log written whether or not a webhook endpoint exists. HMAC-signed webhook delivery with exponential retry backoff across five attempts.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="developers.html" class="badge badge-neutral">API</a>
+          <a href="developers.html#webhooks" class="badge badge-neutral">Webhooks</a>
+          <a href="notifications.html" class="badge badge-neutral">Events</a>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon-box icon-accent"><span data-icon="users" data-icon-size="18"></span></div>
+        <div class="feature-card-title">Accounts &amp; security</div>
+        <div class="feature-card-body">Four roles with real permission boundaries. TOTP two-factor authentication. Per-device session binding with remote revocation. An audit log entry on every account-affecting action, and a no-delete data policy.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="team-security.html" class="badge badge-neutral">Team &amp; Security</a>
+          <a href="notifications.html" class="badge badge-neutral">Notifications</a>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon-box icon-accent"><span data-icon="monitor" data-icon-size="18"></span></div>
+        <div class="feature-card-title">Operations</div>
+        <div class="feature-card-body">Schema-separated sandbox and production data, so cross-mode leakage is structurally impossible. Rate limiting, startup secret checks, nightly database backups, and a written restore runbook. A live per-capability status page.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="status.html" class="badge badge-neutral">Status</a>
+          <a href="changelog.html" class="badge badge-neutral">Changelog</a>
         </div>
       </div>
 
@@ -105,13 +112,109 @@
   </div>
 </section>
 
+<!-- PHASE 2 — IN PROGRESS -->
+<section class="section" style="background:var(--surface);border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="mb-32" data-animate style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span class="badge badge-accent">Phase 2 · In progress</span>
+      <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);">Being worked on right now</h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;max-width:980px;" data-animate>
+
+      <div class="feature-card" style="display:flex;gap:20px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;"><span data-icon="bank" data-icon-size="18"></span></div>
+        <div>
+          <div class="feature-card-title" style="font-size:16px;">Licensed partner arrangement</div>
+          <div class="feature-card-body">The single thing standing between sandbox and real money. PPay is a software layer and will not custody funds. We are structuring the arrangement with a licensed bank or PSP that will hold funds, run settlement, and carry the regulatory permissions. That structure determines the final legal position of the platform, and this page gets updated when it is settled.</div>
+          <div style="margin-top:10px;font-size:12.5px;color:var(--text-muted);"><strong style="color:var(--text);">Blocks:</strong> real money movement, live API keys, merchant go-live.</div>
+        </div>
+      </div>
+
+      <div class="feature-card" style="display:flex;gap:20px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;"><span data-icon="idCard" data-icon-size="18"></span></div>
+        <div>
+          <div class="feature-card-title" style="font-size:16px;">Go-live review and merchant KYC</div>
+          <div class="feature-card-body">The review flow that gates a merchant moving from sandbox to live. Merchants submit business and bank details for manual review. There is deliberately no code path that auto-approves real-money processing, and there will not be one.</div>
+          <div style="margin-top:10px;font-size:12.5px;color:var(--text-muted);"><strong style="color:var(--text);">Status:</strong> submission and review states are built; approval stays manual by design.</div>
+        </div>
+      </div>
+
+      <div class="feature-card" style="display:flex;gap:20px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;"><span data-icon="card" data-icon-size="18"></span></div>
+        <div>
+          <div class="feature-card-title" style="font-size:16px;">Mobile dashboard</div>
+          <div class="feature-card-body">The merchant dashboard is desktop-only today. The hosted checkout page your customers see is already mobile-optimised; it is the operator dashboard that is not. A mobile experience is in progress.</div>
+          <div style="margin-top:10px;font-size:12.5px;color:var(--text-muted);"><strong style="color:var(--text);">Today:</strong> signing in from a phone shows a desktop-only notice with contact details.</div>
+        </div>
+      </div>
+
+      <div class="feature-card" style="display:flex;gap:20px;align-items:flex-start;">
+        <div class="icon-box icon-accent" style="margin:0;flex-shrink:0;"><span data-icon="globe" data-icon-size="18"></span></div>
+        <div>
+          <div class="feature-card-title" style="font-size:16px;">Local rail integrations</div>
+          <div class="feature-card-body">Wallet and bank-transfer flows work end to end against the sandbox engine. Connecting them to the real JazzCash, Easypaisa, 1LINK, and Raast rails depends on the partner arrangement above, since those integrations are made through a licensed entity rather than directly.</div>
+          <div style="margin-top:10px;font-size:12.5px;color:var(--text-muted);"><strong style="color:var(--text);">Depends on:</strong> the licensed partner arrangement.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 3 — NOT STARTED -->
+<section class="section">
+  <div class="container">
+    <div class="mb-32" data-animate style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span class="badge badge-neutral">Phase 3 · Not started</span>
+      <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);">On the list, not yet begun</h2>
+    </div>
+    <div class="grid-2" style="gap:20px;" data-animate>
+
+      <div class="feature-card">
+        <div class="feature-card-title">Real money movement</div>
+        <div class="feature-card-body">Every transaction today is a sandbox construct. No real funds move anywhere until the partner arrangement is finalised, and we would rather say that plainly than imply otherwise.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">Sentinel custom rules</div>
+        <div class="feature-card-body">A no-code rule builder with per-account thresholds ("block if amount is over X and the customer is new"). Today's 75-point threshold is fixed and identical for every account.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">Device fingerprinting</div>
+        <div class="feature-card-body">Sentinel's velocity signals currently key on IP address and email only. True device fingerprinting would catch rings that rotate both.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">Automatic dispute evidence</div>
+        <div class="feature-card-body">Pulling the risk score, signals, and transaction history into a dispute response automatically, instead of you writing the evidence text by hand.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">Marketplaces and split payments</div>
+        <div class="feature-card-body">Routing a single payment to multiple recipients, with per-seller balances and payouts. Today a settlement batch belongs to exactly one merchant.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">In-person payments</div>
+        <div class="feature-card-body">Card-present terminals and QR-based collection. Everything today is online-only, and card-present is a hardware and certification problem rather than a software one.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">Ecommerce plugins</div>
+        <div class="feature-card-body">WooCommerce, Shopify, and Magento integrations. The REST API is there to build against; the packaged plugins are not written.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">Client SDKs</div>
+        <div class="feature-card-body">Official libraries for Node, PHP, and Python. Today the API is plain REST, which works everywhere but means you write the HTTP calls yourself.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HONESTY NOTICE -->
 <section class="section" style="padding-top:0;">
   <div class="container" data-animate>
-    <div style="background:var(--pending-soft);border:1px solid var(--pending);border-radius:var(--radius-lg);padding:30px;display:flex;gap:18px;align-items:flex-start;max-width:840px;margin:0 auto;">
+    <div style="background:var(--pending-soft);border:1px solid var(--pending);border-radius:var(--radius-lg);padding:30px;display:flex;gap:18px;align-items:flex-start;max-width:900px;margin:0 auto;">
       <div style="color:var(--pending);display:flex;flex-shrink:0;"><span data-icon="alert" data-icon-size="22"></span></div>
       <div>
         <h4 style="font-size:17px;font-weight:700;color:var(--pending);margin-bottom:8px;">Everything above runs in sandbox</h4>
-        <p style="font-size:14.5px;color:var(--text);line-height:1.65;">PPay is a technology layer, not a bank. We do not hold a PSO/PSP or EMI licence and we do not custody merchant or customer funds — a licensed partner will. Until that arrangement is finalised there are no live transactions and no real money movement, only test credentials.</p>
+        <p style="font-size:14.5px;color:var(--text);line-height:1.65;">PPay is a technology layer, not a bank. We do not hold a PSO/PSP or EMI licence and we do not custody merchant or customer funds. A licensed partner will. Until that arrangement is finalised there are no live transactions and no real money movement, only test credentials. A payments company that overstates what it does is a payments company you should not trust with money.</p>
       </div>
     </div>
   </div>

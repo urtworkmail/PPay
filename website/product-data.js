@@ -118,7 +118,7 @@ Idempotency-Key: <span style="color:var(--success);">order-1029</span>
 
 <span style="color:var(--text-faint);">// →</span>
 {
-  <span style="color:var(--success);">"url"</span>: <span style="color:var(--success);">"https://ppay.pk/pay/lnk_8Kd"</span>,
+  <span style="color:var(--success);">"url"</span>: <span style="color:var(--success);">"https://pay.ppay.silicatelabs.site/pay/lnk_8Kd"</span>,
   <span style="color:var(--success);">"usage_count"</span>: <span style="color:var(--pending);">0</span>
 }`,
         },

@@ -71,7 +71,7 @@ const browserChrome = (url) => `
 const MOCKUPS = {
   checkout: () => `
     <div class="mockup">
-      ${browserChrome('pay.ppay.pk/c/cs_live_9fA2')}
+      ${browserChrome('pay.ppay.silicatelabs.site/c/cs_live_9fA2')}
       <div class="mockup-body">
         <div class="mock-card" style="display:flex;justify-content:space-between;align-items:center;">
           <div><div class="mock-label">Order #1029</div><div class="mock-value">₨1,500.00</div></div>
@@ -98,7 +98,7 @@ const MOCKUPS = {
         <div style="text-align:center;padding:6px 0;">
           <div style="width:36px;height:36px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:0 auto 8px;">Z</div>
           <div style="font-size:12.5px;font-weight:700;">Zainab Traders</div>
-          <div style="font-size:10.5px;color:var(--text-faint);">ppay.pk/pay/lnk_8Kd</div>
+          <div style="font-size:10.5px;color:var(--text-faint);">pay.ppay.silicatelabs.site/pay/lnk_8Kd</div>
         </div>
         <div class="mock-card" style="text-align:center;">
           <div class="mock-label">Amount due</div>
@@ -112,7 +112,7 @@ const MOCKUPS = {
 
   invoice: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/invoices/INV-0042')}
+      ${browserChrome('app.ppay.silicatelabs.site/invoices/INV-0042')}
       <div class="mockup-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
           <div><div class="mock-label">Invoice</div><div style="font-size:14px;font-weight:800;">INV-0042</div></div>
@@ -132,7 +132,7 @@ const MOCKUPS = {
 
   subscription: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/subscriptions')}
+      ${browserChrome('app.ppay.silicatelabs.site/subscriptions')}
       <div class="mockup-body">
         <div class="mock-grid-2">
           <div class="mock-card"><div class="mock-label">Active</div><div class="mock-value">128</div></div>
@@ -149,7 +149,7 @@ const MOCKUPS = {
 
   sentinel: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/transactions/txn_01J3')}
+      ${browserChrome('app.ppay.silicatelabs.site/transactions/txn_01J3')}
       <div class="mockup-body">
         <div class="mock-card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -173,7 +173,7 @@ const MOCKUPS = {
 
   disputes: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/disputes/dp_7Xq')}
+      ${browserChrome('app.ppay.silicatelabs.site/disputes/dp_7Xq')}
       <div class="mockup-body">
         <div class="mock-card" style="border-color:var(--danger);">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -195,7 +195,7 @@ const MOCKUPS = {
 
   tax: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/settings/tax')}
+      ${browserChrome('app.ppay.silicatelabs.site/settings/tax')}
       <div class="mockup-body">
         <div class="mock-grid-2">
           <div class="mock-field">Province · <strong style="color:var(--text);">Sindh</strong></div>
@@ -213,7 +213,7 @@ const MOCKUPS = {
 
   payouts: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/balances')}
+      ${browserChrome('app.ppay.silicatelabs.site/balances')}
       <div class="mockup-body">
         <div class="mock-grid-2">
           <div class="mock-card"><div class="mock-label">Available</div><div class="mock-value" style="color:var(--success);">₨218,400</div><div class="mock-sub">Next payout Fri</div></div>
@@ -229,7 +229,7 @@ const MOCKUPS = {
 
   analytics: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/analytics')}
+      ${browserChrome('app.ppay.silicatelabs.site/analytics')}
       <div class="mockup-body">
         <div class="mock-card">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -251,7 +251,7 @@ const MOCKUPS = {
 
   financialConnections: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/settings/payout-account')}
+      ${browserChrome('app.ppay.silicatelabs.site/settings/payout-account')}
       <div class="mockup-body">
         <div class="mock-card">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -271,7 +271,7 @@ const MOCKUPS = {
 
   notifications: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/notifications')}
+      ${browserChrome('app.ppay.silicatelabs.site/notifications')}
       <div class="mockup-body">
         <div class="mock-list">
           <div class="mock-list-header">Activity</div>
@@ -285,7 +285,7 @@ const MOCKUPS = {
 
   teamSecurity: () => `
     <div class="mockup">
-      ${browserChrome('app.ppay.pk/settings/team')}
+      ${browserChrome('app.ppay.silicatelabs.site/settings/team')}
       <div class="mockup-body">
         <div class="mock-list">
           <div class="mock-list-header">Team members</div>
