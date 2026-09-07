@@ -1,6 +1,6 @@
 # PPay
 
-Payment infrastructure for Pakistan — one API and one dashboard for checkout, payment links, invoicing, subscriptions, fraud scoring, disputes, tax, and settlements. A product of **Silicate Labs (Pvt.) Ltd.**
+Payment infrastructure for Pakistan — one API and one dashboard for checkout, payment links, invoicing, subscriptions, fraud scoring, disputes, tax, and settlements. A product of **Silicate Labs**.
 
 This is a **sandbox-mode** build: every payment, wallet, and settlement is a deterministic simulation (see `backend/TEST_CARDS.md`). No real money moves yet — PPay does not hold a PSO/PSP or EMI licence and does not custody funds. See the [Roadmap](website/roadmap.html) for exactly what's shipped, what's in progress, and what hasn't started.
 
@@ -87,4 +87,4 @@ See the full [Roadmap](website/roadmap.html) page for the up-to-date, honest lis
 
 ## Team
 
-Built by **Usama Rehman Tarar** and **Muhammad Junaid**, under **Silicate Labs (Pvt.) Ltd.** See the [Team page](website/team.html) for more.
+Built by **Usama Rehman Tarar** and **Muhammad Junaid**, under **Silicate Labs**. See the [Team page](website/team.html) for more.
