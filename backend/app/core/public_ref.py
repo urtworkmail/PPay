@@ -3,7 +3,7 @@
 Under schema-per-mode separation (see core/db.py), a raw UUID path param is not
 enough to serve a public checkout/pay-link/invoice page: the server has to know
 which schema (`sandbox` vs `production`) to query *before* it can look anything
-up, and an anonymous buyer request carries no API key to read that from. Stripe
+up, and an anonymous buyer request carries no API key to read that from. The convention
 solves the identical problem by encoding the mode into the object id itself
 (`cs_test_...` vs `cs_live_...` checkout session ids) — this module reproduces
 that convention for the three entities buyers reach directly: CheckoutSession,
@@ -11,11 +11,11 @@ PaymentLink, Invoice.
 
 The encoded form is what every API response and URL uses as the object's `id` —
 not just an alias for public routes — so there is exactly one id format per
-entity, matching Stripe's own behavior.
+entity, the standard approach for this kind of reference.
 
 Mode tags here match this codebase's existing vocabulary (`ApiKeyMode.SANDBOX`/
 `LIVE`, `sk_sandbox_...`/`sk_live_...` — see core/security.py) rather than
-Stripe's literal `test`/`live` wording, so there's one consistent term for
+the literal `test`/`live` wording some platforms use, so there's one consistent term for
 "non-production" across keys, schemas, and now these reference ids.
 """
 
@@ -53,7 +53,7 @@ def decode_ref(prefix: str, value: str) -> DecodedRef:
     return DecodedRef(mode=_MODE_BY_TAG[tag], id=object_id)
 
 
-# One short, stable prefix per entity — mirrors Stripe's `cs_`, `pi_`, `in_` etc.
+# One short, stable prefix per entity — the same `cs_`, `pi_`, `in_` style prefix convention used industry-wide.
 CHECKOUT_SESSION_PREFIX = "cs"
 PAYMENT_LINK_PREFIX = "plink"
 INVOICE_PREFIX = "inv"

@@ -26,7 +26,7 @@ class PriceResponse(BaseModel):
 
 class PriceUpdateRequest(BaseModel):
     """Only is_active can change — amount/currency/interval are immutable once a price
-    exists, matching Stripe (a price already shared on a link/subscription must never
+    exists (a price already shared on a link/subscription must never
     change value under someone). Deactivate and create a new price instead."""
 
     is_active: bool

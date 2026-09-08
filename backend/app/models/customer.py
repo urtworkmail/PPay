@@ -14,7 +14,7 @@ class Customer(Base):
 
     Tenant-scoped like all transactional data: a customer created in test mode
     is a separate record from a customer with the same email in live mode,
-    matching Stripe's own test/live customer separation.
+    the standard test/live customer separation for this kind of platform.
     """
 
     __tablename__ = "customers"

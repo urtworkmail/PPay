@@ -21,7 +21,7 @@ export default function Authentication() {
         The full key is shown <strong>once</strong>, at creation time. PPay stores only a bcrypt hash of it — if you
         lose it, revoke the key and create a new one. There is currently one mode: <code className="mono">sandbox</code>.
         A <code className="mono">live</code> mode exists in the data model for when an account completes go-live
-        review, gated the same way Stripe gates live keys behind identity/business verification.
+        review, gated behind identity and business verification before it becomes usable.
       </P>
 
       <H2 id="using-a-key">Using a key</H2>

@@ -13,7 +13,7 @@ reading from the new orchestrator objects (the transaction detail view's
 `charge_attempts` count, and anything built on top of it going forward) would
 disagree with `Transaction` about whether money had gone back.
 
-This mirrors Stripe's own shape: a refund doesn't change a Charge's terminal
+This uses a standard processor's shape: a refund doesn't change a Charge's terminal
 `succeeded` status, it accumulates against `refunded_amount_minor`. No new
 table, no PaymentIntent status change — `charges.refunded_amount_minor` is
 enough for the transaction/refund endpoints to keep both records honest.

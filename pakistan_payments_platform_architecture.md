@@ -1,6 +1,6 @@
 # Pakistan Domestic Payments Platform — System Architecture Spec
 
-**Purpose of this document:** This is the canonical architecture reference for building a Stripe-equivalent payments platform for the Pakistani domestic market. It exists to solve a specific problem: individual features (checkout, payment links, subscriptions, wallet integrations) were built in isolation and are not connected through a shared core. This spec defines the single data model, state machines, and service boundaries that every feature must be refactored to use.
+**Purpose of this document:** This is the canonical architecture reference for building a payments platform for the Pakistani domestic market. It exists to solve a specific problem: individual features (checkout, payment links, subscriptions, wallet integrations) were built in isolation and are not connected through a shared core. This spec defines the single data model, state machines, and service boundaries that every feature must be refactored to use.
 
 **Audience:** This document is written to be handed to an AI coding agent (Claude Code) for implementation. Every section should be treated as a spec to build against, not just a description.
 
@@ -113,7 +113,7 @@ Merchant
 4. **Attempt 1 (auto-debit):** `PaymentIntent` created against saved `PaymentMethod`. Success → `invoice.paid`, cycle extended.
 5. **Attempt 1 fails or times out:** Invoice → `past_due`. Dunning engine sends WhatsApp/SMS with a single-click `PaymentLink` fallback, retries at Day 1/3/7.
 6. Retries exhausted → `Subscription` → `canceled` or `unpaid` per merchant policy.
-7. **Proration:** on upgrade/downgrade mid-cycle, generate an immediate prorated `Invoice` (credit or charge) for the difference between old and new `Price`, time-weighted by days remaining in the current period. Do not silently swap the price without a proration invoice — this is the single most common Stripe-parity gap.
+7. **Proration:** on upgrade/downgrade mid-cycle, generate an immediate prorated `Invoice` (credit or charge) for the difference between old and new `Price`, time-weighted by days remaining in the current period. Do not silently swap the price without a proration invoice — this is the single most common gap in a naive implementation.
 
 ### 4.4 Standalone Invoicing (new — required for parity)
 1. Merchant creates an `Invoice` directly (no `Subscription`), sets `is_standalone = true`, line items, due date.
@@ -134,7 +134,7 @@ Merchant
 4. Platform submits evidence to the network; outcome (`won`/`lost`) updates the dispute and, if lost, reverses funds from the merchant's balance (ledger entries) and typically applies a dispute fee.
 
 ### 4.7 Customer Portal (new — required for parity)
-A self-service, Stripe-hosted-equivalent page (`portal.yourdomain.pk/session/...`) generated per customer session, where the customer can:
+A self-service, hosted equivalent page (`portal.yourdomain.pk/session/...`) generated per customer session, where the customer can:
 - View invoice/payment history
 - Update saved payment method (re-tokenize card, re-link wallet)
 - Cancel or change (upgrade/downgrade) their own subscription (triggers 4.3 proration flow)
@@ -281,7 +281,7 @@ Verification integrations: NADRA Verisys (CNIC), FBR (NTN), 1Link Title Fetch (b
 
 ---
 
-## 11. Feature Parity Checklist vs. Stripe
+## 11. Feature Parity Checklist
 
 **Must-have for MVP parity (not in original doc, added here):**
 - [ ] Customer Portal (self-service)
@@ -325,12 +325,12 @@ Verification integrations: NADRA Verisys (CNIC), FBR (NTN), 1Link Title Fetch (b
 
 ## 13. Merchant Onboarding & Dashboard Experience (World-Class Parity)
 
-This section specs the merchant-facing flows and dashboard surfaces needed to match a Stripe-caliber experience. No visual/UI design here — this is behavior, information architecture, and widget content only, mapped back to the entities in §2 and workflows in §4.
+This section specs the merchant-facing flows and dashboard surfaces needed to match a best-in-class experience. No visual/UI design here — this is behavior, information architecture, and widget content only, mapped back to the entities in §2 and workflows in §4.
 
 ### 13.1 Signup & Instant Activation
 - Signup fields: email, password (or OAuth), business name, mobile number. Nothing else.
 - On submit: `Merchant` created with `kyc_tier = 0`, `kyc_status = unverified`. Test key pair (`pk_test_`, `sk_test_`) generated instantly; live key pair generated but `disabled`.
-- No CNIC/SECP documents required at signup — a merchant can start building immediately, matching Stripe's "build before you're verified" model.
+- No CNIC/SECP documents required at signup — a merchant can start building immediately, a "build before you're verified" model.
 - User lands directly in the dashboard, in Test Mode, not a marketing/docs page.
 
 ### 13.2 Progressive KYC / Go-Live Checklist
@@ -371,7 +371,7 @@ This section specs the merchant-facing flows and dashboard surfaces needed to ma
 ### 13.6 Payments Section
 - Table of all `PaymentIntent`s: filter by status, date range, rail, amount, customer.
 - Status badges reflect §5.1's state machine, with a distinct badge for `requires_reconciliation` so merchants read it as "we're checking this," not "failed."
-- Detail view per payment: full timeline — intent created → charge attempt(s) → rail response → refunds/disputes → ledger breakdown (fee/tax/net) — mirroring Stripe's payment timeline view.
+- Detail view per payment: full timeline — intent created → charge attempt(s) → rail response → refunds/disputes → ledger breakdown (fee/tax/net) — a full payment timeline view.
 - One-click Refund action directly from the detail view (§4.5).
 
 ### 13.7 Customers Section
@@ -408,7 +408,7 @@ This section specs the merchant-facing flows and dashboard surfaces needed to ma
 - API key management: view/rotate test and live keys; secret vs. publishable keys kept visually and functionally distinct.
 - Webhook management: add endpoint, select event types, view delivery log with manual replay (§8).
 - Event log: raw payloads, searchable by type/date.
-- Embedded quickstart snippets pre-filled with the merchant's own test key — copy-pasteable code that already works against their account, matching Stripe's docs experience.
+- Embedded quickstart snippets pre-filled with the merchant's own test key — copy-pasteable code that already works against their account, a documentation experience merchants can build against immediately.
 
 ### 13.14 Settings
 - Business profile (KYC documents, tier status).

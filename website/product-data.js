@@ -649,7 +649,7 @@ Authorization: Bearer <span style="color:var(--success);">sk_sandbox_...</span>
     mockup: 'financialConnections',
     hero: {
       title: 'Prove the payout account is really yours',
-      sub: 'Micro-deposit verification — the same mechanism Stripe, PayPal, and GoCardless use for real ACH verification. Not a bank-aggregator integration, because none broadly exists to connect to for Pakistani banks yet.',
+      sub: 'Micro-deposit verification — the same mechanism major payment platforms use for real ACH verification. Not a bank-aggregator integration, because none broadly exists to connect to for Pakistani banks yet.',
       marks: ['<span style="color:var(--success);">●</span> Live in sandbox', '{{ico:bank}} Micro-deposit based', '{{ico:shield}} Required before payout'],
     },
     valueProps: [

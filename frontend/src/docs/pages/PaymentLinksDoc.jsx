@@ -13,7 +13,7 @@ export default function PaymentLinksDoc() {
 
       <Callout tone="info">
         Payment Links are always created from a <Link to="/docs/products-and-prices">Product's Price</Link>, the
-        same way Stripe requires. This keeps every link tied to something you can report on, and keeps the amount
+        same way most modern payment platforms require. This keeps every link tied to something you can report on, and keeps the amount
         immutable once shared.
       </Callout>
 
@@ -40,7 +40,7 @@ export default function PaymentLinksDoc() {
 
       <H2 id="share">Sharing it</H2>
       <P>
-        The response includes a <code className="mono">url</code> like <code className="mono">https://yourppay.example/pay/&lt;id&gt;</code>. Opening it creates a fresh Checkout Session behind the scenes and takes the customer straight to the branded checkout page — there's no separate "click to continue" step, matching how Stripe Payment Links behave.
+        The response includes a <code className="mono">url</code> like <code className="mono">https://yourppay.example/pay/&lt;id&gt;</code>. Opening it creates a fresh Checkout Session behind the scenes and takes the customer straight to the branded checkout page — there's no separate "click to continue" step.
       </P>
 
       <H2 id="tracking">What you get back</H2>

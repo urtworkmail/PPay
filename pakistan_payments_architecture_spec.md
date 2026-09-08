@@ -1,4 +1,4 @@
-# System Architecture & Workflow Design Specification: Domestic Payment Gateway Platform ("PakStripe")
+# System Architecture & Workflow Design Specification: Domestic Payment Gateway Platform (PPay)
 
 ## Executive Summary & Architectural Vision
 
@@ -6,7 +6,7 @@ This document outlines the end-to-end operational workflows, domain entity relat
 
 The core problem identified in the current system is **modular decoupling without orchestration**: individual modules (e.g., payment rail connectors, link generators, merchant auth, billing scripts) exist in isolation, lacking a unified data model, event-driven state transitions, and a central orchestration engine.
 
-This specification serves as a blueprint for AI agents and software architects to connect these disconnected components into a cohesive, developer-first platform modeled after Stripe, fully tailored to Pakistan's financial ecosystem (JazzCash, EasyPaisa, Raast, 1Link PayPak/IBFT, local Visa/Mastercard acquisition, and SBP regulatory requirements).
+This specification serves as a blueprint for AI agents and software architects to connect these disconnected components into a cohesive, developer-first platform fully tailored to Pakistan's financial ecosystem (JazzCash, EasyPaisa, Raast, 1Link PayPak/IBFT, local Visa/Mastercard acquisition, and SBP regulatory requirements).
 
 ---
 
@@ -298,7 +298,7 @@ In Sandbox Mode, merchants can integrate and test all workflows programmatically
   - Test Raast Alias (`test-merchant@raast` auto-returns mock transaction ID).
 - **Test Clocks**: Merchants can manipulate time in sandbox to test subscription renewal cycles, trial expirations, and dunning workflows without waiting days/months.
 - **Local Webhook CLI & Tunneling**:
-  - Developers run CLI tool (`pakstripe listen --forward-to localhost:8000/webhook`) to route sandbox events directly to their local development server.
+  - Developers run CLI tool (`ppay listen --forward-to localhost:8000/webhook`) to route sandbox events directly to their local development server.
 
 #### Step 3: Merchant KYC Tiering & Verification Journey (Going Live)
 To accept real PKR money, merchants submit business verification in the dashboard:
@@ -458,7 +458,7 @@ Every state transition produces an immutable `Event` record in JSON format.
 
 ### 2. Secure HMAC Signature Verification
 To prevent spoofing attacks, all webhooks sent to merchants include a signature header:
-`X-PakStripe-Signature: t=1721678400,v1=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08`
+`X-PPay-Signature: t=1721678400,v1=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08`
 
 - `t` = Timestamp
 - `v1` = HMAC-SHA256 signature calculated over `${t}.${json_payload}` using the merchant's Webhook Secret (`whsec_...`).

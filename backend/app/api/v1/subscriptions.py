@@ -92,7 +92,7 @@ async def create_subscription(
 
     # If this customer already has a card/wallet on file, we can charge them
     # immediately instead of sending them back through checkout — the same
-    # "existing customer, one-click subscribe" flow Stripe supports.
+    # "existing customer, one-click subscribe" flow this kind of platform supports.
     method_result = await db.execute(
         select(SavedPaymentMethod)
         .where(

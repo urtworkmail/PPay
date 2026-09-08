@@ -69,7 +69,7 @@ def _decode_link_ref(link_id: str, expected_mode: Mode | None = None) -> uuid.UU
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment link not found") from exc
     if expected_mode is not None and decoded.mode != expected_mode:
         # A test-mode key/session probing a live-mode id (or vice versa) sees
-        # the same 404 a nonexistent id would — same as Stripe's cross-mode
+        # the same 404 a nonexistent id would — the standard cross-mode
         # behavior, and it never reveals whether the id exists in the other mode.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment link not found")
     return decoded.id
@@ -98,7 +98,7 @@ async def create_payment_link(
         )
 
     # The link copies amount/title at creation time rather than joining live,
-    # matching Stripe: a link keeps working exactly as shared even if the
+    # so a link keeps working exactly as shared even if the
     # price is later deactivated (prices are otherwise immutable — no amount
     # ever changes underneath a link that's already gone out).
     link = PaymentLink(

@@ -13,7 +13,7 @@ export const RELEASES = [
   },
   {
     version: "Q2 2026",
-    title: "Stripe-parity core",
+    title: "Payment orchestration core",
     summary:
       "Payment intents, charges, and a full ledger sit under the sandbox engine, with sandbox and live data separated at the database level.",
     highlights: ["Payment intents & charges", "Sandbox/live isolation", "Audit log"],

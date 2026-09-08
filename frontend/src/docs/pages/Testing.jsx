@@ -7,7 +7,7 @@ export default function Testing() {
       <P>
         Every account is sandbox-only until it completes go-live review, and the sandbox engine is fully
         deterministic — specific "magic" card numbers and wallet numbers always produce the same result, every
-        time, so your integration tests are reproducible. This is the same idea as Stripe's test-mode card numbers.
+        time, so your integration tests are reproducible — the same idea used by test-mode card numbers industry-wide.
       </P>
 
       <Callout tone="info">

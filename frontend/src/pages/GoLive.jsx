@@ -211,7 +211,7 @@ export default function GoLive() {
         <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Go Live</h1>
         <p style={{ color: "var(--color-text-muted)", marginTop: 0, marginBottom: 24, maxWidth: 640 }}>
           Sandbox mode processes simulated payments only. Moving to real money requires a one-time business
-          verification — similar to how PayFast, Stripe, and every licensed payment gateway onboard merchants for
+          verification — the same way every licensed payment gateway onboards merchants for
           compliance with State Bank of Pakistan and FBR regulations.
         </p>
         <div className="card" style={{ padding: 24, maxWidth: 560 }}>
@@ -277,7 +277,7 @@ export default function GoLive() {
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Go Live</h1>
       <p style={{ color: "var(--color-text-muted)", marginTop: 0, marginBottom: 24, maxWidth: 640 }}>
         Sandbox mode processes simulated payments only. Moving to real money requires a one-time business
-        verification, one step at a time — just like PayFast, Stripe, and every licensed gateway.
+        verification, one step at a time — just like every licensed gateway.
       </p>
 
       {error && <div className="badge badge-danger" style={{ marginBottom: 16 }}>{error}</div>}

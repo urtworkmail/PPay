@@ -27,7 +27,7 @@ class User(Base):
 
     Merchant is the business entity; User is who can log in and act on its
     behalf. One user belongs to exactly one merchant (no cross-account
-    switching, unlike Stripe's real account switcher).
+    switching, unlike a real production account switcher).
     """
 
     __tablename__ = "users"

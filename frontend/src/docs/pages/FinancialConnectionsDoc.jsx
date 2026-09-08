@@ -7,7 +7,7 @@ export default function FinancialConnectionsDoc() {
       <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 6 }}>Financial Connections</h1>
       <P>
         Proves you control the bank account your payouts are sent to, via micro-deposit verification — the same
-        mechanism Stripe, PayPal, and GoCardless use for real ACH verification. Not a third-party bank-aggregator
+        mechanism major payment platforms use for real ACH verification. Not a third-party bank-aggregator
         integration; none broadly exists to connect to for Pakistani banks yet.
       </P>
 

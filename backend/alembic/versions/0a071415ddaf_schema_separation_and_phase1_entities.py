@@ -1,4 +1,4 @@
-"""introduce sandbox/production schema separation and Phase 1 Stripe-parity entities
+"""introduce sandbox/production schema separation and Phase 1 core entities
 
 Revision ID: 0a071415ddaf
 Revises: 33f037391660

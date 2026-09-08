@@ -3,7 +3,7 @@
 This never touches a real card network, bank, or wallet provider. It exists so
 that investor/merchant demos are fully reproducible: specific "magic" test
 card numbers and wallet phone numbers always resolve to the same outcome,
-the same way Stripe's test-mode card numbers work. See TEST_CARDS.md for the
+the same way test-mode card numbers work industry-wide. See TEST_CARDS.md for the
 full reference table shown to demo users.
 """
 

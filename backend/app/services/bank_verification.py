@@ -3,8 +3,8 @@
 This is what "Financial Connections" actually means for PPay: proving the
 merchant controls the account they've entered, not a third-party
 bank-aggregator integration — no broadly-available one exists to integrate
-with for Pakistani banks. The mechanism is the same one Stripe/PayPal/
-GoCardless use for ACH: send two small amounts, have the account holder read
+with for Pakistani banks. The mechanism is the same one major payment platforms
+use for ACH verification: send two small amounts, have the account holder read
 them off their real statement and confirm.
 
 In a live deployment the two amounts would actually be transferred by the

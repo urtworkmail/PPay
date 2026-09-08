@@ -7,7 +7,7 @@ Create Date: 2026-09-07 17:30:00.000000
 "Financial Connections" for PPay isn't a third-party bank-aggregator
 integration (none broadly exists for Pakistan to integrate with) — it's
 proving a merchant actually controls the bank account they've entered for
-payouts, the same micro-deposit mechanism Stripe/PayPal/GoCardless use. Two
+payouts, the same micro-deposit mechanism major payment platforms use. Two
 small pending amounts and an attempt counter, on `merchants` since a merchant
 has exactly one payout account at a time (matching the existing
 `payout_bank_account_number` field this verifies).

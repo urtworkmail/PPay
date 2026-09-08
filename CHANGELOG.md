@@ -2,10 +2,10 @@
 
 All notable changes to PPay are logged here, one entry per pushed version.
 
-## v3 — Stripe-parity architecture rebuild (in progress)
+## v3 — Core architecture rebuild (in progress)
 
 Multi-phase rebuild bringing PPay onto a single `PaymentIntent` orchestration core,
-matching Stripe's actual architecture and workflows (see
+matching a modern payment-platform architecture and workflow (see
 `pakistan_payments_platform_architecture.md` and the phased plan). Logged per phase
 as each lands.
 
@@ -70,7 +70,7 @@ as each lands.
   `Transaction`/`Refund` but never touched the `Charge` it was dual-written
   alongside, so a refunded transaction's `Charge` kept claiming to be fully,
   unrefundedly `succeeded`. `payment_intent_engine.apply_refund` mirrors the
-  refund onto the matching charge — same shape as Stripe's own (`Charge` stays
+  refund onto the matching charge — a standard processor's shape (`Charge` stays
   `succeeded`, the refunded amount accumulates in its own field) — verified
   against a real refund: `Charge.status` stays `SUCCEEDED`,
   `refunded_amount_minor` matches the refund.
@@ -243,7 +243,7 @@ any of this can be traced back to an exact schema change.
   third-party bank-aggregator integration, since none broadly exists to
   integrate with for Pakistani banks: proving the merchant controls the
   payout bank account they entered, via the same micro-deposit mechanism
-  Stripe/PayPal/GoCardless use for real ACH verification. Two random 1–99
+  major payment platforms use for real ACH verification. Two random 1–99
   amounts are generated; in a live deployment they'd only become visible on
   the merchant's real bank statement after 1–2 business days (never
   revealed anywhere else); in sandbox mode (gated on `merchant.live_status`,
@@ -450,7 +450,7 @@ across the codebase and finding none.
 - **Go Live flow**: merchants submit business and settlement bank details for review; adds a `live_status` field (`sandbox_only` / `pending_review` / `live`) to the merchant record. There is intentionally no code path that auto-approves this — it models the real manual KYC/compliance review every licensed payment gateway requires before real money moves.
 - **Help Center** page: FAQs, sandbox test card/wallet reference, a quick-start API snippet, contact info, and an honest "on the roadmap" list of what isn't built yet (POS hardware, e-commerce plugins, recurring billing, real settlement).
 - **Theme toggle**: light/dark/system, persisted across sessions, with a pre-paint init script so there's no flash of the wrong theme on load.
-- **Dashboard redesign**: grouped icon sidebar, Stripe-inspired color and typography tokens, and a 14-day volume chart on the Overview page.
+- **Dashboard redesign**: grouped icon sidebar, modern SaaS-style color and typography tokens, and a 14-day volume chart on the Overview page.
 - Merchant business profile fields (support email/phone, address, website, statement descriptor), branding fields (logo URL, brand color), and payout settings (bank name/account, payout schedule).
 - `backend/scripts/seed_demo.py` — populates a merchant with realistic transactions, invoices, payment links, refunds, and settlements for demos.
 - Project `README.md`.
