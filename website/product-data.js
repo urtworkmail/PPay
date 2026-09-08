@@ -344,6 +344,30 @@ Idempotency-Key: <span style="color:var(--success);">order-1029</span>
 }`,
         },
       },
+      {
+        eyebrow: 'No hidden weighting',
+        title: 'The exact scoring math — this is the whole scorer',
+        sub: 'Every signal adds a fixed number of points, capped at 100. No model, no learned weights, nothing that changes behind your back.',
+        bullets: [
+          '<strong>velocity_email</strong> +35 · <strong>recent_declines</strong> +30 · <strong>velocity_ip</strong> +25',
+          '<strong>amount_deviation</strong> +20 · <strong>high_amount_first_time</strong> +15 (on top of amount_deviation, when the customer is also new)',
+          '<strong>first_time_customer</strong> alone adds nothing — it only matters combined with an unusual amount.',
+        ],
+        code: {
+          label: 'worked example',
+          body: `<span style="color:var(--text-faint);">// first-time customer, bursty IP, 6× your average order:</span>
+velocity_ip           <span style="color:var(--pending);">+25</span>
+amount_deviation       <span style="color:var(--pending);">+20</span>
+high_amount_first_time <span style="color:var(--pending);">+15</span>
+                        <span style="color:var(--text-faint);">────</span>
+                        <span style="color:var(--success);">60</span>
+
+<span style="color:var(--text-faint);">// one more failed attempt from the same identity:</span>
+recent_declines        <span style="color:var(--pending);">+30</span>
+                        <span style="color:var(--text-faint);">────</span>
+                        <span style="color:var(--danger);">90 → blocked (≥75)</span>`,
+        },
+      },
     ],
     segments: {
       title: 'For anyone taking card payments from strangers',

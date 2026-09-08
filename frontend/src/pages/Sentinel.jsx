@@ -1,6 +1,18 @@
 import { Link } from "react-router-dom";
 import { ChartLineIcon, CheckIcon, FingerprintIcon, ShieldIcon, WorkflowIcon } from "../components/Icons";
 
+// The real weights from services/fraud_engine.py — kept here as plain data,
+// not prose, so this table can never drift from what the scorer actually
+// does without someone noticing the numbers don't add up anymore.
+const SCORING_RULES = [
+  { flag: "velocity_email", points: 35, rule: "4+ attempts from the same email in 10 minutes" },
+  { flag: "velocity_ip", points: 25, rule: "6+ attempts from the same IP in 10 minutes" },
+  { flag: "amount_deviation", points: 20, rule: "More than 5× this merchant's own trailing average" },
+  { flag: "high_amount_first_time", points: 15, rule: "amount_deviation and first_time_customer together — added on top of both" },
+  { flag: "recent_declines", points: 30, rule: "3+ failed attempts from the same identity in 30 minutes" },
+  { flag: "first_time_customer", points: 0, rule: "No prior succeeded transaction — recorded as a flag, scores nothing alone" },
+];
+
 const LIVE_CAPABILITIES = [
   {
     icon: ChartLineIcon,
@@ -89,6 +101,70 @@ export default function Sentinel() {
         {LIVE_CAPABILITIES.map((c) => (
           <CapabilityCard key={c.title} c={c} live />
         ))}
+      </div>
+
+      <div className="card" style={{ padding: 20, marginBottom: 28 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 4 }}>Exactly how the score adds up</div>
+        <p style={{ fontSize: 13, color: "var(--color-text-muted)", margin: "0 0 16px", lineHeight: 1.6, maxWidth: 640 }}>
+          Every signal that fires adds a fixed number of points to a 0–100 score, capped at 100. At{" "}
+          <strong style={{ color: "var(--color-text)" }}>75 or higher</strong>, the attempt is blocked before
+          authorization runs. No machine-learning model, no hidden weighting — this table is the entire scorer.
+        </p>
+        <div style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto 2fr",
+              gap: 12,
+              padding: "9px 14px",
+              background: "var(--color-bg)",
+              fontSize: 10.5,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              color: "var(--color-text-faint)",
+            }}
+          >
+            <span>Flag</span>
+            <span>Points</span>
+            <span>Fires when</span>
+          </div>
+          {SCORING_RULES.map((r, i) => (
+            <div
+              key={r.flag}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto 2fr",
+                gap: 12,
+                alignItems: "center",
+                padding: "10px 14px",
+                borderTop: i === 0 ? "none" : "1px solid var(--color-border)",
+              }}
+            >
+              <span className="mono" style={{ fontSize: 12 }}>
+                {r.flag}
+              </span>
+              <span
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: r.points > 0 ? "var(--color-danger)" : "var(--color-text-faint)",
+                  justifySelf: "start",
+                  minWidth: 34,
+                }}
+              >
+                {r.points > 0 ? `+${r.points}` : "—"}
+              </span>
+              <span style={{ fontSize: 12.5, color: "var(--color-text-muted)" }}>{r.rule}</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: "var(--color-text-faint)", margin: "12px 0 0", lineHeight: 1.5 }}>
+          Worked example: a first-time customer, from an IP with 6+ attempts in the last 10 minutes, paying 6× your
+          average order value — that's velocity_ip (25) + amount_deviation (20) + high_amount_first_time (15) = 60.
+          Add one more failed attempt from the same identity in the last 30 minutes (recent_declines, +30) and the
+          total crosses 75: blocked.
+        </p>
       </div>
 
       <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--color-text-faint)", marginBottom: 10 }}>
