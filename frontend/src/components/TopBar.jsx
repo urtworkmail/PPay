@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { getBreadcrumb } from "../nav/navConfig";
 import NotificationPanel from "./NotificationPanel";
-import { BellIcon, HelpIcon, LifeBuoyIcon, SearchIcon } from "./Icons";
+import { BellIcon, HelpIcon, PhoneIcon, SearchIcon } from "./Icons";
 
 function Breadcrumb() {
   const location = useLocation();
@@ -291,7 +291,7 @@ export default function TopBar({ onOpenHelp }) {
             e.currentTarget.style.borderColor = "var(--color-border)";
           }}
         >
-          <LifeBuoyIcon width={15} height={15} />
+          <PhoneIcon width={15} height={15} />
           +92 (327) 575-4989
         </a>
         <IconButton onClick={onOpenHelp} aria-label="Help" title="Help">

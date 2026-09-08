@@ -189,7 +189,7 @@ main { flex: 1 0 auto; }   /* pushes footer down */
   text-decoration: none;
 }
 
-.nav-links a:hover { color: var(--text); background: var(--bg); }
+.nav-links a:hover { color: var(--accent); background: var(--accent-soft); }
 .nav-links a.active { color: var(--accent); background: var(--accent-soft); }
 
 /* Sentinel link gets a subtle highlight (removed) */

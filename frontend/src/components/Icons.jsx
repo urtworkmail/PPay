@@ -378,3 +378,9 @@ export const BookIcon = (p) => (
     <path d="M12 6v13" />
   </svg>
 );
+
+export const PhoneIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5C11.4 18.6 5.4 12.6 5 5.1A1.5 1.5 0 0 1 6.5 3.5Z" />
+  </svg>
+);
