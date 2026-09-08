@@ -1044,6 +1044,94 @@ footer {
   .btn-lg { width: 100%; }
 }
 
+/* ── Bento product grid (homepage) ────────────────────────
+   Stripe's homepage overview grid uses asymmetric tile sizes and a
+   distinct colored/illustrated ground per tile rather than a flat row of
+   identical white cards — the size and color carry meaning (the featured
+   product gets the big tile) instead of everything competing equally. We
+   have no product photography, so each tile's "image" is a tinted gradient
+   plus a large outline icon rendered in the corner, not a stock photo. */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 190px;
+  gap: 16px;
+}
+.bento-tile {
+  position: relative;
+  grid-column: span 2;
+  grid-row: span 1;
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  transition: box-shadow .18s ease, transform .18s ease;
+}
+.bento-tile:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.bento-tile-lg { grid-column: span 2; grid-row: span 2; }
+.bento-tile-wide { grid-column: span 2; grid-row: span 1; }
+.bento-tile-sm { grid-column: span 1; grid-row: span 1; }
+
+.bento-tile-icon {
+  position: absolute;
+  right: -14px; bottom: -14px;
+  opacity: 0.1;
+  transform: scale(2.6);
+  color: var(--accent);
+  pointer-events: none;
+}
+.bento-tile-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; }
+.bento-tile-title { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; margin-top: auto; position: relative; z-index: 1; }
+.bento-tile-lg .bento-tile-title { font-size: 22px; }
+.bento-tile-body { font-size: 13px; color: var(--text-muted); margin-top: 6px; position: relative; z-index: 1; max-width: 34ch; }
+
+.bento-accent  { background: linear-gradient(155deg, var(--accent-soft) 0%, var(--surface) 65%); }
+.bento-success { background: linear-gradient(155deg, var(--success-soft) 0%, var(--surface) 65%); }
+.bento-pending { background: linear-gradient(155deg, var(--pending-soft) 0%, var(--surface) 65%); }
+.bento-plain   { background: var(--surface); }
+.bento-dark {
+  background: linear-gradient(155deg, var(--text) 0%, #1c3a5e 100%);
+  color: #fff;
+  border-color: var(--text);
+}
+.bento-dark .bento-tile-body { color: rgba(255,255,255,0.72); }
+.bento-dark .bento-tile-icon { color: #fff; opacity: 0.12; }
+
+@media (max-width: 860px) {
+  .bento-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 176px; }
+  .bento-tile-lg, .bento-tile-wide { grid-column: span 2; grid-row: span 1; }
+}
+@media (max-width: 560px) {
+  .bento-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
+  .bento-tile, .bento-tile-lg, .bento-tile-wide, .bento-tile-sm { grid-column: span 1; min-height: 150px; }
+}
+
+/* ── Updates feed (homepage "what's new") ─────────────────── */
+.updates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.update-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+  display: block;
+  transition: box-shadow .18s ease;
+}
+.update-card:hover { box-shadow: var(--shadow-md); }
+.update-date {
+  font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 10px;
+}
+.update-title { font-size: 15.5px; font-weight: 700; margin-bottom: 8px; line-height: 1.35; }
+.update-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+@media (max-width: 860px) { .updates-grid { grid-template-columns: 1fr; } }
+
 /* ══════════════════════════════════════════════════════════
    MARKETING SECTION SYSTEM
    The repeatable section vocabulary every product page is

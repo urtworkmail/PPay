@@ -108,7 +108,7 @@
   })();
 </script>
 
-<!-- WHAT IS PPAY -->
+<!-- WHAT IS PPAY (bento overview) -->
 <section class="section">
   <div class="container">
     <div class="text-center mb-48" data-animate>
@@ -116,56 +116,81 @@
       <h2 class="section-title">One API for every payment method<br>Pakistanis actually use</h2>
       <p class="section-sub">Pakistan's payment landscape is fragmented — cards through one gateway, wallets through another, bank transfers through a third. PPay unifies all of it into one API and one dashboard.</p>
     </div>
-    <div class="grid-3" style="gap:20px;">
-      <a href="checkout.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="icon-box icon-accent"><span data-icon="card" data-icon-size="18"></span></div>
+
+    <div class="bento-grid" data-animate>
+      <a href="checkout.html" class="bento-tile bento-tile-lg bento-dark">
+        <div class="bento-tile-top">
+          <div class="icon-box" style="background:rgba(255,255,255,0.12);color:#fff;"><span data-icon="card" data-icon-size="20"></span></div>
           <span class="badge badge-success">Live in sandbox</span>
         </div>
-        <div class="feature-card-title">Hosted Checkout</div>
-        <div class="feature-card-body">A hosted payment page for card, wallet, and bank transfer, without you touching PCI scope.</div>
-      </a>
-      <a href="payment-links.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.06s">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="icon-box icon-accent"><span data-icon="link" data-icon-size="18"></span></div>
-          <span class="badge badge-success">Live in sandbox</span>
+        <span class="bento-tile-icon"><span data-icon="card" data-icon-size="72"></span></span>
+        <div>
+          <div class="bento-tile-title">Hosted Checkout</div>
+          <div class="bento-tile-body">One page for card, wallet, and bank transfer — you never touch PCI scope.</div>
         </div>
-        <div class="feature-card-title">Payment Links</div>
-        <div class="feature-card-body">A shareable payment URL, no code and no website — send it on WhatsApp or SMS.</div>
       </a>
-      <a href="invoicing.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.12s">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="icon-box icon-accent"><span data-icon="invoice" data-icon-size="18"></span></div>
-          <span class="badge badge-success">Live in sandbox</span>
-        </div>
-        <div class="feature-card-title">Invoicing</div>
-        <div class="feature-card-body">Auto-numbered, one-off invoices with a hosted pay link — live the moment you send them.</div>
-      </a>
-      <a href="subscriptions.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="icon-box icon-accent"><span data-icon="refresh" data-icon-size="18"></span></div>
-          <span class="badge badge-success">Live in sandbox</span>
-        </div>
-        <div class="feature-card-title">Subscriptions</div>
-        <div class="feature-card-body">Recurring billing with saved payment methods and automatic retries on a failed cycle.</div>
-      </a>
-      <a href="sentinel.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.06s">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+
+      <a href="sentinel.html" class="bento-tile bento-tile-wide bento-accent">
+        <div class="bento-tile-top">
           <div class="icon-box icon-accent"><span data-icon="shield" data-icon-size="18"></span></div>
           <span class="badge badge-success">Partially live</span>
         </div>
-        <div class="feature-card-title">Sentinel, fraud scoring</div>
-        <div class="feature-card-body">Six deterministic signals score every checkout attempt before authorization runs.</div>
-      </a>
-      <a href="balances-payouts.html" class="feature-card card-hover" data-animate style="text-decoration:none;display:block;transition-delay:.12s">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="icon-box icon-accent"><span data-icon="bank" data-icon-size="18"></span></div>
-          <span class="badge badge-success">Live in sandbox</span>
+        <span class="bento-tile-icon"><span data-icon="shield" data-icon-size="60"></span></span>
+        <div>
+          <div class="bento-tile-title">Sentinel, fraud scoring</div>
+          <div class="bento-tile-body">Six signals score every attempt before authorization runs.</div>
         </div>
-        <div class="feature-card-title">Balances &amp; Payouts</div>
-        <div class="feature-card-body">Itemised nightly settlement batches, released on the schedule you choose.</div>
+      </a>
+
+      <a href="payment-links.html" class="bento-tile-sm bento-tile bento-success">
+        <div class="bento-tile-top">
+          <div class="icon-box icon-success"><span data-icon="link" data-icon-size="16"></span></div>
+        </div>
+        <span class="bento-tile-icon"><span data-icon="link" data-icon-size="52"></span></span>
+        <div class="bento-tile-title" style="font-size:15px;">Payment Links</div>
+      </a>
+
+      <a href="invoicing.html" class="bento-tile-sm bento-tile bento-pending">
+        <div class="bento-tile-top">
+          <div class="icon-box icon-pending"><span data-icon="invoice" data-icon-size="16"></span></div>
+        </div>
+        <span class="bento-tile-icon"><span data-icon="invoice" data-icon-size="52"></span></span>
+        <div class="bento-tile-title" style="font-size:15px;">Invoicing</div>
+      </a>
+
+      <a href="subscriptions.html" class="bento-tile-sm bento-tile bento-accent">
+        <div class="bento-tile-top">
+          <div class="icon-box icon-accent"><span data-icon="refresh" data-icon-size="16"></span></div>
+        </div>
+        <span class="bento-tile-icon"><span data-icon="refresh" data-icon-size="52"></span></span>
+        <div class="bento-tile-title" style="font-size:15px;">Subscriptions</div>
+      </a>
+
+      <a href="balances-payouts.html" class="bento-tile-sm bento-tile bento-success">
+        <div class="bento-tile-top">
+          <div class="icon-box icon-success"><span data-icon="bank" data-icon-size="16"></span></div>
+        </div>
+        <span class="bento-tile-icon"><span data-icon="bank" data-icon-size="52"></span></span>
+        <div class="bento-tile-title" style="font-size:15px;">Balances &amp; Payouts</div>
+      </a>
+
+      <a href="analytics.html" class="bento-tile-sm bento-tile bento-pending">
+        <div class="bento-tile-top">
+          <div class="icon-box icon-pending"><span data-icon="chart" data-icon-size="16"></span></div>
+        </div>
+        <span class="bento-tile-icon"><span data-icon="chart" data-icon-size="52"></span></span>
+        <div class="bento-tile-title" style="font-size:15px;">Analytics</div>
+      </a>
+
+      <a href="financial-connections.html" class="bento-tile-sm bento-tile bento-accent">
+        <div class="bento-tile-top">
+          <div class="icon-box icon-accent"><span data-icon="plug" data-icon-size="16"></span></div>
+        </div>
+        <span class="bento-tile-icon"><span data-icon="plug" data-icon-size="52"></span></span>
+        <div class="bento-tile-title" style="font-size:15px;">Financial Connections</div>
       </a>
     </div>
+
     <div class="text-center mt-32" data-animate>
       <a href="products.html" class="btn btn-secondary">See every product →</a>
     </div>
@@ -352,7 +377,7 @@ Idempotency-Key: <span style="color:#3ddc97;">order-1029</span>
   <div class="container">
     <div class="text-center mb-32" data-animate>
       <div class="section-eyebrow">Where we are</div>
-      <h2 class="section-title" style="font-size:clamp(22px,3vw,32px);">Honest build status</h2>
+      <h2 class="section-title" style="font-size:clamp(22px,3vw,32px);">Where we're at</h2>
       <p class="section-sub" style="margin-top:8px;">The full picture, including what isn't built yet, lives on the <a href="roadmap.html" style="color:var(--accent);">roadmap</a>.</p>
     </div>
     <div class="grid-4" style="gap:16px;" data-animate>
@@ -376,6 +401,36 @@ Idempotency-Key: <span style="color:#3ddc97;">order-1029</span>
         <div style="font-size:14px;font-weight:700;margin-bottom:6px;">Real money movement</div>
         <div style="font-size:12px;color:var(--text-muted);">Every payment today is a sandbox construct until that partnership is in place.</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S HAPPENING -->
+<section class="section" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="mb-32" data-animate style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="section-eyebrow">What's happening</div>
+        <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);margin-top:8px;">Recent shipped work</h2>
+      </div>
+      <a href="changelog.html" class="btn btn-secondary btn-sm">View all changes →</a>
+    </div>
+    <div class="updates-grid" data-animate>
+      <a href="changelog.html" class="update-card">
+        <div class="update-date">September 2026</div>
+        <div class="update-title">Notifications, Sentinel, and five new products</div>
+        <div class="update-body">A categorised in-dashboard activity feed, six-signal fraud scoring, plus Disputes, Tax, Financial Connections, Analytics, and Balances &amp; Payouts all shipped in one release.</div>
+      </a>
+      <a href="roadmap.html" class="update-card">
+        <div class="update-date">September 2026</div>
+        <div class="update-title">Events API and an honest roadmap</div>
+        <div class="update-body">Every account event is now recorded whether or not a webhook is configured, and the roadmap page was rebuilt as an actual status report — what's shipped, in progress, and not started.</div>
+      </a>
+      <a href="changelog.html" class="update-card">
+        <div class="update-date">Earlier</div>
+        <div class="update-title">Stripe-parity architecture rebuild</div>
+        <div class="update-body">Schema-separated sandbox/production data, a PaymentIntent orchestration core, a no-delete data policy, and a full audit log.</div>
+      </a>
     </div>
   </div>
 </section>
