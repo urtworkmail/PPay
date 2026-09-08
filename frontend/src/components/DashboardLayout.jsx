@@ -759,6 +759,7 @@ export default function DashboardLayout() {
         )}
 
         <nav
+          className={collapsed ? "icon-rail-scroll" : undefined}
           style={{
             display: "flex",
             flexDirection: "column",

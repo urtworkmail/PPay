@@ -378,3 +378,17 @@ tr:last-child td {
   background: var(--color-border);
   border-radius: 999px;
 }
+
+/* The collapsed sidebar's icon rail is 68px wide with ~48px of usable
+   content space — the global 10px scrollbar there doesn't just look
+   cramped, it visibly eats into the icon column and throws the whole
+   rail's centering off. Icon-only nav rails (VS Code's activity bar,
+   Slack's, etc.) don't show a scrollbar at all; scrolling still works via
+   wheel/trackpad, it's just not drawn. */
+.icon-rail-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge/IE */
+}
+.icon-rail-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Edge/Safari */
+}
