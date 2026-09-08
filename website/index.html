@@ -261,6 +261,151 @@
   </div>
 </section>
 
+<!-- DETAILED BENEFITS BY BUSINESS TYPE -->
+<section class="section" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="text-center mb-48" data-animate>
+      <div class="section-eyebrow">Why businesses use PPay</div>
+      <h2 class="section-title">What actually changes for your business</h2>
+      <p class="section-sub">Not a features list — the specific problem each product solves, for the business that has it.</p>
+    </div>
+
+    <!-- Row 1: Ecommerce & retail -->
+    <div class="feature-row" data-animate>
+      <div class="feature-row-text">
+        <div class="section-eyebrow">For ecommerce &amp; retail</div>
+        <h3 class="feature-row-title">Don't lose a sale because you couldn't take their money</h3>
+        <p class="feature-row-sub">A customer who wants to pay by wallet and only sees a card form doesn't come back later — they just buy from whoever accepted the payment method they had open. That's the gap this closes.</p>
+        <ul class="feature-row-list">
+          <li><strong>Card, wallet, and bank transfer on one hosted page</strong> — the customer picks what they already have, you build the integration once.</li>
+          <li><strong>Sentinel scores the attempt before authorization runs</strong>, so a card-testing run shows up as a block, not a stack of refunds and chargebacks to clean up afterward.</li>
+          <li><strong>Settlement batches you can actually read</strong> — gross, fee, and net broken out per batch, not one net number you have to trust.</li>
+        </ul>
+      </div>
+      <div class="feature-row-visual">
+        <div class="mockup">
+          <div class="mockup-chrome">
+            <div class="mockup-dot" style="background:#ff5f57;"></div><div class="mockup-dot" style="background:#febc2e;"></div><div class="mockup-dot" style="background:#28c840;"></div>
+            <span class="mockup-url">pay.ppay.silicatelabs.site/c/cs_9fA2</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mock-card" style="display:flex;justify-content:space-between;align-items:center;">
+              <div><div class="mock-label">Order #1029</div><div class="mock-value">₨1,500.00</div></div>
+            </div>
+            <div class="mock-grid-3">
+              <div class="mock-field" style="text-align:center;border-color:var(--accent);color:var(--accent);font-weight:700;">Card</div>
+              <div class="mock-field" style="text-align:center;">Wallet</div>
+              <div class="mock-field" style="text-align:center;">Bank</div>
+            </div>
+            <div class="mock-btn">Pay ₨1,500.00</div>
+            <div style="text-align:center;font-size:10.5px;color:var(--text-faint);display:flex;align-items:center;justify-content:center;gap:5px;"><span data-icon="shield" data-icon-size="12"></span>Sentinel-checked before authorization</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: SaaS & recurring revenue -->
+    <div class="feature-row reverse" data-animate>
+      <div class="feature-row-text">
+        <div class="section-eyebrow">For SaaS &amp; recurring revenue</div>
+        <h3 class="feature-row-title">Stop losing customers to a card that quietly expired</h3>
+        <p class="feature-row-sub">Most subscription churn isn't a customer deciding to leave — it's a renewal that failed silently and nobody followed up. A retry schedule catches almost all of it before it becomes a support ticket.</p>
+        <ul class="feature-row-list">
+          <li><strong>A failed renewal retries automatically</strong> on a fixed schedule — three attempts — before the subscription is marked unpaid.</li>
+          <li><strong>The first invoice force-saves a payment method</strong>, so there's no separate "add a card" step a new customer can abandon halfway through.</li>
+          <li><strong>Every cycle produces a real, numbered invoice</strong> — the same object a one-off customer gets, so your books never need two different code paths for the same kind of charge.</li>
+        </ul>
+      </div>
+      <div class="feature-row-visual">
+        <div class="mockup">
+          <div class="mockup-chrome">
+            <div class="mockup-dot" style="background:#ff5f57;"></div><div class="mockup-dot" style="background:#febc2e;"></div><div class="mockup-dot" style="background:#28c840;"></div>
+            <span class="mockup-url">app.ppay.silicatelabs.site/subscriptions</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mock-grid-2">
+              <div class="mock-card"><div class="mock-label">Active</div><div class="mock-value">128</div></div>
+              <div class="mock-card"><div class="mock-label">MRR</div><div class="mock-value">₨384k</div></div>
+            </div>
+            <div class="mock-list">
+              <div class="mock-list-header">Upcoming renewals</div>
+              <div class="mock-row"><div><div class="mock-row-title">Pro plan · monthly</div><div class="mock-row-sub">Renews in 3 days</div></div><span class="badge badge-success">Active</span></div>
+              <div class="mock-row"><div><div class="mock-row-title">Studio plan · monthly</div><div class="mock-row-sub">Retry 2 of 3</div></div><span class="badge badge-pending">Past due</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Creators, freelancers & small sellers -->
+    <div class="feature-row" data-animate>
+      <div class="feature-row-text">
+        <div class="section-eyebrow">For creators, freelancers &amp; small sellers</div>
+        <h3 class="feature-row-title">Get paid without building anything</h3>
+        <p class="feature-row-sub">Most selling in Pakistan starts in a chat, not a checkout funnel — a WhatsApp thread, a DM, an Instagram comment. A payment link turns that conversation into a paid order without asking the buyer to leave it.</p>
+        <ul class="feature-row-list">
+          <li><strong>A link is live the moment you create a product and a price</strong> — no website, no code, no approval wait.</li>
+          <li><strong>Share it exactly where the sale already happens</strong> — a WhatsApp message, an Instagram bio, a printed QR code.</li>
+          <li><strong>See who paid and how many times a link was used</strong>, without ever asking the customer to fill out a form first.</li>
+        </ul>
+      </div>
+      <div class="feature-row-visual">
+        <div style="display:flex;justify-content:center;">
+          <div class="mockup-phone">
+            <div class="mockup-phone-body">
+              <div style="text-align:center;padding:6px 0;">
+                <div style="width:36px;height:36px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:0 auto 8px;">Z</div>
+                <div style="font-size:12.5px;font-weight:700;">Zainab Traders</div>
+                <div style="font-size:10.5px;color:var(--text-faint);">pay.ppay.silicatelabs.site/pay/lnk_8Kd</div>
+              </div>
+              <div class="mock-card" style="text-align:center;">
+                <div class="mock-label">Amount due</div>
+                <div class="mock-value">₨2,500</div>
+              </div>
+              <div class="mock-btn" style="font-size:11.5px;padding:9px;">Pay now</div>
+              <div style="font-size:9.5px;color:var(--text-faint);text-align:center;">No app, no account needed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Marketplaces & platforms -->
+    <div class="feature-row reverse" data-animate>
+      <div class="feature-row-text">
+        <div class="section-eyebrow">For marketplaces, agencies &amp; multi-seller platforms</div>
+        <h3 class="feature-row-title">Know exactly whose money is whose</h3>
+        <p class="feature-row-sub">The moment more than one person's money moves through the same account, "what happened to this payment" stops being a question you can answer from memory — it needs to be a record you can point to.</p>
+        <ul class="feature-row-list">
+          <li><strong>Every settlement batch is itemised</strong> down to the individual transaction, so reconciling which seller a payment belonged to isn't a spreadsheet exercise.</li>
+          <li><strong>Role-based access</strong> means a support agent can look up a dispute without being able to touch payout settings.</li>
+          <li><strong>An audit log entry on every account-affecting action</strong>, so "who changed this, and when" is a fact you can look up, not a guess.</li>
+        </ul>
+      </div>
+      <div class="feature-row-visual">
+        <div class="mockup">
+          <div class="mockup-chrome">
+            <div class="mockup-dot" style="background:#ff5f57;"></div><div class="mockup-dot" style="background:#febc2e;"></div><div class="mockup-dot" style="background:#28c840;"></div>
+            <span class="mockup-url">app.ppay.silicatelabs.site/balances</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mock-grid-2">
+              <div class="mock-card"><div class="mock-label">Available</div><div class="mock-value" style="color:var(--success);">₨218,400</div></div>
+              <div class="mock-card"><div class="mock-label">Pending</div><div class="mock-value">₨64,900</div></div>
+            </div>
+            <div class="mock-list">
+              <div class="mock-list-header">Settlement batches</div>
+              <div class="mock-row"><div><div class="mock-row-title">Batch · 14 payments</div><div class="mock-row-sub">Gross ₨96,000 · fee ₨2,496</div></div><span class="badge badge-success">Paid</span></div>
+              <div class="mock-row"><div><div class="mock-row-title">Batch · 9 payments</div><div class="mock-row-sub">Gross ₨61,500 · fee ₨1,599</div></div><span class="badge badge-pending">Pending</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- WHY PPAY -->
 <section class="section">
   <div class="container">
