@@ -28,3 +28,11 @@ Thumbs.db
 db-backups/
 
 .claude
+
+# Internal-only docs — not for the public repo
+DEPLOYMENT.md
+GO_TO_MARKET.md
+RESTORE.md
+pakistan_payments_architecture_spec.md
+pakistan_payments_platform_architecture.md
+
