@@ -51,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
             { href: 'notifications.html', ico: 'bell', title: 'Notifications', desc: 'An activity feed, plus email alerts you control' },
             { href: 'team-security.html', ico: 'users', title: 'Team & Security', desc: 'Roles, two-factor auth, and session control' },
             { href: 'status.html', ico: 'monitor', title: 'Status', desc: 'Live uptime for every capability below' },
-            { href: 'roadmap.html', ico: 'compass', title: 'Roadmap', desc: "What's shipped, what's next, what isn't started" },
           ],
         },
       ],
@@ -148,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
           label: 'Stay current',
           items: [
             { href: 'changelog.html', ico: 'refresh', title: 'Changelog', desc: 'Everything shipped, in order' },
-            { href: 'roadmap.html', ico: 'compass', title: 'Roadmap', desc: "What's next, what isn't started" },
             { href: 'contact.html', ico: 'lifeBuoy', title: 'Developer support', desc: 'Talk to the people who built it' },
           ],
         },
@@ -405,12 +403,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   // A mega-menu trigger doesn't link anywhere itself, but it should still
   // read as "active" when the current page is one of its own items.
-  MEGA_KEYS.forEach(key => {
-    const hrefs = MEGA_MENUS[key].groups.flatMap(g => g.items.map(i => i.href.split('#')[0]));
-    if (hrefs.includes(path)) {
-      document.querySelector(`.mega-trigger[data-mega="${key}"]`)?.classList.add('active');
-    }
-  });
+  // Solutions deliberately cross-lists the same product pages under an
+  // industry lens, so a page can legitimately appear under more than one
+  // menu — only the first match (in MEGA_KEYS's declared order, which is
+  // also each page's canonical home) gets highlighted, so exactly one
+  // trigger lights up rather than every menu that happens to link there.
+  const canonicalKey = MEGA_KEYS.find(key =>
+    MEGA_MENUS[key].groups.some(g => g.items.some(i => i.href.split('#')[0] === path))
+  );
+  if (canonicalKey) {
+    document.querySelector(`.mega-trigger[data-mega="${canonicalKey}"]`)?.classList.add('active');
+  }
 
   // ── Mega menus (multiple triggers, one open at a time) ────────
   const triggers = [...document.querySelectorAll('.mega-trigger')];
