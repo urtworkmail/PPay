@@ -28,6 +28,7 @@ from app.models.live_access_request import BusinessType, LiveAccessRequest, Live
 from app.models.merchant import Merchant, MerchantLiveStatus, MerchantStatus, PayoutSchedule
 from app.models.session import Session as UserSession, SessionRevokedReason
 from app.models.user import User, UserRole, UserStatus
+from app.services.geoip import resolve_location
 from app.services.audit_log import record_audit_event
 from app.services.bank_verification import clear_verification
 from app.schemas.auth import (
@@ -78,6 +79,20 @@ REAL_PAYMENT_METHODS = {PaymentMethod.CARD.value, PaymentMethod.WALLET.value, Pa
 
 def _client_ip(request: Request) -> str | None:
     return request.client.host if request.client else None
+
+
+async def _refresh_session_location(session: UserSession, ip: str | None) -> None:
+    """Re-resolves city/region/country only when the IP actually changed —
+    a session's location would otherwise trigger a geolocation lookup on
+    every single token refresh, which happens far more often than a device's
+    location does.
+    """
+    if not ip or ip == session.ip_address:
+        return
+    location = await resolve_location(ip)
+    session.city = location["city"]
+    session.region = location["region"]
+    session.country = location["country"]
 
 
 def _device_id(request: Request) -> str:
@@ -162,7 +177,9 @@ async def _start_session(db: AsyncSession, user: User, request: Request) -> tupl
 
     refresh_token = create_refresh_token(str(user.id), session_id=str(session.id))
     session.refresh_jti = decode_token(refresh_token)["jti"]
-    session.ip_address = _client_ip(request)
+    incoming_ip = _client_ip(request)
+    await _refresh_session_location(session, incoming_ip)
+    session.ip_address = incoming_ip
     session.user_agent = user_agent
     session.device_label = _device_label(user_agent)
     session.last_seen_at = now
@@ -257,14 +274,26 @@ async def login(payload: MerchantLoginRequest, request: Request, db: AsyncSessio
     # Notifying on every login trains people to ignore the alert, which is
     # exactly the message you need them to read when it does matter.
     if is_new_device:
+        new_session = await db.execute(
+            select(UserSession).where(
+                UserSession.user_id == user.id, UserSession.device_id == _device_id(request)
+            )
+        )
+        session_row = new_session.scalars().first()
+        location = (
+            ", ".join(p for p in (session_row.city, session_row.country) if p)
+            if session_row
+            else None
+        )
+        location_clause = f" in {location}" if location else ""
         await notify(
             db,
             merchant_id=user.merchant_id,
             category=NotificationCategory.SECURITY,
             title="New sign-in from a new device",
             body=(
-                f"{user.email} signed in from {_device_label(request.headers.get('user-agent'))} "
-                f"({_client_ip(request) or 'unknown IP'}). "
+                f"{user.email} signed in from {_device_label(request.headers.get('user-agent'))}"
+                f"{location_clause} ({_client_ip(request) or 'unknown IP'}). "
                 "If this wasn't you, change your password and revoke the session."
             ),
             severity=NotificationSeverity.WARNING,
@@ -482,7 +511,9 @@ async def refresh(payload: RefreshRequest, request: Request, db: AsyncSession = 
     session.refresh_jti = decode_token(new_refresh_token)["jti"]
     session.last_seen_at = datetime.now(timezone.utc)
     session.expires_at = refresh_token_expiry()
-    session.ip_address = _client_ip(request)
+    incoming_ip = _client_ip(request)
+    await _refresh_session_location(session, incoming_ip)
+    session.ip_address = incoming_ip
     if request.headers.get("user-agent"):
         session.user_agent = request.headers.get("user-agent")
         session.device_label = _device_label(request.headers.get("user-agent"))
@@ -805,6 +836,9 @@ async def list_sessions(
             ip_address=s.ip_address,
             user_agent=s.user_agent,
             device_label=s.device_label or _device_label(s.user_agent),
+            city=s.city,
+            region=s.region,
+            country=s.country,
             created_at=s.created_at,
             last_seen_at=s.last_seen_at,
             expires_at=s.expires_at,

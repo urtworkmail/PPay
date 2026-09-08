@@ -38,6 +38,14 @@ function describeDevice(userAgent) {
   return [browser, os].filter(Boolean).join(" on ");
 }
 
+/** City-level location from the session's IP address (see services/geoip.py
+ *  on the backend) — never device GPS, so this is only ever as precise as
+ *  the sign-in's IP already was, and is null until that lookup succeeds. */
+function describeLocation(session) {
+  const parts = [session.city, session.region, session.country].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : "Unknown location";
+}
+
 export default function SettingsSessions() {
   const [sessions, setSessions] = useState(null);
   const [error, setError] = useState(null);
@@ -156,7 +164,7 @@ export default function SettingsSessions() {
                     {session.is_current && <span className="badge badge-success">This device</span>}
                   </div>
                   <div style={{ fontSize: 12.5, color: "var(--color-text-muted)", marginTop: 3 }}>
-                    IP {session.ip_address || "unknown"} · signed in {formatDate(session.created_at)}
+                    {describeLocation(session)} · IP {session.ip_address || "unknown"} · signed in {formatDate(session.created_at)}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--color-text-faint)", marginTop: 2 }}>
                     Last active {formatRelativeTime(session.last_seen_at)}

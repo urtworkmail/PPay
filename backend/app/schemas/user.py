@@ -127,6 +127,9 @@ class SessionResponse(BaseModel):
     ip_address: str | None
     user_agent: str | None
     device_label: str | None = None
+    city: str | None = None
+    region: str | None = None
+    country: str | None = None
     created_at: datetime
     last_seen_at: datetime
     expires_at: datetime | None = None

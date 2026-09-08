@@ -56,6 +56,14 @@ class Session(Base):
     ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
+    # City-level IP geolocation, resolved once at sign-in/refresh time — see
+    # services/geoip.py. Never device GPS; there is no location permission
+    # prompt anywhere in this app. Null until the lookup succeeds (or for an
+    # unresolvable IP, e.g. localhost in development).
+    city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    region: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     # When the current refresh token stops working. A session past this point
