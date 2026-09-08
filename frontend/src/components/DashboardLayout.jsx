@@ -161,7 +161,14 @@ function NavItem({ item, collapsed, depth = 1 }) {
           style={({ isActive }) => ({
             ...itemStyle({ isActive }),
             justifyContent: "center",
+            // itemStyle() sets paddingLeft separately (for expanded-mode
+            // indentation) — that survives the "padding: 11px 0" shorthand
+            // above unless cleared explicitly, leaving 25px on the left and
+            // 0 on the right. That asymmetry is what was pushing every
+            // collapsed icon off-center instead of aligning it with the
+            // avatar/expand button above.
             padding: "11px 0",
+            paddingLeft: 0,
             opacity: 1, // the icon rail has no hierarchy to express
           })}
         >
