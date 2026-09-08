@@ -246,6 +246,41 @@ main { flex: 1 0 auto; }   /* pushes footer down */
 }
 .mobile-menu a:hover { color: var(--text); background: var(--bg); }
 
+/* CTA buttons keep their own text color — .mobile-menu a alone outranks
+   .btn-primary/.btn-secondary by specificity, which was rendering "Access
+   app in beta" in muted gray-on-purple instead of white. */
+.mobile-menu a.btn-primary,
+.mobile-menu a.btn-primary:hover { color: #fff; }
+.mobile-menu a.btn-secondary,
+.mobile-menu a.btn-secondary:hover { color: var(--text); }
+
+/* Collapsible mega-menu sections */
+.mobile-menu-section { border-top: 1px solid var(--border); margin-top: 6px; }
+.mobile-menu-section:first-child { border-top: none; margin-top: 0; }
+.mobile-menu-section-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%;
+  padding: 14px 12px 10px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.mobile-menu-section-toggle svg { color: var(--text-faint); transition: transform 0.2s; flex-shrink: 0; }
+.mobile-menu-section-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.mobile-menu-section-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.mobile-menu-section-panel.open { grid-template-rows: 1fr; }
+.mobile-menu-section-panel-inner { overflow: hidden; display: flex; flex-direction: column; gap: 4px; }
+.mobile-menu-section-panel .mobile-menu-group-label:first-child { padding-top: 0; }
+
 @media (max-width: 780px) {
   .nav-links, .nav-cta { display: none; }
   .nav-hamburger { display: flex; }

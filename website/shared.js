@@ -239,6 +239,21 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
+  function mobileMenuSectionHTML(key, menu) {
+    return `
+    <div class="mobile-menu-section">
+      <button type="button" class="mobile-menu-section-toggle" data-mobile-target="${key}" aria-expanded="false" aria-controls="mobile-panel-${key}">
+        ${menu.label}
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mobile-menu-section-panel" id="mobile-panel-${key}">
+        <div class="mobile-menu-section-panel-inner">
+          ${mobileMenuLinksHTML(menu)}
+        </div>
+      </div>
+    </div>`;
+  }
+
   const MEGA_KEYS = Object.keys(MEGA_MENUS);
   const ALL_PANELS_HTML = MEGA_KEYS.map(key => megaPanelHTML(key, MEGA_MENUS[key])).join('');
 
@@ -274,10 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </nav>
   <div class="mobile-menu" id="mobile-menu">
-    ${MEGA_KEYS.map(key => `
-      <div class="mobile-menu-group-label" style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px;">${MEGA_MENUS[key].label}</div>
-      ${mobileMenuLinksHTML(MEGA_MENUS[key])}
-    `).join('')}
+    ${MEGA_KEYS.map(key => mobileMenuSectionHTML(key, MEGA_MENUS[key])).join('')}
     <div class="mobile-menu-group-label" style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px;">More</div>
     <a href="pricing.html">Pricing</a>
     <a href="tel:+923275754989" class="btn btn-secondary" style="margin-top:8px;justify-content:center;">Call +92 (327) 575-4989</a>
@@ -487,6 +499,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.querySelectorAll('.mobile-menu a').forEach(a => {
     a.addEventListener('click', () => mm.classList.remove('open'));
+  });
+
+  // ── Collapsible sections within the mobile menu ───────────
+  document.querySelectorAll('.mobile-menu-section-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = document.getElementById(`mobile-panel-${btn.getAttribute('data-mobile-target')}`);
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      if (panel) panel.classList.toggle('open', !isOpen);
+    });
   });
 
   // ── Icon placeholders ─────────────────────────────────────
