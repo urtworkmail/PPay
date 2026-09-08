@@ -4,6 +4,7 @@ import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import DeveloperPanel from "./DeveloperPanel";
+import Modal from "./Modal";
 import {
   BellIcon,
   CheckIcon,
@@ -30,6 +31,13 @@ const HELP_PINNED_STORAGE_KEY = "ppay_help_pinned";
 const HELP_WIDTH_STORAGE_KEY = "ppay_help_width";
 const DEV_PANEL_STORAGE_KEY = "ppay_dev_panel_open";
 const SHORTCUTS_STORAGE_KEY = "ppay_shortcuts";
+
+// The one account used for external panel/judge review. Its data is real
+// sandbox data seeded to look like an established vendor's account, not a
+// blank signup — the welcome modal below exists so reviewers know that
+// up front rather than mistaking it for a real merchant's real activity.
+const PANEL_REVIEW_EMAIL = "panel-review@silicatelabs.site";
+const PANEL_WELCOME_SESSION_KEY = "ppay_panel_welcome_seen";
 const DEFAULT_SHORTCUT_IDS = SHORTCUTS.map((item) => item.to);
 const TOPBAR_HEIGHT = 60;
 const THEME_OPTIONS = [
@@ -628,6 +636,15 @@ export default function DashboardLayout() {
   const [shortcutIds, setShortcutIds] = useShortcutIds();
   const [shortcutsEditorRect, setShortcutsEditorRect] = useState(null);
   const [accountMenuRect, setAccountMenuRect] = useState(null);
+  const isPanelReviewAccount = user?.email === PANEL_REVIEW_EMAIL;
+  const [showPanelWelcome, setShowPanelWelcome] = useState(
+    () => isPanelReviewAccount && sessionStorage.getItem(PANEL_WELCOME_SESSION_KEY) !== "1"
+  );
+
+  function dismissPanelWelcome() {
+    sessionStorage.setItem(PANEL_WELCOME_SESSION_KEY, "1");
+    setShowPanelWelcome(false);
+  }
 
   // Pinning the help panel takes over the horizontal space it needs: the
   // sidebar collapses to its icon rail and the main content narrows to make
@@ -876,6 +893,23 @@ export default function DashboardLayout() {
         />
       )}
       <OnboardingWidget bottomOffset={devPanelHeight} />
+
+      {showPanelWelcome && (
+        <Modal title="Welcome, panel reviewers" onClose={dismissPanelWelcome}>
+          <p style={{ fontSize: 13.5, color: "var(--color-text-muted)", lineHeight: 1.6, marginBottom: 16 }}>
+            This account is set up specifically for reviewing PPay. Every transaction, invoice, subscription, and
+            dispute you'll see here is simulated sandbox data, built to look like what an established vendor's
+            account would actually contain after a few months of real use — not a blank signup.
+          </p>
+          <p style={{ fontSize: 13.5, color: "var(--color-text-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+            Nothing here is real money or a real customer. Explore freely — nothing you do in this account affects
+            anyone else's.
+          </p>
+          <button className="btn btn-primary" style={{ width: "100%" }} onClick={dismissPanelWelcome}>
+            Got it
+          </button>
+        </Modal>
+      )}
     </div>
   );
 }
