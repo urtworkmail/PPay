@@ -223,6 +223,7 @@ main { flex: 1 0 auto; }   /* pushes footer down */
   display: none;
   position: fixed;
   top: var(--nav-h); left: 0; right: 0;
+  bottom: 0;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-direction: column;
@@ -230,6 +231,9 @@ main { flex: 1 0 auto; }   /* pushes footer down */
   gap: 4px;
   z-index: 99;
   box-shadow: var(--shadow-md);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .mobile-menu.open { display: flex; }
 .mobile-menu a {
