@@ -74,7 +74,10 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Log in to PPay. Sandbox mode — no real funds are moved.">
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Checkout, payouts, subscriptions, and fraud scoring — one dashboard. Sandbox mode, no real funds move."
+    >
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {error && (
           <div className="badge badge-danger" style={{ width: "100%", padding: "10px 12px" }}>

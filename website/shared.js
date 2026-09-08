@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         href: 'contact.html',
         eyebrow: 'Silicate Labs',
         title: 'PPay is built by Silicate Labs',
-        body: 'Reach support at support@silicatelabs.site, or investors at ir@silicatelabs.site.',
+        body: 'Reach support at support@silicatelabs.site. Investor relations: silicatelabs.site.',
       },
     },
   };
@@ -250,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <span>PPay</span>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
         ${MEGA_KEYS.map(key => `
           <li>
             <button type="button" class="mega-trigger" data-mega="${key}" aria-expanded="false" aria-controls="mega-panel-${key}">
@@ -275,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </nav>
   <div class="mobile-menu" id="mobile-menu">
-    <a href="index.html">Home</a>
     ${MEGA_KEYS.map(key => `
       <div class="mobile-menu-group-label" style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px;">${MEGA_MENUS[key].label}</div>
       ${mobileMenuLinksHTML(MEGA_MENUS[key])}
@@ -357,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <li><a href="team.html">Team</a></li>
             <li><a href="contact.html">Contact</a></li>
             <li><a href="https://silicatelabs.site" target="_blank" rel="noopener">Silicate Labs</a></li>
-            <li><a href="mailto:ir@silicatelabs.site">Investor relations</a></li>
+            <li><a href="https://silicatelabs.site/investor-relations.html" target="_blank" rel="noopener">Investor relations</a></li>
             <li><a href="tel:+923275754989">+92 (327) 575-4989</a></li>
           </ul>
         </div>
