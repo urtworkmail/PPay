@@ -26,6 +26,7 @@ from app.models.subscription import SavedPaymentMethod, Subscription
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.webhook import WebhookEndpoint, WebhookLog
+from app.models.website_visit import WebsiteVisit
 
 __all__ = [
     "Merchant",
@@ -63,4 +64,5 @@ __all__ = [
     "EmailVerification",
     "ServiceStatusCheck",
     "ServiceStatusIncident",
+    "WebsiteVisit",
 ]

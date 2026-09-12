@@ -511,6 +511,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ── Visit tracking ────────────────────────────────────────
+  // Fire-and-forget beacon so the internal review team can see who's
+  // actually visiting the site (IP-resolved city/region/country, same
+  // mechanism as the dashboard's own sign-in location — see
+  // services/geoip.py — never device GPS, no permission prompt). Never
+  // blocks rendering and never throws if the API is unreachable.
+  (function () {
+    var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000'
+      : 'https://app.ppay.silicatelabs.site';
+    try {
+      fetch(API_BASE + '/api/v1/public/track-visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          path: location.pathname + location.search,
+          referrer: document.referrer || null,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (e) {}
+  })();
+
   // ── Icon placeholders ─────────────────────────────────────
   // Static pages mark icons up as <span data-icon="shield"> so the markup
   // stays readable; this swaps each one for the real SVG on load.

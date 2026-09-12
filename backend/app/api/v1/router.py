@@ -21,6 +21,7 @@ from app.api.v1 import (
     transactions,
     events,
     webhooks,
+    website_visits,
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -47,3 +48,5 @@ api_router.include_router(tax.router)
 api_router.include_router(notifications.router)
 api_router.include_router(status.router)
 api_router.include_router(status.admin_router)
+api_router.include_router(website_visits.router)
+api_router.include_router(website_visits.admin_router)
